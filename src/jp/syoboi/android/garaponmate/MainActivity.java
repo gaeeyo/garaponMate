@@ -231,10 +231,6 @@ public class MainActivity extends Activity  {
 			public void onPageFinished(WebView view, String url) {
 				Log.v(TAG, "onPageFinished url:" + url);
 				super.onPageFinished(view, url);
-
-				if (url.endsWith("/auth/login.garapon")) {
-					autoLogin();
-				}
 			}
 
 			@Override
@@ -284,6 +280,14 @@ public class MainActivity extends Activity  {
 						}
 					}
 				}
+				if (url.endsWith("/auth/login.garapon")) {
+					// ログイン画面に遷移するとき、自動ログインする
+					if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) == 0) {
+						login();
+						return true;
+					}
+				}
+
 				return super.shouldOverrideUrlLoading(view, url);
 			}
 		});
