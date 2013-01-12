@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:id="@+id/playerToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/pause"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_media_pause" />
+
+        <ImageButton
+            android:id="@+id/previous"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_media_previous" />
+
+        <ImageButton
+            android:id="@+id/rew"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_media_rew"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/ff"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_media_ff"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/next"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_media_next" />
+    </LinearLayout>
+
+    <WebView
+        android:id="@+id/playerWebView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/playerToolbar" />
+
+    <View
+        android:id="@+id/playerViewOverlay"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/playerToolbar" />
+
+</RelativeLayout>

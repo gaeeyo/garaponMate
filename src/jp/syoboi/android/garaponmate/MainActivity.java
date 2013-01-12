@@ -1,5 +1,6 @@
 package jp.syoboi.android.garaponmate;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -8,15 +9,12 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
@@ -24,7 +22,6 @@ import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
-import android.webkit.WebSettings.PluginState;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
@@ -35,13 +32,15 @@ import android.widget.Toast;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.syoboi.android.garaponmate.view.PlayerView;
+
 public class MainActivity extends Activity  {
 
 	static final String TAG = "MainActivity";
 
 	static final int FLAG_AUTO_LOGIN_PROGRESS = 1;
 	static final int [] FAV_BUTTONS = { R.id.fav0, R.id.fav1, R.id.fav2 };
-	static final int [] PLAYER_BUTTONS = { R.id.back, R.id.forward };
+	static final long CHANGE_FULLSCREEN_DELAY = 3000;
 
 	String 		mBaseUrl;
 	String 		mUser;
@@ -50,13 +49,13 @@ public class MainActivity extends Activity  {
 
 	Handler			mHandler = new Handler();
 	LinearLayout	mMainContainer;
-	View			mPlayerContainer;
-	WebView			mPlayerView;
+	PlayerView		mPlayer;
 	View			mPlayerOverlay;
 	View			mWebViewContainer;
 	WebView			mWebView;
 	ProgressBar		mProgress;
 	boolean			mPlayerExpanded;
+	boolean			mFullScreen;
 
 	private boolean mSettingChanged;
 
@@ -76,12 +75,6 @@ public class MainActivity extends Activity  {
 			switch (v.getId()) {
 			case R.id.settings:
 				startSettingsActivity();
-				break;
-			case R.id.forward:
-				mPlayerView.loadUrl("javascript:document.getElementById(player_flg).SetVariable('player:jsSetFastForward', '30');");
-				break;
-			case R.id.back:
-				mPlayerView.loadUrl("javascript:document.getElementById(player_flg).SetVariable('player:jsSetRewind', '15');");
 				break;
 			default:
 				Object tag = v.getTag();
@@ -116,37 +109,7 @@ public class MainActivity extends Activity  {
 		}
 	};
 
-	void extractTitle() {
-		String script = "javascript:"
-				+ "var page=document.getElementsByClassName('ui-page-active');"
-				+ "var titles=page[0].getElementsByClassName('ui-title');"
-				+ "var title=titles[0].textContent;"
-				//+ "alert(title);"
-				+ "document.title=title;";
-		mWebView.loadUrl(script);
-	}
-
-	boolean navigateFav(String tag) {
-		String url = getPrefs().getString(tag + "url", "");
-		if (!TextUtils.isEmpty(url)) {
-			mWebView.loadUrl(url);
-			return true;
-		}
-		return false;
-	}
-
-	void saveFav(String tag, String title, String url) {
-		getPrefs().edit()
-		.putString(tag + "title", title)
-		.putString(tag + "url", url)
-		.commit();
-
-		String msg = "★" + title + "\n"
-				+ "URL:" + url;
-		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-		reloadSettings();
-	}
-
+	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -158,9 +121,6 @@ public class MainActivity extends Activity  {
 		prefs.registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		reloadSettings();
 
-		for (int id: PLAYER_BUTTONS) {
-			findViewById(id).setOnClickListener(mOnClickListener);
-		}
 		int favIndex = 0;
 		for (int id: FAV_BUTTONS) {
 			View v = findViewById(id);
@@ -178,10 +138,9 @@ public class MainActivity extends Activity  {
 		});
 
 		mMainContainer = (LinearLayout) findViewById(R.id.mainContainer);
-		mPlayerContainer = findViewById(R.id.playerContainer);
+		mPlayer = (PlayerView) findViewById(R.id.player);
 		mWebViewContainer = findViewById(R.id.webViewContainer);
 		mWebView = (WebView) findViewById(R.id.webView);
-		mPlayerView = (WebView) findViewById(R.id.player);
 
 		mProgress = (ProgressBar) findViewById(R.id.progress);
 		mProgress.setMax(100);
@@ -192,25 +151,65 @@ public class MainActivity extends Activity  {
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setSaveFormData(false);
 		webSettings.setSavePassword(false);
-		//webSettings.setDatabaseEnabled(true);
 		webSettings.setDomStorageEnabled(true);
-//		webSettings.setPluginsEnabled(true);
-//		webSettings.setPluginState(PluginState.ON);
 
-		webSettings = mPlayerView.getSettings();
-		webSettings.setJavaScriptEnabled(true);
-		webSettings.setPluginsEnabled(true);
-		webSettings.setPluginState(PluginState.ON);
-//		webSettings.setDefaultZoom(ZoomDensity.CLOSE);
-//		webSettings.setUseWideViewPort(true);
-		mPlayerView.setHorizontalScrollBarEnabled(false);
-		mPlayerView.setVerticalScrollBarEnabled(false);
+		mPlayer.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+			@Override
+			public void onSystemUiVisibilityChange(int visibility) {
+				final int FS_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+				if (mFullScreen) {
+					if ((visibility & FS_FLAGS) == 0) {
+						// フルスクリーンが解除された
+						cancelFullScreen();
+						startFullScreenDelay();
+					}
+				}
+
+			}
+		});
 
 		mPlayerOverlay = findViewById(R.id.playerOverlay);
-		mPlayerOverlay.setOnClickListener(new View.OnClickListener() {
+		mPlayerOverlay.setOnTouchListener(new View.OnTouchListener() {
+			boolean touching;
 			@Override
-			public void onClick(View v) {
-				expandPlayer(true);
+			public boolean onTouch(View v, MotionEvent event) {
+				if (!mPlayerExpanded) {
+					switch (event.getAction()) {
+					case MotionEvent.ACTION_DOWN:
+						touching = true;
+						break;
+					case MotionEvent.ACTION_UP:
+						if (touching) {
+							expandPlayer(true);
+						}
+						touching = false;
+						break;
+					case MotionEvent.ACTION_CANCEL:
+						touching = false;
+						break;
+					}
+					return true;
+				} else {
+					switch (event.getAction()) {
+					case MotionEvent.ACTION_DOWN:
+						if (mFullScreen) {
+							touching = true;
+							cancelFullScreen();
+						} else {
+							startFullScreenDelay();
+						}
+						break;
+					case MotionEvent.ACTION_UP:
+					case MotionEvent.ACTION_CANCEL:
+						startFullScreenDelay();
+						if (touching) {
+							touching = false;
+							return true;
+						}
+						break;
+					}
+					return touching;
+				}
 			}
 		});
 
@@ -220,9 +219,6 @@ public class MainActivity extends Activity  {
 			public void onLoadResource(WebView view, String url) {
 				Log.v(TAG, "onLoadResource url:" + url);
 				super.onLoadResource(view, url);
-//				if (url.contains("/swf/fp/player_flv_maxi.swf")) {
-//					resizePlayer();
-//				}
 			}
 
 			@Override
@@ -315,26 +311,18 @@ public class MainActivity extends Activity  {
 		login();
 	}
 
-	String getGtvIdFromUrl(String url, String key) {
-		int start = url.indexOf(key + "=");
-		if (start != -1) {
-			int end = url.indexOf("&", start);
-			if (end == -1) {
-				end = url.length();
-			}
-			String id = url.substring(start + key.length() + 1, end);
-			return id;
-		}
-		return null;
-	}
-
 	@Override
 	protected void onDestroy() {
 		SharedPreferences prefs = getPrefs();
 		prefs.unregisterOnSharedPreferenceChangeListener(mPrefsChangeListener);
+
 		if (mWebView != null) {
 			mWebView.destroy();
 			mWebView = null;
+		}
+		if (mPlayer != null) {
+			mPlayer.destroy();
+			mPlayer = null;
 		}
 		super.onDestroy();
 	}
@@ -343,35 +331,45 @@ public class MainActivity extends Activity  {
 	protected void onPause() {
 		super.onPause();
 		mWebView.onPause();
-		mPlayerView.onPause();
+		mPlayer.onPause();
 	}
 
 	@Override
 	protected void onResume() {
 		mWebView.onResume();
-		mPlayerView.onResume();
+		mPlayer.onResume();
 		super.onResume();
 
+		// 設定が変更されていたら読み直してログインしなおす
 		if (mSettingChanged) {
 			reloadSettings();
 			login();
 		}
 	}
 
+	/**
+	 * 画面の向きが変わったらレイアウトを再設定
+	 */
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-//		resizePlayer();
 		updateMainContainer();
 	}
 
 	@Override
 	public void onBackPressed() {
+		// フルスクリーンだったら解除
+		if (mFullScreen) {
+			cancelFullScreen();
+			startFullScreenDelay();
+			return;
+		}
+		// プレイヤーが拡大されていたら縮小
 		if (mPlayerExpanded) {
 			expandPlayer(false);
 			return;
 		}
-
+		// ページが戻れる状態だったら戻る
 		if (mWebView.canGoBack()) {
 			mWebView.goBack();
 			return;
@@ -379,27 +377,17 @@ public class MainActivity extends Activity  {
 		super.onBackPressed();
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.settings:
-			startSettingsActivity();
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
+	/**
+	 * 設定を開く
+	 */
 	void startSettingsActivity() {
 		Intent i = new Intent(MainActivity.this, SettingActivity.class);
 		startActivity(i);
 	}
 
+	/**
+	 * 設定をリロード
+	 */
 	void reloadSettings() {
 		mSettingChanged = false;
 
@@ -423,7 +411,6 @@ public class MainActivity extends Activity  {
 		}
 	}
 
-
 	SharedPreferences getPrefs() {
 		return PreferenceManager.getDefaultSharedPreferences(this);
 	}
@@ -437,8 +424,11 @@ public class MainActivity extends Activity  {
 	//				+ "f.submit();"
 	//				;
 	//		mWebView.loadUrl(script);
-		}
+	}
 
+	/**
+	 * ログイン
+	 */
 	void login() {
 
 		if (TextUtils.isEmpty(mUser)
@@ -458,7 +448,6 @@ public class MainActivity extends Activity  {
 			return;
 		}
 
-
 		String data = "LoginID=" + mUser
 				+ "&" + "Passwd=" + mPass;
 
@@ -466,43 +455,23 @@ public class MainActivity extends Activity  {
 		mWebView.postUrl(mBaseUrl + "/", data.getBytes());
 	}
 
-	Runnable mResizePlayerRunnable = new Runnable() {
-		@Override
-		public void run() {
-			Log.v(TAG, "resizePlayer");
-			float density = getResources().getDisplayMetrics().density;
-			DisplayMetrics dm = getResources().getDisplayMetrics();
-
-			int toolbarHeight = 20;
-			int pagePadding = (int)(15 * density);
-			int viewWidth = (int)(dm.widthPixels / density);
-			int viewHeight = (int)(dm.heightPixels / density);
-
-			float aspect = 16 / 9f;
-			int width = viewWidth - pagePadding * 2;
-			int height = (int)(width / aspect + toolbarHeight);
-
-			if (height > viewHeight) {
-				height = viewHeight - toolbarHeight;
-				width = (int)(height * aspect);
+	String getGtvIdFromUrl(String url, String key) {
+		int start = url.indexOf(key + "=");
+		if (start != -1) {
+			int end = url.indexOf("&", start);
+			if (end == -1) {
+				end = url.length();
 			}
-
-			String script = "javascript:"
-					+ "var objs=document.getElementsByTagName('object');"
-					+ "for (var j=0; j<objs.length; j++) {"
-					+ " objs[j].width=" + width + ";"
-					+ " objs[j].height=" + height + ";"
-					+ "}"
-					;
-			mWebView.loadUrl(script);
+			String id = url.substring(start + key.length() + 1, end);
+			return id;
 		}
-	};
-
-	void resizePlayer() {
-		mHandler.removeCallbacks(mResizePlayerRunnable);
-		mHandler.postDelayed(mResizePlayerRunnable, 500);
+		return null;
 	}
 
+	/**
+	 * ガラポンTVのセッションを取得
+	 * @return
+	 */
 	String getSession() {
 		String cookies = CookieManager.getInstance().getCookie(mBaseUrl);
 
@@ -513,146 +482,165 @@ public class MainActivity extends Activity  {
 		return "";
 	}
 
+	/**
+	 * Playerで再生
+	 * @param id
+	 */
 	void setPlayerPage(String id) {
 		Log.v(TAG, "setPlayerPage id:" + id);
 		String sessionId = getSession();
-
 		String flv = id.substring(6,8) + "/" + id + ".ts-" + sessionId;
-		int pos = mBaseUrl.indexOf("//");
-		String rtmp = "rtmp://" + mBaseUrl.substring(pos + 2) + "/";
+		mPlayer.setVideo(mBaseUrl, flv);
 
-		String html = "<html>"
-				+ "<style type='text/css'>"
-				+ "body { padding:0; margin:0; background:#000; color:#fff; text-align:center; width:100%; }"
-				+ "#player_flg { text-align:center; width:100%; height:100%; }"
-				+ "</style>"
-				+ "<body>"
-				+ "<object id='player_flg' type='application/x-shockwave-flash' data='/swf/fp/player_flv_maxi.swf?20120413'>"
-				//+ "<param name='allowFullScreen' value='true'>"
-				+ "<param name='allowScriptAccess' value='always'>"
-				+ "<param name='flashvars' value='arg1=val"
-					+ "&amp;flv=" + flv
-					+ "&amp;netconnection=" + rtmp
-					+ "&amp;showstop=0"
-					+ "&amp;showvolume=1"
-					//+ "&amp;showtime=2"
-					+ "&amp;showtime=2"
-					//+ "&amp;showfullscreen=1"
-					//+ "&amp;margin=1"
-					+ "&amp;margin=0"
-					+ "&amp;bgcolor1=000000"
-					+ "&amp;bgcolor2=000000"
-					+ "&amp;playercolor=000000"
-					+ "&amp;loadingcolor=0aff17"
-					+ "&amp;buffershowbg=0"
-					//+ "&amp;ondoubleclick=fullscreen"
-					+ "&amp;showiconplay=1"
-					+ "&amp;sliderovercolor=0aff17"
-					+ "&amp;buttonovercolor=0aff17"
-					+ "&amp;showplayer=always"
-					+ "&amp;showloading=always"
-					+ "&amp;autoload=1"
-					+ "&amp;autoplay=1"
-					+ "'>"
-				+ "</object>"
-				+ "<div style='background:#000; width:1px; height:100%; position:absolute; top:0px; right:0px; overflow:hidden;'>&nbsp;</div>"
-				+ "<script type='text/javascript'>"
-				+ "var player_flg='player_flg';"
-				+ "</script>"
-				+ "</body>"
-				+ "</html>"
-				;
-		mPlayerView.loadDataWithBaseURL(mBaseUrl, html, "text/html", "UTF-8", null);
 		expandPlayer(false);
 	}
 
+	/**
+	 * Player部分のサイズを変更
+	 * @param expand
+	 */
 	void expandPlayer(boolean expand) {
 
 		mPlayerExpanded = expand;
-		mPlayerOverlay.setVisibility(expand ? View.GONE : View.VISIBLE);
 
-		mPlayerContainer.setVisibility(View.VISIBLE);
+		mPlayer.setVisibility(View.VISIBLE);
+		mPlayer.showToolbar(expand);
 		mWebViewContainer.setVisibility(expand ? View.GONE : View.VISIBLE);
-		for (int id: PLAYER_BUTTONS) {
-			findViewById(id).setVisibility(expand ? View.VISIBLE : View.GONE);
-		}
-		for (int id: FAV_BUTTONS) {
-			findViewById(id).setVisibility(expand ? View.GONE : View.VISIBLE);
-		}
 
 		updatePlayerContainerSize();
-//		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)mPlayerContainer.getLayoutParams();
-//		if (expand) {
-//			lp.height = 0;
-//			lp.weight = 1;
-//
-//		} else {
-//			Point size = calcPlayerSize();
-//			lp.weight = 0;
-//			lp.height = size.y;
-//		}
-//		mPlayerContainer.requestLayout();
-	}
 
-	void updatePlayerContainerSize() {
-		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)mPlayerContainer.getLayoutParams();
-		switch (getResources().getConfiguration().orientation) {
-		case Configuration.ORIENTATION_LANDSCAPE:
-			lp.width = mPlayerExpanded
-					? LayoutParams.FILL_PARENT
-					: getResources().getDisplayMetrics().widthPixels / 3;
-			lp.height = LayoutParams.FILL_PARENT;
-			break;
-		default:
-			lp.width = LayoutParams.FILL_PARENT;
-			lp.height = mPlayerExpanded
-				? LayoutParams.FILL_PARENT
-				: getResources().getDisplayMetrics().heightPixels / 3;
-			break;
+		if (expand) {
+			startFullScreenDelay();
+		} else {
+			cancelFullScreen();
 		}
 	}
 
-	Point calcPlayerSize() {
-		float density = getResources().getDisplayMetrics().density;
-		DisplayMetrics dm = getResources().getDisplayMetrics();
+	Runnable mChangeFullScreenRunnable = new Runnable() {
+		@Override
+		public void run() {
+			setFullScreen(true);
+		};
+	};
 
-		int toolbarHeight = 20;
-		int pagePadding = (int)(15 * density);
-		int viewWidth = (int)(dm.widthPixels / density);
-		int viewHeight = (int)(dm.heightPixels / density);
-
-		float aspect = 16 / 9f;
-		int width = viewWidth - pagePadding * 2;
-		int height = (int)(width / aspect + toolbarHeight);
-
-		if (height > viewHeight) {
-			height = viewHeight - toolbarHeight;
-			width = (int)(height * aspect);
-		}
-		Point pt = new Point(width, height);
-		return pt;
+	/**
+	 * フルスクリーンへの自動的な移行を開始
+	 */
+	void startFullScreenDelay() {
+		mHandler.removeCallbacks(mChangeFullScreenRunnable);
+		mHandler.postDelayed(mChangeFullScreenRunnable, CHANGE_FULLSCREEN_DELAY);
 	}
 
+	/**
+	 * フルスクリーンへの移行をキャンセル
+	 */
+	void cancelFullScreen() {
+		mHandler.removeCallbacks(mChangeFullScreenRunnable);
+		if (mFullScreen) {
+			setFullScreen(false);
+		}
+	}
+
+	/**
+	 * フルスクリーン設定
+	 * @param fullscreen
+	 */
+	void setFullScreen(boolean fullscreen) {
+		final int FS_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
+		int systemUiVisibility = mPlayer.getSystemUiVisibility();
+		if (fullscreen) {
+			systemUiVisibility |= FS_FLAGS;
+			mFullScreen = true;
+			mPlayer.showToolbar(false);
+		} else {
+			systemUiVisibility &= FS_FLAGS;
+			mFullScreen = false;
+			mPlayer.showToolbar(true);
+		}
+		mPlayer.setSystemUiVisibility(systemUiVisibility);
+	}
+
+	/**
+	 * 画面の向きに合わせてレイアウトを変更する
+	 */
 	void updateMainContainer() {
-
-//		LinearLayout.LayoutParams webLp = (LinearLayout.LayoutParams)mWebViewContainer.getLayoutParams();
-//		LinearLayout.LayoutParams playerLp = (LinearLayout.LayoutParams)mPlayerContainer.getLayoutParams();
 
 		updatePlayerContainerSize();
 
 		switch (getResources().getConfiguration().orientation) {
 		case Configuration.ORIENTATION_LANDSCAPE:
 			mMainContainer.setOrientation(LinearLayout.HORIZONTAL);
-//			webLp.height = LayoutParams.FILL_PARENT;
-//			webLp.weight = 0;
-//			playerLp.width = getResources().getDisplayMetrics().widthPixels / 3;
 			break;
 		default:
 			mMainContainer.setOrientation(LinearLayout.VERTICAL);
-//			playerLp.width = LayoutParams.FILL_PARENT;
-//			webLp.height = 0;
-//			webLp.weight = 1;
 			break;
 		}
+	}
+
+	/**
+	 * 分割表示痔のPlayerの幅と高さを設定
+	 */
+	void updatePlayerContainerSize() {
+		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)mPlayer.getLayoutParams();
+		switch (getResources().getConfiguration().orientation) {
+		case Configuration.ORIENTATION_LANDSCAPE:
+			lp.width = mPlayerExpanded
+					? LayoutParams.MATCH_PARENT
+					: getResources().getDisplayMetrics().widthPixels / 3;
+			lp.height = LayoutParams.MATCH_PARENT;
+			break;
+		default:
+			lp.width = LayoutParams.MATCH_PARENT;
+			lp.height = mPlayerExpanded
+				? LayoutParams.MATCH_PARENT
+				: getResources().getDisplayMetrics().heightPixels / 3;
+			break;
+		}
+	}
+
+	/**
+	 * ガラポンTVのページ内のタイトルっぽい部分を取得
+	 */
+	void extractTitle() {
+		String script = "javascript:"
+				+ "var page=document.getElementsByClassName('ui-page-active');"
+				+ "var titles=page[0].getElementsByClassName('ui-title');"
+				+ "var title=titles[0].textContent;"
+				//+ "alert(title);"
+				+ "document.title=title;";
+		mWebView.loadUrl(script);
+	}
+
+	/**
+	 * お気に入りを開く
+	 * @param tag
+	 * @return
+	 */
+	boolean navigateFav(String tag) {
+		String url = getPrefs().getString(tag + "url", "");
+		if (!TextUtils.isEmpty(url)) {
+			mWebView.loadUrl(url);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * お気に入りに保存(登録)
+	 * @param tag
+	 * @param title
+	 * @param url
+	 */
+	void saveFav(String tag, String title, String url) {
+		getPrefs().edit()
+		.putString(tag + "title", title)
+		.putString(tag + "url", url)
+		.commit();
+
+		String msg = "★" + title + "\n"
+				+ "URL:" + url;
+		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+		reloadSettings();
 	}
 }

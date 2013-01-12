@@ -12,8 +12,6 @@
     <string name="password">パスワード</string>
     
     <string name="settingsWarning">設定でガラポンのURL、ID、パスワードを設定してください</string>
-    <string name="forward">▶</string>
-    <string name="back">◀</string>
     
     <string name="fav0">fav0</string>
     <string name="fav1">fav1</string>
