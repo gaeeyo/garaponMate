@@ -1,0 +1,107 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity" >
+
+    <LinearLayout
+        android:id="@+id/mainContainer"
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:contentDescription="mainContainer"
+        android:orientation="vertical" >
+
+        <FrameLayout
+            android:id="@+id/playerContainer"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="playerContainer"
+            android:visibility="gone" >
+
+            <WebView
+                android:id="@+id/player"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+
+            <View
+                android:id="@+id/playerOverlay"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+        </FrameLayout>
+
+        <RelativeLayout
+            android:id="@+id/webViewContainer"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:contentDescription="webViewContainer" >
+
+            <WebView
+                android:id="@+id/webView"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/fav0"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:text="@string/fav0" />
+
+        <Button
+            android:id="@+id/fav1"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:text="@string/fav1" />
+
+        <Button
+            android:id="@+id/fav2"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:text="@string/fav2" />
+
+        <Button
+            android:id="@+id/back"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/back"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/forward"
+            android:layout_width="48sp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/forward"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/settings"
+            android:layout_marginLeft="16dip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GaraponMate</string>
+
+    <string name="settings">設定</string>
+    
+    <string name="url">URL</string>
+    <string name="urlSummary">http://x.x.x.x/</string>
+    
+    <string name="user">ガラポンID</string>
+    <string name="password">パスワード</string>
+    
+    <string name="settingsWarning">設定でガラポンのURL、ID、パスワードを設定してください</string>
+    <string name="forward">▶</string>
+    <string name="back">◀</string>
+    
+    <string name="fav0">fav0</string>
+    <string name="fav1">fav1</string>
+    <string name="fav2">fav2</string>
+</resources>
