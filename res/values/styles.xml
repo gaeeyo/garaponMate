@@ -1,5 +1,13 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <color name="popupMessageBgColor">#88000000</color>
+    <color name="popupMessageTextColor">#fff3f3f3</color>
+    
+    <style name="popupMessage">
+        <item name="android:background">@drawable/popup_message_bg</item>
+        <item name="android:text">@color/popupMessageTextColor</item>
+    </style>
+    
     <!--
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.

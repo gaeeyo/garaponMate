@@ -1,5 +1,6 @@
 package jp.syoboi.android.garaponmate.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -13,6 +14,7 @@ import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
+import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 
 public class PlayerView extends RelativeLayout {
@@ -31,6 +33,8 @@ public class PlayerView extends RelativeLayout {
 	int				mEmbedToolbarHeight;
 	boolean			mPause;
 
+	@SuppressWarnings("deprecation")
+	@SuppressLint("SetJavaScriptEnabled")
 	public PlayerView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
@@ -53,6 +57,7 @@ public class PlayerView extends RelativeLayout {
 
 		// PlayerのWebView
 		mWebView = (WebView) findViewById(R.id.playerWebView);
+		mWebView.setBackgroundColor(0xff000000);
 
 		WebSettings webSettings = mWebView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
@@ -84,16 +89,16 @@ public class PlayerView extends RelativeLayout {
 //			}
 //		});
 
-		mHandler.postDelayed(mGetTimeRunnable, GET_TIME_INTERVAL);
+//		mHandler.postDelayed(mGetTimeRunnable, GET_TIME_INTERVAL);
 	}
 
-	Runnable mGetTimeRunnable = new Runnable() {
-		@Override
-		public void run() {
-			playerCtrl(false, "player:jsSetPosition");
-			mHandler.postDelayed(mGetTimeRunnable, GET_TIME_INTERVAL);
-		};
-	};
+//	Runnable mGetTimeRunnable = new Runnable() {
+//		@Override
+//		public void run() {
+//			playerCtrl(false, "player:jsSetPosition");
+//			mHandler.postDelayed(mGetTimeRunnable, GET_TIME_INTERVAL);
+//		};
+//	};
 
 	public void showToolbar(boolean show) {
 		if (show) {
@@ -144,12 +149,18 @@ public class PlayerView extends RelativeLayout {
 	}
 
 	public void onPause() {
-		mHandler.removeCallbacks(mGetTimeRunnable);
+//		mHandler.removeCallbacks(mGetTimeRunnable);
+		if (!mPause) {
+			pause();
+		}
 		mWebView.onPause();
 	}
 
 	public void onResume() {
 		mWebView.onResume();
+		if (!mPause) {
+			play();
+		}
 	}
 
 	public void destroy() {
@@ -159,11 +170,10 @@ public class PlayerView extends RelativeLayout {
 		}
 	}
 
-	public void setVideo(String baseUrl, String flv) {
-		int pos = baseUrl.indexOf("//");
+	public void setVideo(String id) {
+		String flvPath = id.substring(6,8) + "/" + id + ".ts-" + Prefs.getGtvSessionId();
 
-		String rtmp = "rtmp://" + baseUrl.substring(pos + 2) + "/";
-		Log.d(TAG, "flv:" + flv + " " + rtmp);
+		String rtmp = "rtmp://" + Prefs.getIpAdr() + ":" + Prefs.getTsPort() + "/";
 
 		String html = "<html>"
 				+ "<style type='text/css'>"
@@ -175,7 +185,7 @@ public class PlayerView extends RelativeLayout {
 				//+ "<param name='allowFullScreen' value='true'>"
 				+ "<param name='allowScriptAccess' value='always'>"
 				+ "<param name='flashvars' value='arg1=val"
-					+ "&amp;flv=" + flv
+					+ "&amp;flv=" + flvPath
 					+ "&amp;netconnection=" + rtmp
 					+ "&amp;showstop=0"
 					+ "&amp;showvolume=1"
@@ -189,7 +199,8 @@ public class PlayerView extends RelativeLayout {
 					+ "&amp;playercolor=000000"
 					+ "&amp;loadingcolor=0aff17"
 					+ "&amp;buffershowbg=0"
-					//+ "&amp;ondoubleclick=fullscreen"
+					+ "&amp;onclick=none"
+					+ "&amp;ondoubleclick=none"
 					//+ "&amp;showiconplay=1"
 					+ "&amp;showiconplay=0"
 					+ "&amp;sliderovercolor=0aff17"
@@ -207,7 +218,7 @@ public class PlayerView extends RelativeLayout {
 				+ "</body>"
 				+ "</html>"
 				;
-		mWebView.loadDataWithBaseURL(baseUrl, html, "text/html", "UTF-8", null);
+		mWebView.loadDataWithBaseURL(Prefs.getBaseUrl(), html, "text/html", "UTF-8", null);
 	}
 
 	public void jump(int sec) {

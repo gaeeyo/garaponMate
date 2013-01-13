@@ -1,24 +1,24 @@
 package jp.syoboi.android.garaponmate;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -29,12 +29,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.syoboi.android.garaponmate.task.ProgressDialogTask;
 import jp.syoboi.android.garaponmate.view.PlayerView;
 
-public class MainActivity extends Activity  {
+public class MainActivity extends FragmentActivity  {
 
 	static final String TAG = "MainActivity";
 
@@ -42,10 +44,7 @@ public class MainActivity extends Activity  {
 	static final int [] FAV_BUTTONS = { R.id.fav0, R.id.fav1, R.id.fav2 };
 	static final long CHANGE_FULLSCREEN_DELAY = 3000;
 
-	String 		mBaseUrl;
-	String 		mUser;
-	String 		mPass;
-	int			mFlags;
+	int				mFlags;
 
 	Handler			mHandler = new Handler();
 	LinearLayout	mMainContainer;
@@ -56,15 +55,20 @@ public class MainActivity extends Activity  {
 	ProgressBar		mProgress;
 	boolean			mPlayerExpanded;
 	boolean			mFullScreen;
+	boolean			mTitleExtracting;
+	boolean			mReloadAfterLogin;
 
-	private boolean mSettingChanged;
+	private boolean 	mSettingChanged;
+	ProgressDialogTask	mLoginTask;
 
 	OnSharedPreferenceChangeListener	mPrefsChangeListener = new OnSharedPreferenceChangeListener() {
 
 		@Override
 		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 				String key) {
-			mSettingChanged = true;
+			if (Prefs.USER.equals(key) || Prefs.PASSWORD.equals(key)) {
+				mSettingChanged = true;
+			}
 		}
 	};
 
@@ -117,9 +121,11 @@ public class MainActivity extends Activity  {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 
-		SharedPreferences prefs = getPrefs();
-		prefs.registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
+		//loginBackground();
+
+		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		reloadSettings();
+
 
 		int favIndex = 0;
 		for (int id: FAV_BUTTONS) {
@@ -128,11 +134,11 @@ public class MainActivity extends Activity  {
 			v.setOnClickListener(mOnClickListener);
 			v.setOnLongClickListener(mOnLongClickListener);
 		}
-
+		findViewById(R.id.settings).setOnClickListener(mOnClickListener);
 		findViewById(R.id.settings).setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				mWebView.loadUrl(mBaseUrl);
+				mWebView.loadUrl(Prefs.getBaseUrl());
 				return true;
 			}
 		});
@@ -156,7 +162,7 @@ public class MainActivity extends Activity  {
 		mPlayer.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
 			@Override
 			public void onSystemUiVisibilityChange(int visibility) {
-				final int FS_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+				final int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 				if (mFullScreen) {
 					if ((visibility & FS_FLAGS) == 0) {
 						// フルスクリーンが解除された
@@ -231,6 +237,7 @@ public class MainActivity extends Activity  {
 			public void onPageFinished(WebView view, String url) {
 				Log.v(TAG, "onPageFinished url:" + url);
 				super.onPageFinished(view, url);
+				extractTitle();
 			}
 
 			@Override
@@ -283,7 +290,7 @@ public class MainActivity extends Activity  {
 				if (url.endsWith("/auth/login.garapon")) {
 					// ログイン画面に遷移するとき、自動ログインする
 					if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) == 0) {
-						login();
+						loginBackground();
 						return true;
 					}
 				}
@@ -298,6 +305,14 @@ public class MainActivity extends Activity  {
 				Log.v(TAG, "onReceivedTitle title:" + title);
 				super.onReceivedTitle(view, title);
 				setTitle(title);
+
+				if (mTitleExtracting) {
+					mTitleExtracting = false;
+					if (title.equals("ログアウト")) {
+						mReloadAfterLogin = true;
+						loginBackground();
+					}
+				}
 			}
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
@@ -312,14 +327,18 @@ public class MainActivity extends Activity  {
 			}
 		});
 
-		login();
+//		navigateFav("fav0");
+		loginBackground();
 	}
 
 	@Override
 	protected void onDestroy() {
-		SharedPreferences prefs = getPrefs();
-		prefs.unregisterOnSharedPreferenceChangeListener(mPrefsChangeListener);
+		Prefs.getInstance().unregisterOnSharedPreferenceChangeListener(mPrefsChangeListener);
 
+		if (mLoginTask != null) {
+			mLoginTask.cancel(true);
+			mLoginTask = null;
+		}
 		if (mWebView != null) {
 			mWebView.destroy();
 			mWebView = null;
@@ -347,7 +366,7 @@ public class MainActivity extends Activity  {
 		// 設定が変更されていたら読み直してログインしなおす
 		if (mSettingChanged) {
 			reloadSettings();
-			login();
+			loginBackground();
 		}
 	}
 
@@ -395,68 +414,17 @@ public class MainActivity extends Activity  {
 	void reloadSettings() {
 		mSettingChanged = false;
 
-		SharedPreferences prefs = getPrefs();
-		mUser = prefs.getString("user", null);
-		mPass = prefs.getString("password", null);
-		mBaseUrl = prefs.getString("baseUrl", null);
-		if (mBaseUrl != null && mBaseUrl.endsWith("/")) {
-			mBaseUrl = mBaseUrl.substring(0, mBaseUrl.length()-1);
-		}
-
+		// お気に入りボタンのラベルに反映
 		int idx = 0;
 		for (int id: FAV_BUTTONS) {
 			TextView tv = (TextView) findViewById(id);
-			String title = prefs.getString("fav" + idx + "title", null);
+			String title = Prefs.getFavTitle(idx);
 			if (TextUtils.isEmpty(title)) {
 				title = "fav" + idx;
 			}
 			tv.setText(title);
 			idx++;
 		}
-	}
-
-	SharedPreferences getPrefs() {
-		return PreferenceManager.getDefaultSharedPreferences(this);
-	}
-
-	void autoLogin() {
-	//		Log.v(TAG, "自動ログイン");
-	//		String script = "javascript:"
-	//				+ "var f=document.forms[0];"
-	//				+ "f.LoginID.value=\"" + mUser +"\";"
-	//				+ "f.Passwd.value=\"" + mPass +"\";"
-	//				+ "f.submit();"
-	//				;
-	//		mWebView.loadUrl(script);
-	}
-
-	/**
-	 * ログイン
-	 */
-	void login() {
-
-		if (TextUtils.isEmpty(mUser)
-				|| TextUtils.isEmpty(mPass)
-				|| TextUtils.isEmpty(mBaseUrl)) {
-
-			new AlertDialog.Builder(this).setTitle(R.string.settingsWarning)
-			.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					startSettingsActivity();
-				}
-			})
-			.setNeutralButton(android.R.string.no, null)
-			.show();
-			return;
-		}
-
-		String data = "LoginID=" + mUser
-				+ "&" + "Passwd=" + mPass;
-
-		mFlags |= FLAG_AUTO_LOGIN_PROGRESS;
-		mWebView.postUrl(mBaseUrl + "/", data.getBytes());
 	}
 
 	String getGtvIdFromUrl(String url, String key) {
@@ -473,28 +441,12 @@ public class MainActivity extends Activity  {
 	}
 
 	/**
-	 * ガラポンTVのセッションを取得
-	 * @return
-	 */
-	String getSession() {
-		String cookies = CookieManager.getInstance().getCookie(mBaseUrl);
-
-		Matcher m = Pattern.compile("GaraponAuthKey=([0-9a-z]+)").matcher(cookies);
-		if (m.find()) {
-			return m.group(1);
-		}
-		return "";
-	}
-
-	/**
 	 * Playerで再生
 	 * @param id
 	 */
 	void setPlayerPage(String id) {
 		Log.v(TAG, "setPlayerPage id:" + id);
-		String sessionId = getSession();
-		String flv = id.substring(6,8) + "/" + id + ".ts-" + sessionId;
-		mPlayer.setVideo(mBaseUrl, flv);
+		mPlayer.setVideo(id);
 
 		expandPlayer(false);
 	}
@@ -550,17 +502,19 @@ public class MainActivity extends Activity  {
 	 * @param fullscreen
 	 */
 	void setFullScreen(boolean fullscreen) {
-		final int FS_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+		int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 
 		int systemUiVisibility = mPlayer.getSystemUiVisibility();
 		if (fullscreen) {
 			systemUiVisibility |= FS_FLAGS;
 			mFullScreen = true;
 			mPlayer.showToolbar(false);
+			getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		} else {
 			systemUiVisibility &= FS_FLAGS;
 			mFullScreen = false;
 			mPlayer.showToolbar(true);
+			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
 		mPlayer.setSystemUiVisibility(systemUiVisibility);
 	}
@@ -607,6 +561,7 @@ public class MainActivity extends Activity  {
 	 * ガラポンTVのページ内のタイトルっぽい部分を取得
 	 */
 	void extractTitle() {
+		mTitleExtracting = true;
 		String script = "javascript:"
 				+ "var page=document.getElementsByClassName('ui-page-active');"
 				+ "var titles=page[0].getElementsByClassName('ui-title');"
@@ -622,10 +577,13 @@ public class MainActivity extends Activity  {
 	 * @return
 	 */
 	boolean navigateFav(String tag) {
-		String url = getPrefs().getString(tag + "url", "");
-		if (!TextUtils.isEmpty(url)) {
-			mWebView.loadUrl(url);
-			return true;
+		int idx = favTagToIndex(tag);
+		if (idx != -1) {
+			String url = Prefs.getFavUrl(idx);
+			if (!TextUtils.isEmpty(url)) {
+				mWebView.loadUrl(url);
+				return true;
+			}
 		}
 		return false;
 	}
@@ -637,14 +595,101 @@ public class MainActivity extends Activity  {
 	 * @param url
 	 */
 	void saveFav(String tag, String title, String url) {
-		getPrefs().edit()
-		.putString(tag + "title", title)
-		.putString(tag + "url", url)
-		.commit();
+		int idx = favTagToIndex(tag);
+		if (idx != -1) {
+			Prefs.setFav(idx, title, url);
 
-		String msg = "★" + title + "\n"
-				+ "URL:" + url;
-		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-		reloadSettings();
+			String msg = "★" + title + "\n"
+					+ "URL:" + url;
+			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+			reloadSettings();
+		}
 	}
+
+	int favTagToIndex(String tag) {
+		Matcher m = Pattern.compile("\\d+").matcher(tag);
+
+		if (m.find()) {
+			return Integer.valueOf(m.group());
+		}
+		return -1;
+	}
+
+
+	/**
+	 * ログイン
+	 */
+	void loginBackground() {
+		if (mLoginTask != null) {
+			return;
+		}
+
+		mLoginTask = new ProgressDialogTask(this) {
+			@Override
+			protected Object doInBackground(Object... params) {
+				try {
+					HashMap<String,String> cookies = GaraponClientUtils.login(Prefs.getInstance());
+
+					return cookies;
+				} catch (Throwable e) {
+					e.printStackTrace();
+					return e;
+				}
+			}
+
+			@Override
+			protected void onPostExecute(Object result) {
+				mLoginTask = null;
+
+				if (result instanceof Throwable) {
+					// ログインエラー時はダイアログ表示
+					ErrorDialogFragment.newInstance(
+							getString(R.string.error),
+							((Throwable) result).getMessage())
+					.show(getSupportFragmentManager(), "dialog");
+				}
+				else if (result instanceof HashMap<?,?>) {
+
+					@SuppressWarnings("unchecked")
+					HashMap<String,String> setCookies = (HashMap<String,String>)result;
+
+					CookieManager cm = CookieManager.getInstance();
+
+					Uri.Builder builder = new Uri.Builder();
+
+					cm.removeAllCookie();
+					for (String key: setCookies.keySet()) {
+						builder.appendQueryParameter(key, setCookies.get(key));
+						cm.setCookie(Prefs.getBaseUrl(), key + "=;");
+						cm.setCookie(Prefs.getBaseUrl(), key + "=" + setCookies.get(key) +";");
+					}
+
+					CookieSyncManager.getInstance().sync();
+
+//					Log.v(TAG, "cookie\n old:" + cookies + "\n new:" + newCookies);
+//					mWebView.loadDataWithBaseURL(mBaseUrl,
+//							"<html><body><script>alert(document.cookie);</script></body></html>",
+//							"text/html", "utf-8", null);
+
+					if (mReloadAfterLogin) {
+						mReloadAfterLogin = false;
+						mWebView.reload();
+					} else {
+						if (!navigateFav("fav0")) {
+							mWebView.loadUrl(Prefs.getBaseUrl());
+						}
+					}
+				}
+			}
+
+			@Override
+			protected void onCancelled() {
+				mLoginTask = null;
+			}
+
+		};
+		mLoginTask.setMessage(R.string.loginProgress);
+		mLoginTask.execute();
+	}
+
 }

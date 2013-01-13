@@ -11,9 +11,17 @@
     <string name="user">ガラポンID</string>
     <string name="password">パスワード</string>
     
-    <string name="settingsWarning">設定でガラポンのURL、ID、パスワードを設定してください</string>
+    <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
     
     <string name="fav0">fav0</string>
     <string name="fav1">fav1</string>
     <string name="fav2">fav2</string>
+    
+    <string name="loginProgress">ログイン中…</string>
+    <string name="wrongPassword">パスワードが違います</string>
+    <string name="unknownUser">ガラポンIDが違います</string>
+    <string name="unknownRegistkey">ガラポンTVが登録されていません(ガラポンTVのセットアップが完了していないかもしれません)</string>
+    <string name="unknownIpAddress">ガラポンTVのIPアドレスが不明です(ガラポンTVのセットアップが完了していないかもしれません)</string>
+    <string name="error">エラー</string>
+    
 </resources>

@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,8 +8,7 @@
     <LinearLayout
         android:id="@+id/mainContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:contentDescription="mainContainer"
         android:orientation="vertical" >
 
@@ -33,9 +32,9 @@
 
             <LinearLayout
                 android:id="@+id/toolbar"
-                android:layout_alignParentBottom="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal" >
 
@@ -73,9 +72,9 @@
 
             <WebView
                 android:id="@+id/webView"
-                android:layout_above="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_above="@+id/toolbar" />
 
             <ProgressBar
                 android:id="@+id/progress"
@@ -85,4 +84,4 @@
         </RelativeLayout>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>
