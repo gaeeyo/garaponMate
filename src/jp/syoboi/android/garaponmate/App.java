@@ -5,6 +5,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 
+import jp.syoboi.android.garaponmate.data.GenreGroupList;
+
 public class App extends Application {
 
 	public static boolean DEBUG = false;
@@ -13,6 +15,8 @@ public class App extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		GenreGroupList.getInstance(this);
 
 		DEBUG = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 

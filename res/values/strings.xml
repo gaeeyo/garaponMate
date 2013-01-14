@@ -4,18 +4,31 @@
     <string name="app_name">GaraponMate</string>
 
     <string name="settings">設定</string>
+    <string name="add">追加</string>
+    <string name="delete">削除</string>
     
     <string name="url">URL</string>
     <string name="urlSummary">http://x.x.x.x/</string>
     
     <string name="user">ガラポンID</string>
     <string name="password">パスワード</string>
+    <string name="empty">空</string>
+    <string name="loading">取得中…</string>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
     
     <string name="fav0">fav0</string>
     <string name="fav1">fav1</string>
     <string name="fav2">fav2</string>
+    
+    <string name="searchListSettings">検索リスト設定</string>
+    <string name="title">タイトル</string>
+    <string name="titleOrDescription">タイトルまたは詳細</string>
+    <string name="keywordOr">どれかを含む</string>
+    <string name="keywordAnd">すべて含む</string>
+    <string name="keywordNot">含まない</string>
+    <string name="keywordHint">キーワード</string>
+    <string name="emptySearchList">キーワードが設定されていません。設定でキーワードを設定するとキーワードに一致した番組が表示されます。</string>
     
     <string name="loginProgress">ログイン中…</string>
     <string name="wrongPassword">パスワードが違います</string>
@@ -25,4 +38,5 @@
     <string name="error">エラー</string>
     <string name="invalidParameter">パラメーターが異常です</string>
     <string name="authSyncError">認証同期エラー。IDとパスワードがガラポンTVサイトと同期されていません。ガラポンTVがインターネットに接続してあることを確認し、5分程度お待ちください</string>
+    
 </resources>

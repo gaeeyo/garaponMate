@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <TextView
+        android:id="@+id/keywordAndLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="48dip"
+        android:layout_alignBaseline="@+id/keywordAnd"
+        android:layout_marginLeft="8dip"
+        android:text="@string/keywordAnd"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <EditText
+        android:id="@+id/keywordAnd"
+        style="@style/keywordEditStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dip"
+        android:layout_toRightOf="@+id/keywordAndLabel" />
+
+    <TextView
+        android:id="@+id/keywordOrLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="48dip"
+        android:layout_alignBaseline="@+id/keywordOr"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="8dip"
+        android:text="@string/keywordOr"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <EditText
+        android:id="@+id/keywordOr"
+        style="@style/keywordEditStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/keywordAnd"
+        android:layout_marginLeft="8dip"
+        android:layout_toRightOf="@+id/keywordOrLabel" />
+
+    <TextView
+        android:id="@+id/keywordNotLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="48dip"
+        android:layout_alignBaseline="@+id/keywordNot"
+        android:layout_marginLeft="8dip"
+        android:text="@string/keywordNot"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <EditText
+        android:id="@+id/keywordNot"
+        style="@style/keywordEditStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/keywordOr"
+        android:layout_marginLeft="8dip"
+        android:layout_toRightOf="@+id/keywordNotLabel" />
+
+</RelativeLayout>

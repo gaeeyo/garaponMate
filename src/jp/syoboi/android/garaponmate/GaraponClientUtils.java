@@ -4,21 +4,26 @@ import android.content.SharedPreferences;
 import android.content.res.Resources.NotFoundException;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+import android.util.Log;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import jp.syoboi.android.garaponmate.GaraponClient.GaraponClientException;
 import jp.syoboi.android.garaponmate.GaraponClient.Program;
 import jp.syoboi.android.garaponmate.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.GaraponClient.SearchTime;
+import jp.syoboi.android.garaponmate.data.ProgSearchList.ProgSearchListMatcher;
 
 import org.json.JSONException;
 
 public class GaraponClientUtils {
+
+	private static final String TAG = "GaraponClientUtils";
 
 	private static boolean REFRESH_AUTH;
 
@@ -134,6 +139,64 @@ public class GaraponClientUtils {
 				SearchTime.END, now, now + 6 * DateUtils.HOUR_IN_MILLIS,
 				null, true, true);
 		return sr;
+	}
+
+	public static SearchResult searchFavorite(ProgSearchListMatcher m, int count) throws MalformedURLException, IOException {
+
+		final SearchResult result = new SearchResult();
+		result.program = new ArrayList<Program>();
+
+		final ArrayList<Program> progs = result.program;
+
+		int total = 0;
+		int hit = -1;
+
+		long now = System.currentTimeMillis();
+		long limit = now - 1 * DateUtils.DAY_IN_MILLIS;
+		boolean stop = false;
+
+		for (int j=0; j<10; j++) {
+			Log.v(TAG, "searchFavorite page:" + j);
+			SearchResult sr = GaraponClient.search(Prefs.getGaraponHost(),
+					Prefs.getGtvSessionId(),
+					100, (j + 1),
+					null, null,
+					null, null, null, 0,
+					SearchTime.START, limit, 0,
+					null, false, true);
+
+			if (hit == -1) {
+				hit = sr.hit;
+				result.hit = sr.hit;
+				result.status = sr.status;
+			}
+			total += sr.program.size();
+
+			for (Program p: sr.program) {
+				if (m.match(p)) {
+					Log.v(TAG, p.toString());
+					progs.add(p);
+				} else {
+					Log.d(TAG, p.toString());
+				}
+				if (p.startdate < limit) {
+					stop = true;
+				}
+			}
+			if (stop) {
+				break;
+			}
+
+			if (progs.size() > count) {
+				break;
+			}
+
+			if (total >= hit || sr.program.size() == 0) {
+				break;
+			}
+		}
+
+		return result;
 	}
 
 }

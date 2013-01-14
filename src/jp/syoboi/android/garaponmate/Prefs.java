@@ -7,6 +7,8 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import jp.syoboi.android.garaponmate.data.ProgSearchList;
+
 public class Prefs {
 	public static final String USER = "user";
 	public static final String PASSWORD = "password";
@@ -20,6 +22,7 @@ public class Prefs {
 	private static final String GTV_SESSION_ID = "gtvSessionId";
 	private static final String GARAPON_AUTH = "garaponAuth";
 	private static final String COMMON_SESSION_ID = "commonSessionId";
+	private static final String PROG_SEARCH_LIST = "progSearchList";
 
 
 	private static SharedPreferences sPrefs;
@@ -135,4 +138,15 @@ public class Prefs {
 		.putString("fav" + j + "url", url)
 		.commit();
 	}
+
+	public static void setSearch(ProgSearchList ps) {
+		sPrefs.edit()
+		.putString(PROG_SEARCH_LIST, ps.toJson())
+		.commit();
+	}
+
+	public static String getProgSearchList() {
+		return sPrefs.getString(PROG_SEARCH_LIST, "");
+	}
+
 }

@@ -8,6 +8,13 @@ import android.support.v4.app.DialogFragment;
 
 public class ErrorDialogFragment extends DialogFragment {
 
+	public static ErrorDialogFragment newInstance(String title, Throwable throwable) {
+		if (throwable.getClass().getName().startsWith("jp.syoboi.android")) {
+			return newInstance(title, throwable.getMessage());
+		}
+		return newInstance(title, throwable.getMessage() + "\n" + throwable.toString());
+	}
+
 	public static ErrorDialogFragment newInstance(String title, String message) {
 		Bundle args = new Bundle();
 		args.putString(Intent.EXTRA_TITLE, title);

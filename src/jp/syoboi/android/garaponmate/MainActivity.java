@@ -93,8 +93,9 @@ public class MainActivity extends FragmentActivity  {
 				if (tag instanceof String) {
 					String tagName = tag.toString();
 					if (tagName.startsWith("fav")) {
-						navigateFav((String)v.getTag());
-
+						if (!navigateFav((String)v.getTag())) {
+							mWebView.loadUrl(Prefs.getBaseUrl());
+						}
 					}
 				}
 				break;
@@ -437,11 +438,11 @@ public class MainActivity extends FragmentActivity  {
 			expandPlayer(false);
 			return;
 		}
-		// ページが戻れる状態だったら戻る
-		if (mWebView.canGoBack()) {
-			mWebView.goBack();
-			return;
-		}
+//		//ページが戻れる状態だったら戻る
+//		if (mWebView.canGoBack()) {
+//			mWebView.goBack();
+//			return;
+//		}
 		super.onBackPressed();
 	}
 
@@ -690,7 +691,7 @@ public class MainActivity extends FragmentActivity  {
 					// ログインエラー時はダイアログ表示
 					ErrorDialogFragment.newInstance(
 							getString(R.string.error),
-							((Throwable) result).getMessage())
+							(Throwable)result)
 					.show(getSupportFragmentManager(), "dialog");
 				}
 				else if (result instanceof HashMap<?,?>) {
@@ -750,8 +751,9 @@ public class MainActivity extends FragmentActivity  {
 			@Override
 			protected Object doInBackground(Object... params) {
 				try {
-					return SpecialPage.getBroadcastingPage(MainActivity.this);
+					return SpecialPage.getSpecialPage(MainActivity.this);
 				} catch (Throwable t) {
+					t.printStackTrace();
 					return t;
 				}
 			}
@@ -761,7 +763,7 @@ public class MainActivity extends FragmentActivity  {
 				mSpecialPageTask = null;
 				if (result instanceof Throwable) {
 					ErrorDialogFragment f = ErrorDialogFragment.newInstance(getString(R.string.error),
-							((Throwable)result).getMessage());
+							(Throwable)result);
 					f.show(getSupportFragmentManager(), "dialog");
 				}
 				else if (result instanceof String) {
@@ -776,6 +778,7 @@ public class MainActivity extends FragmentActivity  {
 				mSpecialPageTask = null;
 			}
 		};
+		mSpecialPageTask.setMessage(R.string.loading);
 		mSpecialPageTask.execute();
 	}
 

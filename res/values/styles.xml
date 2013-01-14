@@ -8,6 +8,12 @@
         <item name="android:text">@color/popupMessageTextColor</item>
     </style>
     
+    <style name="keywordEditStyle">
+        <item name="android:hint">@string/keywordHint</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:inputType">text</item>
+    </style>
+    
     <!--
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.

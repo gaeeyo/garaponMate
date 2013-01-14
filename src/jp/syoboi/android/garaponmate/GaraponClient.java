@@ -344,7 +344,11 @@ public class GaraponClient {
 
 				@Override
 				public boolean onTargetObject(JsonParser jp, JksnObject j) {
-					programs.add(new Program(j, chMap));
+					try {
+						programs.add(new Program(j, chMap));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 					return true;
 				}
 
@@ -489,6 +493,19 @@ public class GaraponClient {
 			int genre0 = Integer.valueOf(text.substring(0,  pos), 10);
 			int genre1 = Integer.valueOf(text.substring(pos+1), 10);
 			return genre0 << 16 | genre1;
+		}
+
+		@Override
+		public String toString() {
+			Time t = new Time();
+			t.set(startdate);
+			long min = duration / 1000 / 60;
+
+			return String.format("%s [%02d:%02d] %s %s %s",
+					t.format("%Y-%m-%d %H:%M:%S"),
+					min / 60, min % 60,
+					ch.bc,
+					title, description);
 		}
 	}
 

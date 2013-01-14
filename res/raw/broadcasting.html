@@ -5,18 +5,19 @@
 <style>
 * { margin:0; padding:0; }
 body { background: #f3f3f3; line-height:1.1; }
-h2 { font-size:100%; padding:4px 8px; color:#09f; }
+h2 { font-size:100%; padding:4px 8px; color:#33B5E5; }
 ul { list-style:none; }
 li { border-top:1px solid #999; }
-li a { display:block; padding:4px 8px 8px 8px; text-decoration:none; color:#000; }
-.bar { height:7px; background-color:#84BBFF; overflow:hidden; position:absolute; margin-top:-5px; border:1px solid #999; }
-.barBg { height:7px; background-color:#f3f3f3; overflow:hidden; position:absolute; margin-top:-5px; border:1px solid #999; }
-.duration { font-size:90%; color:#777 }
+li a { display:block; padding:6px 8px 8px 8px; text-decoration:none; color:#000; }
+.bar { height:4px; background-color:#33B5E5; overflow:hidden; position:absolute; margin-top:-1px; border:1px solid #bbb; z-index:-1; }
+.barBg { height:4px; background-color:#ddd; overflow:hidden; position:absolute; margin-top:-1px; border:1px solid #bbb; z-index:-1; }
+.duration { font-size:90%; color:#777; margin-left:8px; }
 .bc { color:#090; font-size:90%; margin-left:8px; }
 .start { font-size:90%; }
 .end { float:right; font-size:90%; display:none; }
-.title { display:block; }
+.title { display:block; margin-top:1px; }
 .cmnt { color:#777; font-size:80%; line-height:1; font-weight: }
+.hint { display:block; padding:4px 8px; }
 </style>
 <h2>放送中</h2>
 <ul id="broadcasting">
@@ -30,18 +31,24 @@ li a { display:block; padding:4px 8px 8px 8px; text-decoration:none; color:#000;
 <li><div class="barBg">&nbsp;</div>
 <div class="bar" start="1358146800000" duration="3600000">&nbsp;</div><a href="foo"></a></li>
 -->
-%LIST%
+<!-- BROADCASTING -->
 </ul>
+<h2>検索リスト (24時間以内のみ)</h2>
+<ul id="searchList">
+<!-- SEARCHLIST -->
+</ul>
+
 <script type="text/javascript">
 //setTimeout(function() { location.reload(); }, 10000 );
 
 var loaded = (new Date()).getTime();
+var bc = document.getElementById("broadcasting");
+var titles = bc.getElementsByClassName("title");
+var bars = bc.getElementsByClassName("bar");
+var barBgs = bc.getElementsByClassName("barBg");
 
 var refreshBarInterval = 5;
 function refreshBar() {
-    var bc = document.getElementById("broadcasting");
-    var bars = bc.getElementsByClassName("bar");
-    var barBgs = bc.getElementsByClassName("barBg");
     
     var now = (new Date()).getTime();
     var needRefresh = false;
@@ -91,6 +98,11 @@ function refreshBar() {
         barBg.style.width = (right - left) + "%";
         bar.style.left = left + "%";
         bar.style.width = (nowRight - left) + "%";
+        if (now - start < 60*1000) {
+            titles[j].style.color = "#b00";
+        } else {
+            titles[j].style.color = "#000";
+        }
         //p.textContent = percent;
         // 1SJP00251358009700 
     }
