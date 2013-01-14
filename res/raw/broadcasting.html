@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" />
+<body>
+<style>
+* { margin:0; padding:0; }
+body { background: #f3f3f3; line-height:1.1; }
+h2 { font-size:100%; padding:4px 8px; color:#09f; }
+ul { list-style:none; }
+li { border-top:1px solid #999; }
+li a { display:block; padding:4px 8px 8px 8px; text-decoration:none; color:#000; }
+.bar { height:7px; background-color:#84BBFF; overflow:hidden; position:absolute; margin-top:-5px; border:1px solid #999; }
+.barBg { height:7px; background-color:#f3f3f3; overflow:hidden; position:absolute; margin-top:-5px; border:1px solid #999; }
+.duration { font-size:90%; color:#777 }
+.bc { color:#090; font-size:90%; margin-left:8px; }
+.start { font-size:90%; }
+.end { float:right; font-size:90%; display:none; }
+.title { display:block; }
+.cmnt { color:#777; font-size:80%; line-height:1; font-weight: }
+</style>
+<h2>放送中</h2>
+<ul id="broadcasting">
+<!--
+<li><div class="barBg">&nbsp;</div>
+<div class="bar" start="1358143200000" duration="1800000">&nbsp;</div><a href="foo"></a></li>
+<li><div class="barBg">&nbsp;</div>
+<div class="bar" start="1358146800000" duration="1800000">&nbsp;</div><a href="foo"></a></li>
+<li><div class="barBg">&nbsp;</div>
+<div class="bar" start="1358146800000" duration="900000">&nbsp;</div><a href="foo"></a></li>
+<li><div class="barBg">&nbsp;</div>
+<div class="bar" start="1358146800000" duration="3600000">&nbsp;</div><a href="foo"></a></li>
+-->
+%LIST%
+</ul>
+<script type="text/javascript">
+//setTimeout(function() { location.reload(); }, 10000 );
+
+var loaded = (new Date()).getTime();
+
+var refreshBarInterval = 5;
+function refreshBar() {
+    var bc = document.getElementById("broadcasting");
+    var bars = bc.getElementsByClassName("bar");
+    var barBgs = bc.getElementsByClassName("barBg");
+    
+    var now = (new Date()).getTime();
+    var needRefresh = false;
+
+    var min = 0;
+    var max = 0;
+    for (var j=0; j<bars.length; j++) {
+        var bar = bars[j];
+        var start = bar.getAttribute("start") - 0;
+        var duration = bar.getAttribute("duration") - 0;
+        var end = start + duration;
+        if (end > max) {
+            max = end;
+        }
+        if (start < min || min == 0) {
+            min = start;
+        }
+        if (now > end) {
+            needRefresh = true;
+        }
+        //console.log(start, duration, min, max);
+    }
+    //console.log("minmax:" + min +"," + max);
+    //console.log("min:" + (new Date(min)) + " max:" + (new Date(max)));
+    min -= 5 * 60 * 1000;
+    max += 5 * 60 * 1000;
+    
+    var range = max - min;
+    for (var j=0; j<bars.length; j++) {
+        var barBg = barBgs[j];
+        var bar = bars[j];
+        var start = bar.getAttribute("start") - 0;
+        var duration = bar.getAttribute("duration") - 0;
+        var end = start + duration;
+        
+        var percent = ((now - start) * 100) / duration;
+        if (percent < 0) {
+            percent = 0;
+        }
+        //bar.style.width = percent + "%";
+        
+        var left = ((start - min) * 100) / range;
+        var right = ((end - min) * 100) / range;
+        var nowRight = ((now - min) * 100) / range;
+        //console.log("left:"+left+" right:"+right+" nowRight:"+nowRight);
+        barBg.style.left = left + "%";
+        barBg.style.width = (right - left) + "%";
+        bar.style.left = left + "%";
+        bar.style.width = (nowRight - left) + "%";
+        //p.textContent = percent;
+        // 1SJP00251358009700 
+    }
+    
+    if (needRefresh) {
+        var delay = 60*1000 - (now - loaded);
+        if (delay < 0) {
+            delay = 0;
+        }
+        console.log("reload delay:" + delay);
+        setTimeout(function() {
+            console.log("reloadSpecialPage");
+        }, delay);
+    } else {
+        var delay = refreshBarInterval - new Date().getSeconds() % refreshBarInterval;
+        setTimeout(refreshBar, delay * 1000);
+    }
+}
+refreshBar();
+
+</script>
+</body>
+</html>

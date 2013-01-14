@@ -11,13 +11,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebChromeClient;
@@ -30,14 +30,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.syoboi.android.garaponmate.GaraponClient.Program;
-import jp.syoboi.android.garaponmate.GaraponClient.SearchResult;
+import jp.syoboi.android.garaponmate.page.SpecialPage;
 import jp.syoboi.android.garaponmate.task.ProgressDialogTask;
 import jp.syoboi.android.garaponmate.view.PlayerView;
 
@@ -246,9 +243,6 @@ public class MainActivity extends FragmentActivity  {
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				Log.v(TAG, "onPageStarted url:" + url);
 				super.onPageStarted(view, url, favicon);
-//				if (SPECIAL_PAGE_PATH.contains(url)) {
-//					loadSpecialPage();
-//				}
 			}
 
 			@Override
@@ -262,67 +256,19 @@ public class MainActivity extends FragmentActivity  {
 			public WebResourceResponse shouldInterceptRequest(WebView view,
 					String url) {
 				Log.v(TAG, "shouldInterceptRequest url:" + url);
-				if (url.contains("/viewer/player.garapon?gtvid=")) {
-					final String id = getGtvIdFromUrl(url, "gtvid");
-					if (id != null) {
-						mHandler.post(new Runnable() {
-							@Override
-							public void run() {
-//								mWebView.stopLoading();
-								setPlayerPage(id);
-							}
-						});
-						return super.shouldInterceptRequest(view, null);
-					}
+				if (overrideUrl(url)) {
+					return super.shouldInterceptRequest(view, null);
 				}
+
 				return super.shouldInterceptRequest(view, url);
 			}
 
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				Log.v(TAG, "shouldOverrideUrlLoading url:" + url);
-
-				if (url.contains("/main.garapon")) {
-					if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) != 0) {
-						// ログインが完了したら fav0 を開く
-						mFlags &= ~FLAG_AUTO_LOGIN_PROGRESS;
-						if (navigateFav("fav0")) {
-							return true;
-						}
-					}
-				}
-				if (url.endsWith("/auth/login.garapon")) {
-					// ログイン画面に遷移するとき、自動ログインする
-					if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) == 0) {
-						loginBackground();
-						return true;
-					}
-				}
-				// site.garapon.tv の画像をローカルで開く
-				if (url.contains("http://site.garapon.tv/g?g=")) {
-					final String id = getGtvIdFromUrl(url, "g");
-					if (id != null) {
-						mHandler.post(new Runnable() {
-							@Override
-							public void run() {
-								mWebView.stopLoading();
-								setPlayerPage(id);
-							}
-						});
-						return true;
-					}
-				}
-				// site.garapon.tv の画像をローカルで開く
-				if (url.contains("/play?")) {
-					final String id = getGtvIdFromUrl(url, "gtvid");
-					setPlayerPage(id);
+				if (overrideUrl(url)) {
 					return true;
 				}
-				if (url.contains(SPECIAL_PAGE_PATH)) {
-					loadSpecialPage();
-					return true;
-				}
-
 				return super.shouldOverrideUrlLoading(view, url);
 			}
 		});
@@ -353,11 +299,77 @@ public class MainActivity extends FragmentActivity  {
 					mProgress.setProgress(newProgress);
 				}
 			}
+			@Override
+			public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+				String msg = consoleMessage.message();
+				if ("reloadSpecialPage".equals(msg)) {
+					loadSpecialPage();
+				}
+				return super.onConsoleMessage(consoleMessage);
+			}
 		});
 
 //		navigateFav("fav0");
 //		loginBackground();
 		loadSpecialPage();
+	}
+
+	boolean overrideUrl(String url) {
+		if (url.contains("/viewer/player.garapon?gtvid=")) {
+			final String id = getGtvIdFromUrl(url, "gtvid");
+			if (id != null) {
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+//						mWebView.stopLoading();
+						setPlayerPage(id);
+					}
+				});
+				return true;
+			}
+		}
+		if (url.contains("/main.garapon")) {
+			if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) != 0) {
+				// ログインが完了したら fav0 を開く
+				mFlags &= ~FLAG_AUTO_LOGIN_PROGRESS;
+				if (navigateFav("fav0")) {
+					return true;
+				}
+			}
+		}
+		if (url.endsWith("/auth/login.garapon")) {
+			// ログイン画面に遷移するとき、自動ログインする
+			if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) == 0) {
+				loginBackground();
+				return true;
+			}
+		}
+		// site.garapon.tv の画像をローカルで開く
+		if (url.contains("http://site.garapon.tv/g?g=")) {
+			final String id = getGtvIdFromUrl(url, "g");
+			if (id != null) {
+				mHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						mWebView.stopLoading();
+						setPlayerPage(id);
+					}
+				});
+				return true;
+			}
+		}
+		// site.garapon.tv の画像をローカルで開く
+		if (url.contains("/play?")) {
+			final String id = getGtvIdFromUrl(url, "gtvid");
+			setPlayerPage(id);
+			return true;
+		}
+		if (url.contains(SPECIAL_PAGE_PATH)) {
+			loadSpecialPage();
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -738,66 +750,7 @@ public class MainActivity extends FragmentActivity  {
 			@Override
 			protected Object doInBackground(Object... params) {
 				try {
-					SearchResult sr = GaraponClientUtils.searchNowBroadcasting();
-
-					Collections.sort(sr.program, new Comparator<Program>() {
-						@Override
-						public int compare(Program lhs, Program rhs) {
-							return rhs.ch.ch - lhs.ch.ch;
-						}
-					});
-
-					StringBuilder sb = new StringBuilder();
-					sb.append("<!DOCTYPE html>\n<html><body>");
-					sb.append("<style>")
-					.append("* { margin:0; padding:0; }")
-					.append("body { background: #f3f3f3; }")
-					.append("h2 { font-size:100%; padding:4px 8px; color:#09f; }")
-					.append("ul { list-style:none; border-top:1px solid #aaa }")
-					.append("li { border-bottom:1px solid #aaa; }")
-					.append("li a { display:block; padding:4px 8px; text-decoration:none; color:#000; }")
-					.append(".cmnt { color:#666; font-size:85%; }")
-					.append("</style>");
-					sb.append("<h2>放送中</h2>");
-					sb.append("<ul>");
-
-					long now = System.currentTimeMillis();
-					Time t = new Time();
-					Time t2 = new Time();
-					for (Program p: sr.program) {
-
-						t.set(p.startdate);
-						t2.set(p.startdate + p.duration);
-
-						sb.append("<li>");
-
-						int width = (int) (((now - p.startdate) * 100) / p.duration);
-						sb.append("<div style='margin-top:-1px; height:3px; background-color:#09f; width:" + width + "%; overflow:hidden;'>&nbsp;</div>");
-
-
-						sb.append("<a href='/play?gtvid=" + p.gtvid +"'>")
-						.append(t.format("%H:%M "))
-						.append(Utils.h(Utils.convertCoolTitle(p.ch.bc)))
-						.append("<div style='float:right'>")
-						.append(t2.format("%H:%M"))
-						.append("</div>")
-						.append("<br>")
-						.append(Utils.h(Utils.convertCoolTitle(p.title)))
-						;
-
-						if (p.description.length() > 0) {
-							sb.append(" <span class='cmnt'>")
-							.append(Utils.h(Utils.convertCoolTitle(p.description)))
-							.append("</span>");
-						}
-
-						sb.append("</a>");
-					}
-					sb.append("</ul>");
-
-					sb.append("</body></html>");
-					return sb.toString();
-
+					return SpecialPage.getBroadcastingPage(MainActivity.this);
 				} catch (Throwable t) {
 					return t;
 				}
@@ -812,7 +765,8 @@ public class MainActivity extends FragmentActivity  {
 					f.show(getSupportFragmentManager(), "dialog");
 				}
 				else if (result instanceof String) {
-					mWebView.loadDataWithBaseURL(Prefs.getBaseUrl(), (String)result, "text/html", "utf-8",
+					mWebView.loadDataWithBaseURL(Prefs.getBaseUrl() + SPECIAL_PAGE_PATH,
+							(String)result, "text/html", "utf-8",
 							Prefs.getBaseUrl() + SPECIAL_PAGE_PATH);
 				}
 			}
@@ -821,8 +775,6 @@ public class MainActivity extends FragmentActivity  {
 			protected void onCancelled() {
 				mSpecialPageTask = null;
 			}
-
-
 		};
 		mSpecialPageTask.execute();
 	}

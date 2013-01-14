@@ -2,14 +2,42 @@ package jp.syoboi.android.garaponmate;
 
 import android.text.Html;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Utils {
 
-	static Matcher UNCOOL_MATCHER = Pattern.compile("[０-９ａ-ｚＡ-Ｚ　]").matcher("");
+	static Matcher UNCOOL_MATCHER;
 	static StringBuilder UNCOOL_TMP = new StringBuilder();
 
+	static HashMap<Character,Character> COOL_MAP = new HashMap<Character, Character>();
+	static {
+		COOL_MAP.put('　', ' ');
+		COOL_MAP.put('：', ':');
+		COOL_MAP.put('）', ')');
+		COOL_MAP.put('（', '(');
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("[０-９ａ-ｚＡ-Ｚ");
+		for (Character key: COOL_MAP.keySet()) {
+			sb.append(key);
+		}
+		sb.append("]");
+
+		UNCOOL_MATCHER = Pattern.compile(sb.toString()).matcher("");
+	}
+
+
+	/**
+	 * 番組表によくでてくる全角のダサい文字を変換
+	 * @param text
+	 * @return
+	 */
 	public synchronized static String convertCoolTitle(String text) {
 		final Matcher m = UNCOOL_MATCHER;
 
@@ -34,8 +62,11 @@ public class Utils {
 			else if ('Ａ' <= c && c <= 'Ｚ') {
 				sb.setCharAt(start, (char) ('A' + c - 'Ａ'));
 			}
-			else if (c == 0x3000) {
-				sb.setCharAt(start, ' ');
+			else {
+				Character newChar = COOL_MAP.get(c);
+				if (newChar != null) {
+					sb.setCharAt(start, newChar);
+				}
 			}
 			start++;
 		} while (m.find(start));
@@ -47,4 +78,20 @@ public class Utils {
 		return Html.fromHtml(text).toString();
 	}
 
+	public static String readStream(InputStream is, String encoding) throws IOException {
+		try {
+			InputStreamReader isr = new InputStreamReader(is, encoding);
+			StringBuilder sb = new StringBuilder();
+			char [] buf = new char [8*1024];
+			int size;
+			while ((size = isr.read(buf)) != -1) {
+				sb.append(buf, 0, size);
+			}
+			return sb.toString();
+		} finally {
+			if (is != null) {
+				is.close();
+			}
+		}
+	}
 }

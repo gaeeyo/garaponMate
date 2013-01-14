@@ -193,7 +193,7 @@ public class GaraponClient {
 			con.getOutputStream().write(query.getBytes());
 			con.connect();
 
-			String text = readStream(con.getInputStream(), ENCODING);
+			String text = Utils.readStream(con.getInputStream(), ENCODING);
 
 			Map<String,List<String>> fields = con.getHeaderFields();
 
@@ -405,23 +405,6 @@ public class GaraponClient {
 	static Pattern COOKIE_VALUE_PTN = Pattern.compile("([^=]+)=([^;]+)");
 
 
-	static String readStream(InputStream is, String encoding) throws IOException {
-		try {
-			InputStreamReader isr = new InputStreamReader(is, encoding);
-			StringBuilder sb = new StringBuilder();
-			char [] buf = new char [8*1024];
-			int size;
-			while ((size = isr.read(buf)) != -1) {
-				sb.append(buf, 0, size);
-			}
-			return sb.toString();
-		} finally {
-			if (is != null) {
-				is.close();
-			}
-		}
-	}
-
 	static String md5(String text) throws NoSuchAlgorithmException {
 
 		MessageDigest md = MessageDigest.getInstance("md5");
@@ -449,7 +432,7 @@ public class GaraponClient {
 	public static class SearchResult {
 		public int status;
 		public int hit;
-		ArrayList<Program> program;
+		public ArrayList<Program> program;
 	}
 
 	/**
