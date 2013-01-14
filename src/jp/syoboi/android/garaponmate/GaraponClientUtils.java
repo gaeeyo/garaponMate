@@ -117,7 +117,7 @@ public class GaraponClientUtils {
 
 		for (int j=sr.program.size()-1; j>=0; j--) {
 			Program p = sr.program.get(j);
-			if (p.startdate > now) {
+			if (p.startdate > now || p.startdate + p.duration <= now) {
 				sr.program.remove(p);
 			}
 		}
