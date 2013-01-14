@@ -165,12 +165,23 @@ public class PlayerView extends RelativeLayout {
 
 	public void destroy() {
 		if (mWebView != null) {
+			stop();
 			mWebView.destroy();
 			mWebView = null;
 		}
 	}
 
-	public void setVideo(String id) {
+	public void setVideo(final String id) {
+		stop();
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				setVideoInternal(id);
+			}
+		});
+	}
+
+	private void setVideoInternal(String id) {
 		String flvPath = id.substring(6,8) + "/" + id + ".ts-" + Prefs.getCommonSessionId();
 
 		String rtmp = "rtmp://" + Prefs.getIpAdr() + ":" + Prefs.getTsPort() + "/";
@@ -195,6 +206,7 @@ public class PlayerView extends RelativeLayout {
 					//+ "&amp;showfullscreen=1"
 					//+ "&amp;margin=1"
 					+ "&amp;margin=0"
+					+ "&amp;bgcolor=000000"
 					+ "&amp;bgcolor1=000000"
 					+ "&amp;bgcolor2=000000"
 					+ "&amp;playercolor=000000"
@@ -204,15 +216,20 @@ public class PlayerView extends RelativeLayout {
 					+ "&amp;ondoubleclick=none"
 					//+ "&amp;showiconplay=1"
 					+ "&amp;showiconplay=0"
-					+ "&amp;sliderovercolor=0aff17"
-					+ "&amp;buttonovercolor=0aff17"
+					+ "&amp;buttoncolor=aaaaaa"
+					+ "&amp;iconplaycolor=aaaaaa"
+					+ "&amp;videobgcolor=000000"
+					+ "&amp;sliderovercolor=ffffff"
+					+ "&amp;slidercolor1=aaaaaa"
+					+ "&amp;slidercolor2=aaaaaa"
+					+ "&amp;buttonovercolor=aaaaaa"
 					+ "&amp;showplayer=always"
 					+ "&amp;showloading=always"
 					+ "&amp;autoload=1"
 					+ "&amp;autoplay=1"
 					+ "'>"
 				+ "</object>"
-				+ "<div style='background:#000; width:1px; height:100%; position:absolute; top:0px; right:0px; overflow:hidden;'>&nbsp;</div>"
+				//+ "<div style='background:#000; width:1px; height:100%; position:absolute; top:0px; right:0px; overflow:hidden;'>&nbsp;</div>"
 				+ "<script type='text/javascript'>"
 				+ "var player=document.getElementById('player');"
 				+ "</script>"
@@ -236,6 +253,10 @@ public class PlayerView extends RelativeLayout {
 
 	public void pause() {
 		playerCtrl(true, "player:jsPause", "");
+	}
+
+	public void stop() {
+		playerCtrl(true, "player:jsStop", "");
 	}
 
 	/**
