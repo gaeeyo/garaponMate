@@ -124,12 +124,12 @@ public class PlayerView extends RelativeLayout {
 			case R.id.previous:
 				jump(-15);
 				break;
-//			case R.id.rew:
-//				jump(-15);
-//				break;
-//			case R.id.ff:
-//				jump(15);
-//				break;
+			case R.id.rew:
+				jump(-15);
+				break;
+			case R.id.ff:
+				jump(30);
+				break;
 			case R.id.next:
 				jump(30);
 				break;
@@ -171,11 +171,12 @@ public class PlayerView extends RelativeLayout {
 	}
 
 	public void setVideo(String id) {
-		String flvPath = id.substring(6,8) + "/" + id + ".ts-" + Prefs.getGtvSessionId();
+		String flvPath = id.substring(6,8) + "/" + id + ".ts-" + Prefs.getCommonSessionId();
 
 		String rtmp = "rtmp://" + Prefs.getIpAdr() + ":" + Prefs.getTsPort() + "/";
 
 		String html = "<html>"
+				+ "<meta name='viewport' content='target-densitydpi=low-dpi' />"
 				+ "<style type='text/css'>"
 				+ "body { padding:0; margin:0; background:#000; color:#fff; text-align:center; width:100%; }"
 				+ "#player { text-align:center; width:100%; height:100%; }"
@@ -188,7 +189,7 @@ public class PlayerView extends RelativeLayout {
 					+ "&amp;flv=" + flvPath
 					+ "&amp;netconnection=" + rtmp
 					+ "&amp;showstop=0"
-					+ "&amp;showvolume=1"
+					//+ "&amp;showvolume=1"
 					//+ "&amp;showtime=2"
 					+ "&amp;showtime=2"
 					//+ "&amp;showfullscreen=1"
@@ -225,7 +226,7 @@ public class PlayerView extends RelativeLayout {
 		if (sec > 0) {
 			playerCtrl(true, "player:jsSetFastForward", String.valueOf(sec));
 		} else {
-			playerCtrl(true, "player:jsSetRewind", String.valueOf(sec));
+			playerCtrl(true, "player:jsSetRewind", String.valueOf(-sec));
 		}
 	}
 

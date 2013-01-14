@@ -38,6 +38,14 @@
                 android:gravity="center_horizontal"
                 android:orientation="horizontal" >
 
+                <ImageButton
+                    android:id="@+id/special"
+                    android:layout_width="48sp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:src="@drawable/ic_grid" />
+                
                 <Button
                     android:id="@+id/fav0"
                     android:layout_width="48sp"

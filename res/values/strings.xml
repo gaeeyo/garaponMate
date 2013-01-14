@@ -23,5 +23,6 @@
     <string name="unknownRegistkey">ガラポンTVが登録されていません(ガラポンTVのセットアップが完了していないかもしれません)</string>
     <string name="unknownIpAddress">ガラポンTVのIPアドレスが不明です(ガラポンTVのセットアップが完了していないかもしれません)</string>
     <string name="error">エラー</string>
-    
+    <string name="invalidParameter">パラメーターが異常です</string>
+    <string name="authSyncError">認証同期エラー。IDとパスワードがガラポンTVサイトと同期されていません。ガラポンTVがインターネットに接続してあることを確認し、5分程度お待ちください</string>
 </resources>

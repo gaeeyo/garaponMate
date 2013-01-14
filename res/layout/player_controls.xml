@@ -22,30 +22,30 @@
             android:layout_width="48sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_media_previous" />
+            android:src="@drawable/ic_media_previous"
+            android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/rew"
             android:layout_width="48sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_media_rew"
-            android:visibility="gone" />
+            android:src="@drawable/ic_media_rew" />
 
         <ImageButton
             android:id="@+id/ff"
             android:layout_width="48sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_media_ff"
-            android:visibility="gone" />
+            android:src="@drawable/ic_media_ff" />
 
         <ImageButton
             android:id="@+id/next"
             android:layout_width="48sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_media_next" />
+            android:src="@drawable/ic_media_next"
+            android:visibility="gone" />
     </LinearLayout>
 
     <WebView

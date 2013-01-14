@@ -5,7 +5,10 @@ import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
+import android.text.format.Time;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,14 +20,21 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.syoboi.android.util.JksnUtils;
+import jp.syoboi.android.util.JksnUtils.JksnArray;
+import jp.syoboi.android.util.JksnUtils.JksnArrayCallback;
+import jp.syoboi.android.util.JksnUtils.JksnObject;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonParser;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 public class GaraponClient {
 	private static final String TAG = "GaraponClient";
@@ -33,8 +43,12 @@ public class GaraponClient {
 
 	public static final String AUTH_URL = "http://garagw.garapon.info/getgtvaddress";
 
+	public static final String WEB_LOGIN_PATH = "/";
 	public static final String LOGIN_PATH = "/gapi/v2/auth";
 	public static final String SEARCH_PATH = "/gapi/v2/search";
+
+	public static final int STATUS_SUCCESS = 1;
+	public static final int LOGIN_SUCCESS = 1;
 
 	private static Resources sResources;
 
@@ -55,6 +69,9 @@ public class GaraponClient {
 	 * @throws NotFoundException
 	 */
 	public static HashMap<String,String> auth(String id, String pass) throws MalformedURLException, IOException, NoSuchAlgorithmException, NotFoundException, GaraponClientException {
+		if (App.DEBUG) {
+			Log.i(TAG, "ガラポンTV認証");
+		}
 
 		if (TextUtils.isEmpty(id) || TextUtils.isEmpty(pass)) {
 			throw new GaraponClientException(sResources.getString(R.string.settingsWarning));
@@ -115,10 +132,13 @@ public class GaraponClient {
 	}
 
 
-	public static JSONObject login(String host, String id, String pass)
-			throws IOException, NoSuchAlgorithmException, JSONException {
+	public static String login(String host, String id, String pass)
+			throws IOException, NoSuchAlgorithmException, JSONException, GaraponClientException {
+		if (App.DEBUG) {
+			Log.i(TAG, "ガラポンTVログイン");
+		}
 
-		HttpURLConnection con = (HttpURLConnection)getURL(host, LOGIN_PATH).openConnection();
+		HttpURLConnection con = (HttpURLConnection)new URL("http://" + host + LOGIN_PATH).openConnection();
 		try {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
@@ -132,24 +152,35 @@ public class GaraponClient {
 			con.getOutputStream().write(query.getBytes());
 			con.connect();
 
-			Log.d(TAG, "query:" + query);
-			String text = readStream(con.getInputStream(), ENCODING);
-			Log.v(TAG, "result: " + text);
+			JksnObject jo = (JksnObject) JksnUtils.parseJson(con.getInputStream(), null);
 
-			JSONObject jo = new JSONObject(text);
+			int status = jo.getInt("status", 0);
+			if (status != STATUS_SUCCESS) {
+				throw new GaraponClientException(getApiStatusMessage(status));
+			}
 
-			return jo;
+			int login = jo.getInt("login");
+			if (login != LOGIN_SUCCESS) {
+				throw new GaraponClientException(getLoginErrorMessage(login));
+			}
+
+			String gtvsession = jo.getString("gtvsession");
+
+			return gtvsession;
 		} finally {
 			con.disconnect();
 		}
-//		JsonReader jr = new JsonReader(new InputStreamReader(is, ENCODING));
-//		jr.ha
 	}
+
 
 	public static HashMap<String,String> loginWeb(String host, String id, String pass)
 			throws IOException, NoSuchAlgorithmException, JSONException, URISyntaxException {
+		if (App.DEBUG) {
+			Log.i(TAG, "ガラポンTVログイン(Web)");
+		}
 
-		HttpURLConnection con = (HttpURLConnection)getURL(host, "/").openConnection();
+		HttpURLConnection con = (HttpURLConnection)new URL("http://" + host + WEB_LOGIN_PATH)
+			.openConnection();
 		try {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
@@ -162,9 +193,7 @@ public class GaraponClient {
 			con.getOutputStream().write(query.getBytes());
 			con.connect();
 
-			Log.d(TAG, "query:" + query);
 			String text = readStream(con.getInputStream(), ENCODING);
-			Log.v(TAG, "result: " + text);
 
 			Map<String,List<String>> fields = con.getHeaderFields();
 
@@ -184,15 +213,196 @@ public class GaraponClient {
 		} finally {
 			con.disconnect();
 		}
-//		JsonReader jr = new JsonReader(new InputStreamReader(is, ENCODING));
-//		jr.ha
 	}
+
+	/**
+	 *
+	 * @param ipaddr  IPアドレス
+	 * @param sessionId	セッションID
+	 * @param count 1ページの表示数
+	 * @param page ページ数
+	 * @param searchType 検索対象
+	 * @param keyword キーワード
+	 * @param gtvid 1番組の詳細を取得するときのgtvid
+	 * @param genre0 ジャンル大分類
+	 * @param genre1 ジャンル小分類
+	 * @param ch チャンネル番号
+	 * @param searchTime 指定した時間を開始時間と終了時間のどちらを対象にするか
+	 * @param sdate 時間の始点
+	 * @param edate 時間の終点
+	 * @param rank allにするとお気に入り
+	 * @param sortAscent
+	 * @param videoAll
+	 * @return
+	 * @throws IOException
+	 * @throws MalformedURLException
+	 */
+	public static SearchResult search(String ipaddr, String sessionId,
+			int count, int page, SearchType searchType, String keyword, String gtvid,
+			Integer genre0, Integer genre1, int ch, SearchTime searchTime, long sdate, long edate,
+			Rank rank, boolean sortAscent, boolean videoAll) throws MalformedURLException, IOException {
+
+		Uri.Builder builder = new Uri.Builder()
+		.appendQueryParameter("gtvsession", sessionId)
+		.appendQueryParameter("n", String.valueOf(count))
+		.appendQueryParameter("p", String.valueOf(page));
+
+		if (keyword != null) {
+			builder.appendQueryParameter("key", keyword);
+		}
+		if (gtvid != null) {
+			builder.appendQueryParameter("gtvid", gtvid);
+		}
+		if (genre0 != null) {
+			builder.appendQueryParameter("genre0", String.valueOf(genre0));
+			if (genre1 != null) {
+				builder.appendQueryParameter("genre1", String.valueOf(genre1));
+			}
+		}
+		if (ch != 0) {
+			builder.appendQueryParameter("ch", String.valueOf(ch));
+		}
+		if (searchType != null) {
+			switch (searchType) {
+			case EPG:
+				builder.appendQueryParameter("s", "e");
+				break;
+			case SUBTITLE:
+				builder.appendQueryParameter("s", "c");
+				break;
+			}
+		}
+		if (searchTime != null) {
+			switch (searchTime) {
+			case START:
+				builder.appendQueryParameter("dt", "s");
+				break;
+			case END:
+				builder.appendQueryParameter("dt", "e");
+				break;
+			}
+		}
+		if (sdate != 0) {
+			builder.appendQueryParameter("sdate", longToDateTimeStr(sdate));
+		}
+		if (edate != 0) {
+			builder.appendQueryParameter("edate", longToDateTimeStr(edate));
+		}
+		if (rank != null) {
+			switch (rank) {
+			case FAVORITE:
+				builder.appendQueryParameter("rank", "all");
+			}
+		}
+		if (sortAscent) {
+			builder.appendQueryParameter("sort", sortAscent ? "sta" : "std");
+		}
+		if (videoAll) {
+			builder.appendQueryParameter("video", "all");
+		}
+
+//		builder.clearQuery();
+//		builder//.appendQueryParameter("gtvsession", sessionId)
+//		.appendQueryParameter("sdate", "2013-01-12 22:13:00")
+//		.appendQueryParameter("edate", "2013-01-12 23:11:00")
+//		.appendQueryParameter("dt", "e")
+//		.appendQueryParameter("key", "")
+//		.appendQueryParameter("video", "all");
+
+
+		String query = builder.build().getQuery();
+		if (App.DEBUG) {
+			Log.i(TAG, "検索 " + query);
+		}
+
+		HttpURLConnection con = (HttpURLConnection)new URL("http://" + ipaddr + SEARCH_PATH
+				+ "?gtvsession=" + sessionId)
+			.openConnection();
+
+		try {
+			con.setDoOutput(true);
+			con.setRequestMethod("POST");
+
+			con.getOutputStream().write(query.getBytes());
+			con.connect();
+
+			SearchResult result = parseSearchResult(con.getInputStream());
+
+			return result;
+		} finally {
+			con.disconnect();
+		}
+
+	}
+
+	public static SearchResult parseSearchResult(InputStream is) throws JsonParseException, IOException {
+		try {
+			final SparseArray<Ch>	chMap = new SparseArray<Ch>();
+			final ArrayList<Program> programs = new ArrayList<Program>();
+
+			JksnObject jo = (JksnObject) JksnUtils.parseJson(is, new JksnArrayCallback() {
+
+				@Override
+				public boolean onTargetObject(JsonParser jp, JksnObject j) {
+					programs.add(new Program(j, chMap));
+					return true;
+				}
+
+				@Override
+				public boolean isTargetArray(JsonParser jp, String name) {
+					return name.equals("program");
+				}
+			});
+
+			SearchResult sr = new SearchResult();
+			sr.status = jo.getInt("status", 0);
+			sr.hit = Integer.valueOf(jo.getString("hit", "-1"), 10);
+			sr.program = programs;
+
+			return sr;
+		} finally {
+			is.close();
+		}
+	}
+
+	static final Time TMP_TIME = new Time();
+
+	public static synchronized String longToDateTimeStr(long d) {
+		synchronized (TMP_TIME) {
+			Time t = TMP_TIME;
+			t.set(d);
+			return t.format("%Y-%m-%d %H:%M:%S");
+	//		return String.format(
+	//				"%04d-%02d-%02d %02D:%02d:%02d",
+	//				t.year, t.month, t.monthDay,
+	//				t.hour, t.minute, t.second);
+		}
+	}
+
+	public static long parseDateTimeStr(String str) {
+		synchronized (TMP_TIME) {
+			Time t = TMP_TIME;
+			t.year = Integer.valueOf(str.substring(0, 4), 10);
+			t.month = Integer.valueOf(str.substring(5, 7), 10) - 1;
+			t.monthDay = Integer.valueOf(str.substring(8, 10), 10);
+			t.hour = Integer.valueOf(str.substring(11, 13), 10);
+			t.minute = Integer.valueOf(str.substring(14, 16), 10);
+			t.second = Integer.valueOf(str.substring(17, 19), 10);
+			return t.toMillis(true);
+		}
+	}
+
+	public static long parseTimeStr(String str) {
+		int hour = Integer.valueOf(str.substring(0, 2), 10);
+		int minute = Integer.valueOf(str.substring(3, 5), 10);
+		int second = Integer.valueOf(str.substring(6, 8), 10);
+		return hour * DateUtils.HOUR_IN_MILLIS
+				+ minute * DateUtils.MINUTE_IN_MILLIS
+				+ second * DateUtils.SECOND_IN_MILLIS;
+	}
+
 
 	static Pattern COOKIE_VALUE_PTN = Pattern.compile("([^=]+)=([^;]+)");
-
-	private static URL getURL(String host, String path) throws MalformedURLException {
-		return new URL("http", host, path);
-	}
 
 
 	static String readStream(InputStream is, String encoding) throws IOException {
@@ -224,6 +434,96 @@ public class GaraponClient {
 		return sb.toString();
 	}
 
+	public static enum Rank {
+		FAVORITE,
+	}
+
+	public static enum SearchType {
+		EPG, SUBTITLE
+	}
+
+	public static enum SearchTime {
+		START, END
+	}
+
+	public static class SearchResult {
+		public int status;
+		public int hit;
+		ArrayList<Program> program;
+	}
+
+	/**
+	 * 番組
+	 */
+	public static class Program {
+		public static final int FLAG_TS = 1;
+		public static final int FLAG_TS_ONLY = 2;
+		public static final int FLAG_MP4 = 4;
+		public static final int FLAG_FAVORITE = 8;
+
+		public final String gtvid;
+		public final long startdate;
+		public final long duration;
+		public final Ch ch;
+		public final String title;
+		public final String description;
+		public final int [] genre;
+		public final int flag;
+
+		public Program(JksnObject jo, SparseArray<Ch> chMap) {
+			gtvid = jo.getString("gtvid");
+			startdate = parseDateTimeStr(jo.getString("startdate"));
+			duration = parseTimeStr(jo.getString("duration"));
+			title = jo.getString("title");
+			description = jo.getString("description");
+
+			JksnArray genreArray = jo.getArray("genre");
+			genre = new int [genreArray.size()];
+			for (int j=0; j<genre.length; j++) {
+				genre[j] = parseGenreStr(genreArray.getString(j));
+			}
+
+			int chNum = Integer.parseInt(jo.getString("ch","0"), 10);
+			Ch chCache = chMap.get(chNum);
+			if (chCache == null) {
+				this.ch = new Ch(chNum, jo.getString("bc"), jo.getString("bc_tags"));
+				chMap.put(chNum, this.ch);
+			} else {
+				this.ch = chCache;
+			}
+
+			flag = ("1".equals(jo.getString("ts", "0")) ? FLAG_TS : 0)
+					| ("1".equals(jo.getString("tsonly", "0")) ? FLAG_TS_ONLY : 0)
+					| ("1".equals(jo.getString("mp4", "0")) ? FLAG_MP4 : 0)
+					| ("1".equals(jo.getString("favorite", "0")) ? FLAG_FAVORITE : 0);
+		}
+
+		public static int parseGenreStr(String text) {
+			int pos = text.indexOf('/');
+			if (pos == -1) {
+				return 0;
+			}
+			int genre0 = Integer.valueOf(text.substring(0,  pos), 10);
+			int genre1 = Integer.valueOf(text.substring(pos+1), 10);
+			return genre0 << 16 | genre1;
+		}
+	}
+
+	/**
+	 * チャンネル
+	 */
+	public static class Ch {
+		public int ch;
+		public String bc;
+		public String bc_tags;
+		public Ch(int ch, String bc, String bc_tags) {
+			this.ch = ch;
+			this.bc = bc;
+			this.bc_tags = bc_tags;
+		}
+	}
+
+
 	public static class GaraponClientException extends Exception {
 		private static final long serialVersionUID = 1L;
 		public GaraponClientException() {
@@ -234,6 +534,9 @@ public class GaraponClient {
 		}
 	}
 
+	/**
+	 * 認証エラー例外
+	 */
 	public static class GaraponAuthException extends GaraponClientException {
 		private static final HashMap<String,Integer> sErrorMap;
 
@@ -262,4 +565,25 @@ public class GaraponClient {
 		}
 	}
 
+	public static String getApiStatusMessage(int status) {
+		switch (status) {
+		case 100:
+			return sResources.getString(R.string.invalidParameter);
+		case 200:
+			return sResources.getString(R.string.authSyncError);
+		default:
+			return "ERROR status: " + status;
+		}
+	}
+
+	public static String getLoginErrorMessage(int login) {
+		switch (login) {
+		case 100:
+			return sResources.getString(R.string.unknownUser);
+		case 200:
+			return sResources.getString(R.string.wrongPassword);
+		default:
+			return "ERROR login: " + login;
+		}
+	}
 }
