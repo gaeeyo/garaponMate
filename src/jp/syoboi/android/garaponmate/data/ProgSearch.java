@@ -72,48 +72,83 @@ public class ProgSearch implements Serializable {
 		private static final String KEYWORD_SPLIT = "[ 　]";
 		private static final String [] EMPTY_ARRAY = new String [0];
 
-		final Matcher	[] mKw;
+		final Matcher [] mKw;
 		final Matcher mKwNot;
+		final Matcher [] mTitle;
+		final Matcher mTitleNot;
 
 		public ProgSearchMatcher(ProgSearch f) {
 			int patternFlag = Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE;
 
-			String [] kwOr = (f.kwOr == null ? EMPTY_ARRAY : splitWord(f.kwOr));
-			String [] kwAnd = (f.kwAnd == null ? EMPTY_ARRAY : splitWord(f.kwAnd));
-			String [] kwNot = (f.kwNot == null ? EMPTY_ARRAY : splitWord(f.kwNot));
 
-			mKw = new Matcher [kwAnd.length + (kwOr.length > 0 ? 1 : 0)];
 
-			// or は 1つの正規表現にまとめる
-			int idx = 0;
-			if (kwOr.length > 0) {
-				mKw[idx++] = Pattern.compile(wordsToRegex(kwOr), patternFlag).matcher("");
-			}
-			for (int j=0; j<kwAnd.length; j++) {
-				mKw[idx++] = Pattern.compile(Pattern.quote(kwAnd[j]), patternFlag).matcher("");
-			}
+			mKw = createMatchers(f.kwAnd, f.kwOr, patternFlag);
+			mKwNot = createNotMatcher(f.kwNot, patternFlag);
 
-			String kwNotPtn = wordsToRegex(kwNot);
-			if (kwNotPtn.length() > 0) {
-				mKwNot = Pattern.compile(kwNotPtn, patternFlag).matcher("");
-			} else {
-				mKwNot = null;
-			}
+			mTitle = createMatchers(f.titleAnd, f.titleOr, patternFlag);
+			mTitleNot = createNotMatcher(f.titleNot, patternFlag);
 		}
 
 		public boolean match(Program p) {
 			if (mKwNot != null && (mKwNot.reset(p.description).find() || mKwNot.reset(p.title).find())) {
 				return false;
 			}
-			for (Matcher m: mKw) {
-				if ((!m.reset(p.description).find() && !m.reset(p.title).find())) {
-					return false;
+			if (mTitleNot != null && mTitleNot.reset(p.title).find()) {
+				return false;
+			}
+			if (mKw != null) {
+				for (Matcher m: mKw) {
+					if ((!m.reset(p.description).find() && !m.reset(p.title).find())) {
+						return false;
+					}
+				}
+			}
+			if (mTitle != null) {
+				for (Matcher m: mTitle) {
+					if ((!m.reset(p.title).find())) {
+						return false;
+					}
 				}
 			}
 			return true;
 		}
 
+		static Matcher [] createMatchers(String inKwAnd, String inKwOr, int patternFlag) {
+			String [] kwAnd = splitWord(inKwAnd);
+			String [] kwOr = splitWord(inKwOr);
+
+			int count = kwAnd.length + (kwOr.length > 0 ? 1 : 0);
+			if (count == 0) {
+				return null;
+			}
+			Matcher [] matchers = new Matcher [count];
+
+			// or は 1つの正規表現にまとめる
+			int idx = 0;
+			if (kwOr.length > 0) {
+				matchers[idx++] = Pattern.compile(wordsToRegex(kwOr), patternFlag).matcher("");
+			}
+			for (int j=0; j<kwAnd.length; j++) {
+				matchers[idx++] = Pattern.compile(Pattern.quote(kwAnd[j]), patternFlag).matcher("");
+			}
+			return matchers;
+		}
+
+		static Matcher createNotMatcher(String inKwNot, int patternFlag) {
+			String [] kwNot = splitWord(inKwNot);
+			String kwNotPtn = wordsToRegex(kwNot);
+
+			if (kwNotPtn.length() > 0) {
+				return Pattern.compile(kwNotPtn, patternFlag).matcher("");
+			} else {
+				return null;
+			}
+		}
+
 		static String [] splitWord(String keyword) {
+			if (TextUtils.isEmpty(keyword)) {
+				return EMPTY_ARRAY;
+			}
 			String [] words = keyword.split(KEYWORD_SPLIT);
 			if (words.length == 1 && words[0].length() == 0) {
 				return EMPTY_ARRAY;
