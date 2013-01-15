@@ -1,6 +1,7 @@
 package jp.syoboi.android.garaponmate.data;
 
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -26,6 +27,11 @@ public class ProgSearch implements Serializable {
 	public String titleOr;
 	public String titleNot;
 
+	public String chOr;
+
+	public int durationMin;
+	public int durationMax;
+
 	public ProgSearch() {
 	}
 
@@ -36,6 +42,9 @@ public class ProgSearch implements Serializable {
 		titleAnd = jo.getString("titleAnd");
 		titleOr = jo.getString("titleOr");
 		titleNot = jo.getString("titleNot");
+		chOr = jo.getString("chOr");
+		durationMin = jo.getInt("durationMin", 0);
+		durationMax = jo.getInt("durationMax", 0);
 	}
 
 	@Override
@@ -47,7 +56,10 @@ public class ProgSearch implements Serializable {
 		.append(kwNot).append(", ")
 		.append(titleAnd).append(", " )
 		.append(titleOr).append(", ")
-		.append(titleNot);
+		.append(titleNot).append(", ")
+		.append(chOr).append(", ")
+		.append(durationMin).append(", ")
+		.append(durationMax);
 
 		return sb.toString();
 	}
@@ -60,6 +72,9 @@ public class ProgSearch implements Serializable {
 		jg.writeStringField("titleAnd", titleAnd);
 		jg.writeStringField("titleOr", titleOr);
 		jg.writeStringField("titleNot", titleNot);
+		jg.writeStringField("chOr", chOr);
+		jg.writeNumberField("durationMin", durationMin);
+		jg.writeNumberField("durationMax", durationMax);
 		jg.writeEndObject();
 	}
 
@@ -76,20 +91,28 @@ public class ProgSearch implements Serializable {
 		final Matcher mKwNot;
 		final Matcher [] mTitle;
 		final Matcher mTitleNot;
+		final Matcher [] mCh;
+		final long mDurationMin;
+		final long mDurationMax;
 
 		public ProgSearchMatcher(ProgSearch f) {
 			int patternFlag = Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE;
-
-
 
 			mKw = createMatchers(f.kwAnd, f.kwOr, patternFlag);
 			mKwNot = createNotMatcher(f.kwNot, patternFlag);
 
 			mTitle = createMatchers(f.titleAnd, f.titleOr, patternFlag);
 			mTitleNot = createNotMatcher(f.titleNot, patternFlag);
+
+			mCh = createMatchers(null, f.chOr, patternFlag);
+			mDurationMin = (f.durationMin == 0 ? Long.MIN_VALUE : f.durationMin * DateUtils.MINUTE_IN_MILLIS);
+			mDurationMax = (f.durationMax == 0 ? Long.MAX_VALUE : f.durationMax * DateUtils.MINUTE_IN_MILLIS);
 		}
 
 		public boolean match(Program p) {
+			if (!(mDurationMin <= p.duration && p.duration < mDurationMax)) {
+				return false;
+			}
 			if (mKwNot != null && (mKwNot.reset(p.description).find() || mKwNot.reset(p.title).find())) {
 				return false;
 			}
@@ -106,6 +129,13 @@ public class ProgSearch implements Serializable {
 			if (mTitle != null) {
 				for (Matcher m: mTitle) {
 					if ((!m.reset(p.title).find())) {
+						return false;
+					}
+				}
+			}
+			if (mCh != null) {
+				for (Matcher m: mCh) {
+					if ((!m.reset(p.ch.bc).find())) {
 						return false;
 					}
 				}

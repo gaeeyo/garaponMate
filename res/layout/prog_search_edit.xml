@@ -36,6 +36,93 @@
         <include
             android:id="@+id/titleKeywords"
             layout="@layout/prog_search_edit_keywords" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/chOrLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/chOr"
+                android:paddingBottom="4dip"
+                android:paddingTop="4dip"
+                android:text="@string/chName"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/chOr"
+                style="@style/keywordEditStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="8dip"
+                android:layout_toRightOf="@+id/chOrLabel"
+                android:hint="@string/chName" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/durationLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/durationMin"
+                android:paddingBottom="4dip"
+                android:paddingTop="4dip"
+                android:text="@string/duration"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/minLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/durationMin"
+                android:layout_marginLeft="16dip"
+                android:layout_toRightOf="@+id/durationLabel"
+                android:paddingBottom="4dip"
+                android:paddingTop="4dip"
+                android:text="@string/min"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/durationMin"
+                style="@style/keywordEditStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="8dip"
+                android:layout_toRightOf="@+id/minLabel"
+                android:hint="@string/minute"
+                android:inputType="numberDecimal" />
+
+            <TextView
+                android:id="@+id/maxLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/durationMin"
+                android:layout_marginLeft="16dip"
+                android:layout_toRightOf="@+id/durationMin"
+                android:paddingBottom="4dip"
+                android:paddingTop="4dip"
+                android:text="@string/max"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/durationMax"
+                style="@style/keywordEditStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/durationMin"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="8dip"
+                android:layout_toRightOf="@+id/maxLabel"
+                android:hint="@string/minute"
+                android:inputType="numberDecimal" />
+        </RelativeLayout>
     </LinearLayout>
 
 </ScrollView>

@@ -25,6 +25,9 @@ public class ProgSearchEditFragment extends DialogFragment {
 	private EditText	mTitleAnd;
 	private EditText	mTitleOr;
 	private EditText	mTitleNot;
+	private EditText	mChOr;
+	private EditText	mDurationMax;
+	private EditText	mDurationMin;
 
 	public static ProgSearchEditFragment newInstance(int idx, ProgSearch progSearch) {
 
@@ -64,6 +67,10 @@ public class ProgSearchEditFragment extends DialogFragment {
 		mKwOr  = (EditText)parent.findViewById(R.id.keywordOr);
 		mKwNot = (EditText)parent.findViewById(R.id.keywordNot);
 
+		mChOr = (EditText)v.findViewById(R.id.chOr);
+		mDurationMin = (EditText)v.findViewById(R.id.durationMin);
+		mDurationMax = (EditText)v.findViewById(R.id.durationMax);
+
 		setToDialog();
 
 		dlg.setView(v);
@@ -79,6 +86,14 @@ public class ProgSearchEditFragment extends DialogFragment {
 		mKwAnd.setText(ps.kwAnd);
 		mKwOr.setText(ps.kwOr);
 		mKwNot.setText(ps.kwNot);
+
+		mChOr.setText(ps.chOr);
+		if (ps.durationMin > 0) {
+			mDurationMin.setText(String.valueOf(ps.durationMin));
+		}
+		if (ps.durationMax > 0) {
+			mDurationMax.setText(String.valueOf(ps.durationMax));
+		}
 	}
 
 	@Override
@@ -108,8 +123,20 @@ public class ProgSearchEditFragment extends DialogFragment {
 		ps.kwAnd = mKwAnd.getText().toString();
 		ps.kwOr = mKwOr.getText().toString();
 		ps.kwNot = mKwNot.getText().toString();
+		ps.chOr = mChOr.getText().toString();
+		ps.durationMin = getNumber(mDurationMin, 0);
+		ps.durationMax = getNumber(mDurationMax, 0);
 
 		Bundle args = getArguments();
 		args.putSerializable(EXTRA_PROGSEARCH, ps);
+	}
+
+	public int getNumber(EditText edit, int fallback) {
+		String str = edit.getText().toString();
+		try {
+			return Integer.parseInt(str);
+		} catch (Exception e) {
+			return fallback;
+		}
 	}
 }
