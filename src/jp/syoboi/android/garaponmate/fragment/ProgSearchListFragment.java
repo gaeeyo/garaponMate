@@ -1,9 +1,9 @@
 package jp.syoboi.android.garaponmate.fragment;
 
 import android.app.Activity;
+import android.app.ListFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -36,13 +36,28 @@ public class ProgSearchListFragment extends ListFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		return inflater.inflate(R.layout.prog_search_list_fragment, null);
+		return inflater.inflate(R.layout.fragment_prog_search_list, null);
 	}
 
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
+	public boolean onContextItemSelected(MenuItem item) {
+		ContextMenuInfo cmi = item.getMenuInfo();
+		if (cmi instanceof AdapterContextMenuInfo) {
+			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)cmi;
+			int position = acmi.position;
+			if (0 <= position && position < mProgSearchList.size()) {
+				mProgSearchList.remove(position);
+				mAdapter.notifyDataSetChanged();
+			}
+		}
+		return super.onContextItemSelected(item);
+	}
 
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		View view = getView();
 		view.findViewById(R.id.add).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -69,26 +84,6 @@ public class ProgSearchListFragment extends ListFragment {
 
 			}
 		});
-	}
-
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		ContextMenuInfo cmi = item.getMenuInfo();
-		if (cmi instanceof AdapterContextMenuInfo) {
-			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)cmi;
-			int position = acmi.position;
-			if (0 <= position && position < mProgSearchList.size()) {
-				mProgSearchList.remove(position);
-				mAdapter.notifyDataSetChanged();
-			}
-		}
-		return super.onContextItemSelected(item);
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-
 		mProgSearchList = ProgSearchList.getInstance(getActivity());
 
 		mAdapter = new ArrayAdapter<ProgSearch>(getActivity(),

@@ -1,4 +1,4 @@
-package jp.syoboi.android.garaponmate;
+package jp.syoboi.android.garaponmate.preference;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -7,6 +7,9 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+
+import jp.syoboi.android.garaponmate.App;
+import jp.syoboi.android.garaponmate.R;
 
 public class HelpPreference extends Preference {
 

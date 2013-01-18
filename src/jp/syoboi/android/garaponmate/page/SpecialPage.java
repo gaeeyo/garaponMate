@@ -77,37 +77,72 @@ public class SpecialPage {
 		long now = System.currentTimeMillis();
 		Time t = new Time();
 		Time t2 = new Time();
+
 		for (Program p: sr.program) {
 
 			t.set(p.startdate);
 			t2.set(p.startdate + p.duration);
 
-			sb.append("<li>");
+//			sb.append("<li>");
 
-			sb.append("<div class='barBg'>&nbsp;</div>");
-
-			sb.append("<div class='bar'")
-			.append(" start='" + p.startdate + "' duration='" + p.duration + "'")
-			.append(">")
-			.append("&nbsp;</div>");
-
-			sb.append("<a href='/play?gtvid=" + p.gtvid + "'>");
+//			sb.append("<div class='barBg'>&nbsp;</div>");
+//
+//			sb.append("<div class='bar'")
+//			.append(" start='" + p.startdate + "' duration='" + p.duration + "'")
+//			.append(">")
+//			.append("&nbsp;</div>");
+//
+//			sb.append("<a href='/play?gtvid=" + p.gtvid + "'>");
+//
+//			long durMin = (p.duration / 1000) / 60;
+//			sb
+//			.append("<span class='start'>")
+//			.append(t.format("%H:%M"))
+//			.append("</span>")
+//			.append("<span class='duration'>")
+//			.append(String.format("(%02d:%02d)", durMin / 60, durMin % 60))
+//			.append("</span>")
+//			.append("<span class='bc'>")
+//			.append(Utils.h(Utils.convertCoolTitle(p.ch.bc)))
+//			.append("</span>")
+//			.append("<span class='end'>")
+//			.append(t2.format("%H:%M"))
+//			.append("</span>")
+//			.append("<span class='title'>")
+//			.append(Utils.h(Utils.convertCoolTitle(p.title)))
+//			.append("</span>")
+//			;
 
 			long durMin = (p.duration / 1000) / 60;
-			sb
+
+			sb.append("<tr><th>");
+			sb.append("<span class='bc'>")
+			.append(Utils.h(Utils.convertCoolTitle(p.ch.bc)))
+			.append("</span><br>")
 			.append("<span class='start'>")
 			.append(t.format("%H:%M"))
 			.append("</span>")
 			.append("<span class='duration'>")
 			.append(String.format("(%02d:%02d)", durMin / 60, durMin % 60))
 			.append("</span>")
-			.append("<span class='bc'>")
-			.append(Utils.h(Utils.convertCoolTitle(p.ch.bc)))
-			.append("</span>")
 			.append("<span class='end'>")
 			.append(t2.format("%H:%M"))
-			.append("</span>")
-			.append("<span class='title'>")
+			.append("</span>");
+
+			sb.append("</th><td>");
+
+			sb.append("<a href='/play?gtvid=" + p.gtvid + "'>");
+
+			sb.append("<div class='bar'>");
+			sb.append("<div class='barBg'>&nbsp;</div>");
+
+			sb.append("<div class='barFg'")
+			.append(" start='" + p.startdate + "' duration='" + p.duration + "'")
+			.append(">")
+			.append("&nbsp;</div>");
+			sb.append("</div>");
+
+			sb.append("<span class='title'>")
 			.append(Utils.h(Utils.convertCoolTitle(p.title)))
 			.append("</span>")
 			;
@@ -117,8 +152,9 @@ public class SpecialPage {
 				.append(Utils.h(Utils.convertCoolTitle(p.description)))
 				.append("</span>");
 			}
-
 			sb.append("</a>");
+
+			sb.append("</td></tr>");
 		}
 
 		return sb.toString();
@@ -136,8 +172,13 @@ public class SpecialPage {
 
 		Time t = new Time();
 		Time t2 = new Time();
+		long now = System.currentTimeMillis();
 
 		for (Program p: sr.program) {
+
+			if (p.startdate > now) {
+				continue;
+			}
 
 			t.set(p.startdate);
 			t2.set(p.startdate + p.duration);
@@ -145,6 +186,12 @@ public class SpecialPage {
 			sb.append("<li>");
 
 			sb.append("<a href='/play?gtvid=" + p.gtvid + "'>");
+
+			if (p.startdate + p.duration > now) {
+				sb.append('[')
+				.append(context.getString(R.string.nowBroadcasting))
+				.append("] ");
+			}
 
 			long durMin = (p.duration / 1000) / 60;
 			sb

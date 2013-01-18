@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="48dip"
+    android:background="@drawable/timetable_top_border"
+    android:orientation="horizontal" >
+
+    <FrameLayout
+        android:id="@+id/ch"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@drawable/timetable_right_border" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/timetable_cell_background"
+            android:clickable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingBottom="2dip"
+            android:paddingLeft="4dip"
+            android:paddingRight="4dip"
+            android:paddingTop="2dip" >
+
+            <TextView
+                android:id="@+id/chName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="0dip"
+                android:scrollHorizontally="true"
+                android:text="chName"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/chNameColor"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="0dip"
+                android:scrollHorizontally="true"
+                android:text="00:00 (00:00)"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/timeColor"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/timetable_cell_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:paddingBottom="2dip"
+        android:paddingLeft="4dip"
+        android:paddingRight="4dip"
+        android:paddingTop="2dip"
+        android:text="@string/title"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/titleColor"
+        android:textSize="18sp" />
+
+</TableRow>

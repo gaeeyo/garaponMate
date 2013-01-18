@@ -19,6 +19,7 @@
     <string name="max">最大</string>
     <string name="minute">分</string>
     <string name="chName">チャンネル名</string>
+    <string name="nowBroadcasting">放送中</string>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
     

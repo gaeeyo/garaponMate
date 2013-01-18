@@ -1,6 +1,8 @@
-package jp.syoboi.android.garaponmate;
+package jp.syoboi.android.garaponmate.activity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -9,7 +11,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -34,11 +35,16 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.syoboi.android.garaponmate.page.SpecialPage;
+import jp.syoboi.android.garaponmate.GaraponClient.Program;
+import jp.syoboi.android.garaponmate.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.Prefs;
+import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.fragment.ErrorDialogFragment;
+import jp.syoboi.android.garaponmate.fragment.SummaryFragment;
 import jp.syoboi.android.garaponmate.task.ProgressDialogTask;
 import jp.syoboi.android.garaponmate.view.PlayerView;
 
-public class MainActivity extends FragmentActivity  {
+public class MainActivity extends Activity  {
 
 	static final String TAG = "MainActivity";
 
@@ -47,6 +53,9 @@ public class MainActivity extends FragmentActivity  {
 	static final long CHANGE_FULLSCREEN_DELAY = 3000;
 
 	static final String SPECIAL_PAGE_PATH = "/garaponMate";
+
+	static final int PAGE_SUMMARY = 0;
+	static final int PAGE_WEB = 1;
 
 	int				mFlags;
 
@@ -57,14 +66,15 @@ public class MainActivity extends FragmentActivity  {
 	View			mWebViewContainer;
 	WebView			mWebView;
 	ProgressBar		mProgress;
+	View			mSummaryPage;
 	boolean			mPlayerExpanded;
 	boolean			mFullScreen;
 	boolean			mTitleExtracting;
 	boolean			mReloadAfterLogin;
+	int				mPage;
 
 	private boolean 	mSettingChanged;
 	ProgressDialogTask	mLoginTask;
-	ProgressDialogTask	mSpecialPageTask;
 
 	OnSharedPreferenceChangeListener	mPrefsChangeListener = new OnSharedPreferenceChangeListener() {
 
@@ -83,7 +93,7 @@ public class MainActivity extends FragmentActivity  {
 		public void onClick(View v) {
 			switch (v.getId()) {
 			case R.id.special:
-				loadSpecialPage();
+				switchPage(PAGE_SUMMARY);
 				break;
 			case R.id.settings:
 				startSettingsActivity();
@@ -94,7 +104,7 @@ public class MainActivity extends FragmentActivity  {
 					String tagName = tag.toString();
 					if (tagName.startsWith("fav")) {
 						if (!navigateFav((String)v.getTag())) {
-							mWebView.loadUrl(Prefs.getBaseUrl());
+							loadUrl(Prefs.getBaseUrl());
 						}
 					}
 				}
@@ -138,6 +148,7 @@ public class MainActivity extends FragmentActivity  {
 		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		reloadSettings();
 
+		mSummaryPage = findViewById(R.id.summary);
 
 		int favIndex = 0;
 		for (int id: FAV_BUTTONS) {
@@ -151,7 +162,7 @@ public class MainActivity extends FragmentActivity  {
 		findViewById(R.id.settings).setOnLongClickListener(new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				mWebView.loadUrl(Prefs.getBaseUrl());
+				loadUrl(Prefs.getBaseUrl());
 				return true;
 			}
 		});
@@ -302,17 +313,13 @@ public class MainActivity extends FragmentActivity  {
 			}
 			@Override
 			public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-				String msg = consoleMessage.message();
-				if ("reloadSpecialPage".equals(msg)) {
-					loadSpecialPage();
-				}
 				return super.onConsoleMessage(consoleMessage);
 			}
 		});
 
 //		navigateFav("fav0");
 //		loginBackground();
-		loadSpecialPage();
+		switchPage(PAGE_SUMMARY);
 	}
 
 	boolean overrideUrl(String url) {
@@ -365,10 +372,6 @@ public class MainActivity extends FragmentActivity  {
 			setPlayerPage(id);
 			return true;
 		}
-		if (url.contains(SPECIAL_PAGE_PATH)) {
-			loadSpecialPage();
-			return true;
-		}
 
 		return false;
 	}
@@ -377,10 +380,6 @@ public class MainActivity extends FragmentActivity  {
 	protected void onDestroy() {
 		Prefs.getInstance().unregisterOnSharedPreferenceChangeListener(mPrefsChangeListener);
 
-		if (mSpecialPageTask != null) {
-			mSpecialPageTask.cancel(true);
-			mSpecialPageTask = null;
-		}
 		if (mLoginTask != null) {
 			mLoginTask.cancel(true);
 			mLoginTask = null;
@@ -490,11 +489,20 @@ public class MainActivity extends FragmentActivity  {
 	 * Playerで再生
 	 * @param id
 	 */
-	void setPlayerPage(String id) {
+	public void setPlayerPage(String id) {
 		Log.v(TAG, "setPlayerPage id:" + id);
 		mPlayer.setVideo(id);
 
 		expandPlayer(false);
+
+		Fragment f = getFragmentManager().findFragmentById(R.id.summary);
+		if (f instanceof SummaryFragment) {
+			((SummaryFragment) f).setSelected(id);
+		}
+	}
+
+	public void setPlayerPage(Program p) {
+		setPlayerPage(p.gtvid);
 	}
 
 	/**
@@ -614,7 +622,7 @@ public class MainActivity extends FragmentActivity  {
 				+ "var title=titles[0].textContent;"
 				//+ "alert(title);"
 				+ "document.title=title;";
-		mWebView.loadUrl(script);
+		loadUrl(script);
 	}
 
 	/**
@@ -627,11 +635,16 @@ public class MainActivity extends FragmentActivity  {
 		if (idx != -1) {
 			String url = Prefs.getFavUrl(idx);
 			if (!TextUtils.isEmpty(url)) {
-				mWebView.loadUrl(url);
+				loadUrl(url);
 				return true;
 			}
 		}
 		return false;
+	}
+
+	void loadUrl(String url) {
+		switchPage(PAGE_WEB);
+		mWebView.loadUrl(url);
 	}
 
 	/**
@@ -692,7 +705,7 @@ public class MainActivity extends FragmentActivity  {
 					ErrorDialogFragment.newInstance(
 							getString(R.string.error),
 							(Throwable)result)
-					.show(getSupportFragmentManager(), "dialog");
+					.show(getFragmentManager(), "dialog");
 				}
 				else if (result instanceof HashMap<?,?>) {
 
@@ -726,7 +739,7 @@ public class MainActivity extends FragmentActivity  {
 						mWebView.reload();
 					} else {
 						if (!navigateFav("fav0")) {
-							mWebView.loadUrl(Prefs.getBaseUrl());
+							loadUrl(Prefs.getBaseUrl());
 						}
 					}
 				}
@@ -742,44 +755,9 @@ public class MainActivity extends FragmentActivity  {
 		mLoginTask.execute();
 	}
 
-	void loadSpecialPage() {
-		if (mSpecialPageTask != null) {
-			return;
-		}
-		mSpecialPageTask = new ProgressDialogTask(this) {
-
-			@Override
-			protected Object doInBackground(Object... params) {
-				try {
-					return SpecialPage.getSpecialPage(MainActivity.this);
-				} catch (Throwable t) {
-					t.printStackTrace();
-					return t;
-				}
-			}
-
-			@Override
-			protected void onPostExecute(Object result) {
-				mSpecialPageTask = null;
-				if (result instanceof Throwable) {
-					ErrorDialogFragment f = ErrorDialogFragment.newInstance(getString(R.string.error),
-							(Throwable)result);
-					f.show(getSupportFragmentManager(), "dialog");
-				}
-				else if (result instanceof String) {
-					mWebView.loadDataWithBaseURL(Prefs.getBaseUrl() + SPECIAL_PAGE_PATH,
-							(String)result, "text/html", "utf-8",
-							Prefs.getBaseUrl() + SPECIAL_PAGE_PATH);
-				}
-			}
-
-			@Override
-			protected void onCancelled() {
-				mSpecialPageTask = null;
-			}
-		};
-		mSpecialPageTask.setMessage(R.string.loading);
-		mSpecialPageTask.execute();
+	void switchPage(int page) {
+		mPage = page;
+		mSummaryPage.setVisibility(page == PAGE_SUMMARY ? View.VISIBLE : View.GONE);
+		mWebView.setVisibility(mSummaryPage.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
 	}
-
 }

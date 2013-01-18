@@ -1,4 +1,4 @@
-package jp.syoboi.android.garaponmate;
+package jp.syoboi.android.garaponmate.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,7 +6,8 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 
-import jp.syoboi.android.garaponmate.activity.ProgSearchListActivity;
+import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.R.xml;
 
 public class SettingActivity extends PreferenceActivity {
 

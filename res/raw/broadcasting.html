@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-<meta name="viewport" />
 <body>
 <style>
 * { margin:0; padding:0; }
@@ -9,21 +8,33 @@ h2 { font-size:100%; padding:4px 8px; color:#33B5E5; }
 ul { list-style:none; }
 li { border-top:1px solid #999; }
 li a { display:block; padding:6px 8px 8px 8px; text-decoration:none; color:#000; }
-.bar { height:4px; background-color:#33B5E5; overflow:hidden; position:absolute; margin-top:-1px; border:1px solid #bbb; z-index:-1; }
+td a { display:block; text-decoration:none; color:#000; }
+.bar { position:relative; }
+.barFg { height:4px; background-color:#33B5E5; overflow:hidden; position:absolute; margin-top:-1px; border:1px solid #bbb; z-index:-1; }
 .barBg { height:4px; background-color:#ddd; overflow:hidden; position:absolute; margin-top:-1px; border:1px solid #bbb; z-index:-1; }
-.duration { font-size:90%; color:#777; margin-left:8px; }
-.bc { color:#090; font-size:90%; margin-left:8px; }
+.duration { font-size:90%; color:#777; margin-left:4px; }
+.bc { color:#090; }
 .start { font-size:90%; }
 .end { float:right; font-size:90%; display:none; }
-.title { display:block; margin-top:1px; }
+.title { display:block; margin-top:1px; font-size:110%; }
 .cmnt { color:#777; font-size:80%; line-height:1; font-weight: }
 .hint { display:block; padding:4px 8px; }
+#broadcasting .cmnt { display:none; }
+table { border-collapse: collapse; }
+table th { border:1px solid #aaa; border-width:1px 0px; font-weight:normal; padding:8px 4px; width:5em; }
+table td { border:1px solid #aaa; border-width:1px 0px 1px 1px; width:100%: }
+
+#searchList .bc { color:#090; margin-left:4px; }
 </style>
 <h2>放送中</h2>
-<ul id="broadcasting">
+<div id="broadcasting">
+<table>
 <!--
+<tr><th>foo<br>bar</th><td><div class="bar" style="100%"> <div class="barFg">abc</div></div>foo</td></tr>
+<li>
 <li><div class="barBg">&nbsp;</div>
-<div class="bar" start="1358143200000" duration="1800000">&nbsp;</div><a href="foo"></a></li>
+<div class="bar" start="1358143200000" duration="1800000">&nbsp;</div>
+<a href="foo"><span class=start>start</span><span class=duration>00:00</span><span class=bc>NHK</span><span class=end>end</span><span class=title>title</span><span class=cmnt>cmnt</span></a></li>
 <li><div class="barBg">&nbsp;</div>
 <div class="bar" start="1358146800000" duration="1800000">&nbsp;</div><a href="foo"></a></li>
 <li><div class="barBg">&nbsp;</div>
@@ -32,7 +43,8 @@ li a { display:block; padding:6px 8px 8px 8px; text-decoration:none; color:#000;
 <div class="bar" start="1358146800000" duration="3600000">&nbsp;</div><a href="foo"></a></li>
 -->
 <!-- BROADCASTING -->
-</ul>
+</table>
+</div>
 <h2>検索リスト (24時間以内のみ)</h2>
 <ul id="searchList">
 <!-- SEARCHLIST -->
@@ -44,7 +56,7 @@ li a { display:block; padding:6px 8px 8px 8px; text-decoration:none; color:#000;
 var loaded = (new Date()).getTime();
 var bc = document.getElementById("broadcasting");
 var titles = bc.getElementsByClassName("title");
-var bars = bc.getElementsByClassName("bar");
+var bars = bc.getElementsByClassName("barFg");
 var barBgs = bc.getElementsByClassName("barBg");
 
 var refreshBarInterval = 5;
