@@ -6,11 +6,10 @@ import android.content.res.Resources;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 
 import jp.syoboi.android.garaponmate.R;
 
-public class GenreGroupList extends ArrayList<GenreGroup> {
+public class GenreGroupList extends GenreGroup {
 	/**
 	 *
 	 */
@@ -26,6 +25,7 @@ public class GenreGroupList extends ArrayList<GenreGroup> {
 	}
 
 	private GenreGroupList(Context context) {
+		super(-1, "root");
 
 		Resources res = context.getResources();
 
@@ -38,11 +38,16 @@ public class GenreGroupList extends ArrayList<GenreGroup> {
 				if (line.length() == 0) {
 					continue;
 				}
-				if (line.charAt(0) != ' ') {
-					cur = new GenreGroup(line);
-					add(cur);
+				if (line.charAt(0) == ' ') {
+					line = line.substring(1);
+					int value = Integer.valueOf(line.substring(0, 2), 10);
+					String name = line.substring(2);
+					cur.childs.add(new Genre(value, name));
 				} else {
-					cur.childs.add(new Genre(line.substring(1)));
+					int value = Integer.valueOf(line.substring(0, 2), 10);
+					String name = line.substring(2);
+					cur = new GenreGroup(value, name);
+					childs.add(cur);
 				}
 			}
 		} catch (IOException e) {
@@ -56,5 +61,8 @@ public class GenreGroupList extends ArrayList<GenreGroup> {
 		}
 	}
 
-
+	@Override
+	public GenreGroup findByValue(int genre) {
+		return (GenreGroup) super.findByValue(genre);
+	}
 }

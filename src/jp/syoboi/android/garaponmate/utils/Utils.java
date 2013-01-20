@@ -1,6 +1,8 @@
-package jp.syoboi.android.garaponmate;
+package jp.syoboi.android.garaponmate.utils;
 
 import android.text.Html;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,4 +96,24 @@ public class Utils {
 			}
 		}
 	}
+
+	public static void spinnerSetSelectionById(Spinner spinner, Integer id) {
+		SpinnerAdapter adapter = spinner.getAdapter();
+
+		if (id == null) {
+			if (spinner.getCount() > 0) {
+				spinner.setSelection(0);
+			}
+			return;
+		}
+
+		for (int j=0; j<adapter.getCount(); j++) {
+			if (adapter.getItemId(j) == id) {
+				spinner.setSelection(j);
+				break;
+			}
+		}
+	}
+
+
 }

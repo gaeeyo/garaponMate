@@ -8,10 +8,10 @@
         android:key="password"
         android:title="@string/password" />
 
-    <Preference 
-        android:key="searchListSettings"
-        android:title="@string/searchListSettings" />
+<!--     <Preference  -->
+<!--         android:key="searchListSettings" -->
+<!--         android:title="@string/searchListSettings" /> -->
     
-    <jp.syoboi.android.garaponmate.HelpPreference />
+    <jp.syoboi.android.garaponmate.preference.HelpPreference />
 
 </PreferenceScreen>

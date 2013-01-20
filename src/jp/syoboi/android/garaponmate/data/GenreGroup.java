@@ -6,7 +6,16 @@ public class GenreGroup extends Genre {
 
 	public ArrayList<Genre> childs = new ArrayList<Genre>();
 
-	public GenreGroup(String text) {
-		super(text);
+	public GenreGroup(int value, String text) {
+		super(value, text);
+	}
+
+	public Genre findByValue(int genre) {
+		for (Genre g: childs) {
+			if (g.value == genre) {
+				return g;
+			}
+		}
+		return null;
 	}
 }

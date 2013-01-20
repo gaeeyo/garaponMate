@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 
-import jp.syoboi.android.garaponmate.GaraponClient.Program;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.data.ProgSearch.ProgSearchMatcher;
 import jp.syoboi.android.util.JksnUtils;

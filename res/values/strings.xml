@@ -13,13 +13,25 @@
     <string name="user">ガラポンID</string>
     <string name="password">パスワード</string>
     <string name="empty">空</string>
-    <string name="loading">取得中…</string>
+    <string name="date">日付</string>
     <string name="duration">長さ</string>
     <string name="min">最小</string>
     <string name="max">最大</string>
     <string name="minute">分</string>
+    <string name="ch">チャンネル</string>
+    <string name="keyword">キーワード</string>
+    <string name="favoriteOnly">お気に入りのみ</string>
     <string name="chName">チャンネル名</string>
     <string name="nowBroadcasting">放送中</string>
+    <string name="loading">読み込み中…</string>
+    <string name="eitherIsRequired">いずれかが必須</string>
+    <string name="eitherIsOptioinal">オプション</string>
+    <string name="genre">ジャンル</string>
+    <string name="save">保存</string>
+    <string name="apply">適用</string>
+    <string name="saveSearchParam">検索条件を保存</string>
+    <string name="notSelected">(未選択)</string>
+    <string name="searchHitCount">%1$d 件</string>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
     
@@ -27,8 +39,15 @@
     <string name="fav1">fav1</string>
     <string name="fav2">fav2</string>
     
+    <string name="searchCondition">検索条件</string>
+    <string name="searchConditionEmpty">「キーワード」「チャンネル」「ジャンル」「お気に入りのみ」のどれかを必ず設定する必要があります</string>
+    
+    <string name="search">検索</string>
+    <string name="searchListEmpty">保存された検索がありません</string>
+    
     <string name="searchListSettings">検索リスト設定</string>
     <string name="title">タイトル</string>
+    <string name="description">詳細</string>
     <string name="titleOrDescription">タイトルまたは詳細</string>
     <string name="keywordOr">どれかを含む</string>
     <string name="keywordAnd">すべて含む</string>
@@ -45,4 +64,5 @@
     <string name="invalidParameter">パラメーターが異常です</string>
     <string name="authSyncError">認証同期エラー。IDとパスワードがガラポンTVサイトと同期されていません。ガラポンTVがインターネットに接続してあることを確認し、5分程度お待ちください</string>
     
+    <string name="searchCh">チャンネル: %1$s</string>
 </resources>

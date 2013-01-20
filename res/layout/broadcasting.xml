@@ -5,14 +5,15 @@
     android:orientation="vertical" >
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/tableTitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="4dip"
         android:paddingLeft="8dip"
         android:paddingRight="8dip"
         android:paddingTop="4dip"
         android:text="@string/nowBroadcasting"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TableLayout
         xmlns:android="http://schemas.android.com/apk/res/android"

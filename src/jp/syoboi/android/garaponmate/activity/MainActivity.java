@@ -35,11 +35,13 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.syoboi.android.garaponmate.GaraponClient.Program;
-import jp.syoboi.android.garaponmate.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.client.SearchParam;
+import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.fragment.ErrorDialogFragment;
+import jp.syoboi.android.garaponmate.fragment.SearchResultFragment;
 import jp.syoboi.android.garaponmate.fragment.SummaryFragment;
 import jp.syoboi.android.garaponmate.task.ProgressDialogTask;
 import jp.syoboi.android.garaponmate.view.PlayerView;
@@ -54,8 +56,9 @@ public class MainActivity extends Activity  {
 
 	static final String SPECIAL_PAGE_PATH = "/garaponMate";
 
-	static final int PAGE_SUMMARY = 0;
-	static final int PAGE_WEB = 1;
+	private static final int PAGE_SUMMARY = 0;
+	private static final int PAGE_WEB = 1;
+	private static final int PAGE_SEARCH = 2;
 
 	int				mFlags;
 
@@ -66,7 +69,9 @@ public class MainActivity extends Activity  {
 	View			mWebViewContainer;
 	WebView			mWebView;
 	ProgressBar		mProgress;
+	View			mPlayerClose;
 	View			mSummaryPage;
+	View			mSearchPage;
 	boolean			mPlayerExpanded;
 	boolean			mFullScreen;
 	boolean			mTitleExtracting;
@@ -148,7 +153,8 @@ public class MainActivity extends Activity  {
 		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		reloadSettings();
 
-		mSummaryPage = findViewById(R.id.summary);
+		mSummaryPage = findViewById(R.id.summaryFragment);
+		mSearchPage = findViewById(R.id.searchResultFragment);
 
 		int favIndex = 0;
 		for (int id: FAV_BUTTONS) {
@@ -171,6 +177,7 @@ public class MainActivity extends Activity  {
 		mPlayer = (PlayerView) findViewById(R.id.player);
 		mWebViewContainer = findViewById(R.id.webViewContainer);
 		mWebView = (WebView) findViewById(R.id.webView);
+		mPlayerClose = findViewById(R.id.playerClose);
 
 		mProgress = (ProgressBar) findViewById(R.id.progress);
 		mProgress.setMax(100);
@@ -195,6 +202,15 @@ public class MainActivity extends Activity  {
 					}
 				}
 
+			}
+		});
+
+		mPlayerClose.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mPlayer.stop();
+				mPlayer.setVisibility(View.GONE);
+				onVideoChanged(null);
 			}
 		});
 
@@ -319,7 +335,11 @@ public class MainActivity extends Activity  {
 
 //		navigateFav("fav0");
 //		loginBackground();
-		switchPage(PAGE_SUMMARY);
+		int page = (savedInstanceState == null
+				? PAGE_SUMMARY : savedInstanceState.getInt("page"));
+		switchPage(page);
+
+//		ProgManager.getInstance().refresh();
 	}
 
 	boolean overrideUrl(String url) {
@@ -330,7 +350,7 @@ public class MainActivity extends Activity  {
 					@Override
 					public void run() {
 //						mWebView.stopLoading();
-						setPlayerPage(id);
+						playVideo(id);
 					}
 				});
 				return true;
@@ -360,7 +380,7 @@ public class MainActivity extends Activity  {
 					@Override
 					public void run() {
 						mWebView.stopLoading();
-						setPlayerPage(id);
+						playVideo(id);
 					}
 				});
 				return true;
@@ -369,7 +389,7 @@ public class MainActivity extends Activity  {
 		// site.garapon.tv の画像をローカルで開く
 		if (url.contains("/play?")) {
 			final String id = getGtvIdFromUrl(url, "gtvid");
-			setPlayerPage(id);
+			playVideo(id);
 			return true;
 		}
 
@@ -415,6 +435,12 @@ public class MainActivity extends Activity  {
 		}
 	}
 
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("page", mPage);
+	}
+
 	/**
 	 * 画面の向きが変わったらレイアウトを再設定
 	 */
@@ -437,6 +463,12 @@ public class MainActivity extends Activity  {
 			expandPlayer(false);
 			return;
 		}
+
+		if (mPage != PAGE_SUMMARY) {
+			switchPage(PAGE_SUMMARY);
+			return;
+		}
+
 //		//ページが戻れる状態だったら戻る
 //		if (mWebView.canGoBack()) {
 //			mWebView.goBack();
@@ -489,20 +521,40 @@ public class MainActivity extends Activity  {
 	 * Playerで再生
 	 * @param id
 	 */
-	public void setPlayerPage(String id) {
+	public void playVideo(String id) {
 		Log.v(TAG, "setPlayerPage id:" + id);
 		mPlayer.setVideo(id);
 
 		expandPlayer(false);
 
-		Fragment f = getFragmentManager().findFragmentById(R.id.summary);
+		onVideoChanged(id);
+	}
+
+	void onVideoChanged(String id) {
+
+		Fragment f = getFragmentManager().findFragmentById(R.id.summaryFragment);
 		if (f instanceof SummaryFragment) {
-			((SummaryFragment) f).setSelected(id);
+			((SummaryFragment) f).setVideo(id);
+		}
+		f = getFragmentManager().findFragmentById(R.id.searchResultFragment);
+		if (f instanceof SearchResultFragment) {
+			((SearchResultFragment) f).setVideo(id);
 		}
 	}
 
-	public void setPlayerPage(Program p) {
-		setPlayerPage(p.gtvid);
+	public void playVideo(Program p) {
+		playVideo(p.gtvid);
+	}
+
+	public void playVideoExternal(Program p) {
+		Uri uri = Uri.parse("http://" + Prefs.getIpAdr()
+				+ "/cgi-bin/play/m3u8.cgi?"
+				+ p.gtvid
+				+ "-" + Prefs.getCommonSessionId());
+
+		Intent i = new Intent(Intent.ACTION_VIEW);
+		i.setDataAndType(uri, "application/vnd.apple.mpegurl");
+		startActivity(i);
 	}
 
 	/**
@@ -512,6 +564,8 @@ public class MainActivity extends Activity  {
 	void expandPlayer(boolean expand) {
 
 		mPlayerExpanded = expand;
+
+		mPlayerClose.setVisibility(expand ? View.GONE : View.VISIBLE);
 
 		mPlayer.setVisibility(View.VISIBLE);
 		mPlayer.showToolbar(expand);
@@ -702,10 +756,7 @@ public class MainActivity extends Activity  {
 
 				if (result instanceof Throwable) {
 					// ログインエラー時はダイアログ表示
-					ErrorDialogFragment.newInstance(
-							getString(R.string.error),
-							(Throwable)result)
-					.show(getFragmentManager(), "dialog");
+					ErrorDialogFragment.show(getFragmentManager(), (Throwable)result);
 				}
 				else if (result instanceof HashMap<?,?>) {
 
@@ -757,7 +808,20 @@ public class MainActivity extends Activity  {
 
 	void switchPage(int page) {
 		mPage = page;
+
 		mSummaryPage.setVisibility(page == PAGE_SUMMARY ? View.VISIBLE : View.GONE);
-		mWebView.setVisibility(mSummaryPage.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+		mWebView.setVisibility(page == PAGE_WEB ? View.VISIBLE : View.GONE);
+		mSearchPage.setVisibility(page == PAGE_SEARCH ? View.VISIBLE : View.GONE);
+	}
+
+	public void search(SearchParam searchParam) {
+		switchPage(PAGE_SEARCH);
+
+		SearchResultFragment f = SearchResultFragment.newInstance(
+				searchParam);
+
+		getFragmentManager().beginTransaction()
+		.replace(R.id.searchResultFragment, f)
+		.commit();
 	}
 }

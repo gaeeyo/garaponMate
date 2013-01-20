@@ -1,23 +1,27 @@
-package jp.syoboi.android.garaponmate;
+package jp.syoboi.android.garaponmate.client;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources.NotFoundException;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.Log;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-import jp.syoboi.android.garaponmate.GaraponClient.GaraponClientException;
-import jp.syoboi.android.garaponmate.GaraponClient.Program;
-import jp.syoboi.android.garaponmate.GaraponClient.SearchResult;
-import jp.syoboi.android.garaponmate.GaraponClient.SearchTime;
-import jp.syoboi.android.garaponmate.data.ProgSearchList.ProgSearchListMatcher;
+import jp.syoboi.android.garaponmate.App;
+import jp.syoboi.android.garaponmate.Prefs;
+import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.client.GaraponClient.Ch;
+import jp.syoboi.android.garaponmate.client.GaraponClient.GaraponClientException;
+import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
+import jp.syoboi.android.garaponmate.data.Genre;
+import jp.syoboi.android.garaponmate.data.GenreGroup;
+import jp.syoboi.android.garaponmate.data.GenreGroupList;
+import jp.syoboi.android.garaponmate.data.Program;
 
 import org.json.JSONException;
 
@@ -112,13 +116,23 @@ public class GaraponClientUtils {
 
 		ensureAuth();
 
-		SearchResult sr = searchNowBroadcastingInternal();
+		SearchParam param = new SearchParam();
+		long now = System.currentTimeMillis();
+		param.count = 50;
+		param.searchTime = SearchParam.STIME_END;
+		param.sdate = now;
+		param.edate = now + 6 * DateUtils.HOUR_IN_MILLIS;
+		param.sort = SearchParam.SORT_STA;
+		param.video = SearchParam.VIDEO_ALL;
+
+		String host = Prefs.getGaraponHost();
+		String sessionId = Prefs.getGtvSessionId();
+
+		SearchResult sr = GaraponClient.search(host, sessionId, param);
 		if (sr.status == 0) {
 			login();
-			sr = searchNowBroadcastingInternal();
+			sr = GaraponClient.search(host, sessionId, param);
 		}
-
-		long now = System.currentTimeMillis();
 
 		for (int j=sr.program.size()-1; j>=0; j--) {
 			Program p = sr.program.get(j);
@@ -129,74 +143,73 @@ public class GaraponClientUtils {
 		return sr;
 	}
 
-	public static SearchResult searchNowBroadcastingInternal() throws MalformedURLException, IOException {
-		long now = System.currentTimeMillis();
+//	public static SearchResult searchNowBroadcastingInternal(SearchParam p) throws MalformedURLException, IOException {
+//		long now = System.currentTimeMillis();
+//		SearchResult sr = GaraponClient.search(Prefs.getGaraponHost(),
+//				Prefs.getGtvSessionId(),
+//				50, 1,
+//				null, null,
+//				null, null, null, 0,
+//				SearchTime.END, now, now + 6 * DateUtils.HOUR_IN_MILLIS,
+//				null, true, true);
+//		return sr;
+//	}
+
+
+	public static SearchResult search(SearchParam param) throws MalformedURLException, IOException, NoSuchAlgorithmException, NotFoundException, JSONException, GaraponClientException {
+
+		ensureAuth();
+
 		SearchResult sr = GaraponClient.search(Prefs.getGaraponHost(),
-				Prefs.getGtvSessionId(),
-				50, 1,
-				null, null,
-				null, null, null, 0,
-				SearchTime.END, now, now + 6 * DateUtils.HOUR_IN_MILLIS,
-				null, true, true);
+				Prefs.getGtvSessionId(), param);
+		if (sr.status == 0) {
+			login();
+			sr = GaraponClient.search(Prefs.getGaraponHost(),
+					Prefs.getGtvSessionId(), param);
+		}
+
 		return sr;
 	}
 
-	public static SearchResult searchFavorite(ProgSearchListMatcher m, int count) throws MalformedURLException, IOException {
+	public static String formatSearchParam(Context context, SearchParam p) {
 
-		final SearchResult result = new SearchResult();
-		result.program = new ArrayList<Program>();
+		final String separator = ", ";
+		StringBuilder sb = new StringBuilder();
+		if (!TextUtils.isEmpty(p.keyword)) {
+			sb.append(separator)
+			.append(context.getString(R.string.keyword))
+			.append(":").append(p.keyword);
+		}
+		if (p.ch != 0) {
+			Ch chInfo = App.getChList().getCh(p.ch);
 
-		final ArrayList<Program> progs = result.program;
-
-		int total = 0;
-		int hit = -1;
-
-		long now = System.currentTimeMillis();
-		long limit = now - 1 * DateUtils.DAY_IN_MILLIS;
-		boolean stop = false;
-
-		for (int j=0; j<10; j++) {
-			Log.v(TAG, "searchFavorite page:" + j);
-			SearchResult sr = GaraponClient.search(Prefs.getGaraponHost(),
-					Prefs.getGtvSessionId(),
-					100, (j + 1),
-					null, null,
-					null, null, null, 0,
-					SearchTime.START, limit, 0,
-					null, false, true);
-
-			if (hit == -1) {
-				hit = sr.hit;
-				result.hit = sr.hit;
-				result.status = sr.status;
-			}
-			total += sr.program.size();
-
-			for (Program p: sr.program) {
-				if (m.match(p)) {
-					Log.v(TAG, p.toString());
-					progs.add(p);
-				} else {
-					Log.d(TAG, p.toString());
+			sb.append(separator)
+			.append(context.getString(R.string.ch))
+			.append(":").append(chInfo != null ? chInfo.bc : String.valueOf(p.ch));
+		}
+		if (p.genre0 != SearchParam.GENRE_EMPTY) {
+			GenreGroupList ggl = GenreGroupList.getInstance(context);
+			GenreGroup gg = ggl.findByValue(p.genre0);
+			if (gg != null) {
+				sb.append(separator)
+				.append(context.getString(R.string.genre))
+				.append(":").append(gg.name);
+				if (p.genre1 != SearchParam.GENRE_EMPTY) {
+					Genre g = gg.findByValue(p.genre1);
+					if (g != null) {
+						sb.append("/")
+						.append(g.name);
+					}
 				}
-				if (p.startdate < limit) {
-					stop = true;
-				}
-			}
-			if (stop) {
-				break;
-			}
-
-			if (progs.size() > count) {
-				break;
-			}
-
-			if (total >= hit || sr.program.size() == 0) {
-				break;
 			}
 		}
-
-		return result;
+		if (p.rank == SearchParam.RANK_FAVORITE) {
+			sb.append(separator)
+			.append(context.getString(R.string.favoriteOnly));
+		}
+		if (sb.length() > 0) {
+			return sb.substring(separator.length());
+		}
+		return "Empty";
 	}
-
 }

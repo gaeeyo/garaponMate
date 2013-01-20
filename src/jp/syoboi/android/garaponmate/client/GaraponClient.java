@@ -1,4 +1,4 @@
-package jp.syoboi.android.garaponmate;
+package jp.syoboi.android.garaponmate.client;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.Log;
-import android.util.SparseArray;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,11 +26,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.syoboi.android.garaponmate.App;
+import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.data.Program;
+import jp.syoboi.android.garaponmate.utils.Utils;
 import jp.syoboi.android.util.JksnUtils;
-import jp.syoboi.android.util.JksnUtils.JksnArray;
 import jp.syoboi.android.util.JksnUtils.JksnArrayCallback;
 import jp.syoboi.android.util.JksnUtils.JksnObject;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.json.JSONException;
@@ -215,6 +219,15 @@ public class GaraponClient {
 		}
 	}
 
+	public static SearchResult search(String ipaddr, String sessionId, SearchParam param) throws MalformedURLException, IOException {
+		return search(ipaddr, sessionId,
+				param.count, param.page, param.searchType, param.keyword, param.gtvid,
+				param.genre0, param.genre1, param.ch, param.searchTime, param.sdate, param.edate,
+				param.rank,
+				param.sort,
+				param.video);
+	}
+
 	/**
 	 *
 	 * @param ipaddr  IPアドレス
@@ -238,14 +251,20 @@ public class GaraponClient {
 	 * @throws MalformedURLException
 	 */
 	public static SearchResult search(String ipaddr, String sessionId,
-			int count, int page, SearchType searchType, String keyword, String gtvid,
-			Integer genre0, Integer genre1, int ch, SearchTime searchTime, long sdate, long edate,
-			Rank rank, boolean sortAscent, boolean videoAll) throws MalformedURLException, IOException {
+			int count, int page, int searchType, String keyword, String gtvid,
+			int genre0, int genre1, int ch,
+			int searchTime, long sdate, long edate,
+			int rank, int sort, int video) throws MalformedURLException, IOException {
 
 		Uri.Builder builder = new Uri.Builder()
-		.appendQueryParameter("gtvsession", sessionId)
-		.appendQueryParameter("n", String.valueOf(count))
-		.appendQueryParameter("p", String.valueOf(page));
+		.appendQueryParameter("gtvsession", sessionId);
+
+		if (count != 0) {
+			builder.appendQueryParameter("n", String.valueOf(count));
+		}
+		if (page != 0) {
+			builder.appendQueryParameter("p", String.valueOf(page));
+		}
 
 		if (keyword != null) {
 			builder.appendQueryParameter("key", keyword);
@@ -253,51 +272,57 @@ public class GaraponClient {
 		if (gtvid != null) {
 			builder.appendQueryParameter("gtvid", gtvid);
 		}
-		if (genre0 != null) {
+		if (genre0 != SearchParam.GENRE_EMPTY) {
 			builder.appendQueryParameter("genre0", String.valueOf(genre0));
-			if (genre1 != null) {
+			if (genre1 != SearchParam.GENRE_EMPTY) {
 				builder.appendQueryParameter("genre1", String.valueOf(genre1));
 			}
 		}
 		if (ch != 0) {
 			builder.appendQueryParameter("ch", String.valueOf(ch));
 		}
-		if (searchType != null) {
-			switch (searchType) {
-			case EPG:
-				builder.appendQueryParameter("s", "e");
-				break;
-			case SUBTITLE:
-				builder.appendQueryParameter("s", "c");
-				break;
-			}
+		switch (searchType) {
+		case SearchParam.STYPE_SUBTITLE:
+			builder.appendQueryParameter("s", "c");
+			break;
+		case SearchParam.STYPE_EPG:
+		default:
+			builder.appendQueryParameter("s", "e");
+			break;
 		}
-		if (searchTime != null) {
-			switch (searchTime) {
-			case START:
-				builder.appendQueryParameter("dt", "s");
-				break;
-			case END:
-				builder.appendQueryParameter("dt", "e");
-				break;
-			}
+
+		switch (searchTime) {
+		case SearchParam.STIME_END:
+			builder.appendQueryParameter("dt", "e");
+			break;
+		case SearchParam.STIME_START:
+		default:
+			builder.appendQueryParameter("dt", "s");
+			break;
 		}
+
 		if (sdate != 0) {
 			builder.appendQueryParameter("sdate", longToDateTimeStr(sdate));
 		}
 		if (edate != 0) {
 			builder.appendQueryParameter("edate", longToDateTimeStr(edate));
 		}
-		if (rank != null) {
-			switch (rank) {
-			case FAVORITE:
-				builder.appendQueryParameter("rank", "all");
-			}
+
+		switch (rank) {
+		case SearchParam.RANK_FAVORITE:
+			builder.appendQueryParameter("rank", "all");
 		}
-		if (sortAscent) {
-			builder.appendQueryParameter("sort", sortAscent ? "sta" : "std");
+
+		switch (sort) {
+		case SearchParam.SORT_STA:
+			builder.appendQueryParameter("sort", "sta");
+			break;
+		case SearchParam.SORT_STD:
+			builder.appendQueryParameter("sort", "std");
+			break;
 		}
-		if (videoAll) {
+
+		if (video == SearchParam.VIDEO_ALL) {
 			builder.appendQueryParameter("video", "all");
 		}
 
@@ -337,7 +362,7 @@ public class GaraponClient {
 
 	public static SearchResult parseSearchResult(InputStream is) throws JsonParseException, IOException {
 		try {
-			final SparseArray<Ch>	chMap = new SparseArray<Ch>();
+			final HashMap<Integer,Ch>	chMap = new HashMap<Integer,Ch>();
 			final ArrayList<Program> programs = new ArrayList<Program>();
 
 			JksnObject jo = (JksnObject) JksnUtils.parseJson(is, new JksnArrayCallback() {
@@ -362,6 +387,7 @@ public class GaraponClient {
 			sr.status = jo.getInt("status", 0);
 			sr.hit = Integer.valueOf(jo.getString("hit", "-1"), 10);
 			sr.program = programs;
+			sr.ch = chMap;
 
 			return sr;
 		} finally {
@@ -437,76 +463,7 @@ public class GaraponClient {
 		public int status;
 		public int hit;
 		public ArrayList<Program> program;
-	}
-
-	/**
-	 * 番組
-	 */
-	public static class Program {
-		public static final int FLAG_TS = 1;
-		public static final int FLAG_TS_ONLY = 2;
-		public static final int FLAG_MP4 = 4;
-		public static final int FLAG_FAVORITE = 8;
-
-		public final String gtvid;
-		public final long startdate;
-		public final long duration;
-		public final Ch ch;
-		public final String title;
-		public final String description;
-		public final int [] genre;
-		public final int flag;
-
-		public Program(JksnObject jo, SparseArray<Ch> chMap) {
-			gtvid = jo.getString("gtvid");
-			startdate = parseDateTimeStr(jo.getString("startdate"));
-			duration = parseTimeStr(jo.getString("duration"));
-			title = jo.getString("title");
-			description = jo.getString("description");
-
-			JksnArray genreArray = jo.getArray("genre");
-			genre = new int [genreArray.size()];
-			for (int j=0; j<genre.length; j++) {
-				genre[j] = parseGenreStr(genreArray.getString(j));
-			}
-
-			int chNum = Integer.parseInt(jo.getString("ch","0"), 10);
-			Ch chCache = chMap.get(chNum);
-			if (chCache == null) {
-				this.ch = new Ch(chNum, jo.getString("bc"), jo.getString("bc_tags"));
-				chMap.put(chNum, this.ch);
-			} else {
-				this.ch = chCache;
-			}
-
-			flag = ("1".equals(jo.getString("ts", "0")) ? FLAG_TS : 0)
-					| ("1".equals(jo.getString("tsonly", "0")) ? FLAG_TS_ONLY : 0)
-					| ("1".equals(jo.getString("mp4", "0")) ? FLAG_MP4 : 0)
-					| ("1".equals(jo.getString("favorite", "0")) ? FLAG_FAVORITE : 0);
-		}
-
-		public static int parseGenreStr(String text) {
-			int pos = text.indexOf('/');
-			if (pos == -1) {
-				return 0;
-			}
-			int genre0 = Integer.valueOf(text.substring(0,  pos), 10);
-			int genre1 = Integer.valueOf(text.substring(pos+1), 10);
-			return genre0 << 16 | genre1;
-		}
-
-		@Override
-		public String toString() {
-			Time t = new Time();
-			t.set(startdate);
-			long min = duration / 1000 / 60;
-
-			return String.format("%s [%02d:%02d] %s %s %s",
-					t.format("%Y-%m-%d %H:%M:%S"),
-					min / 60, min % 60,
-					ch.bc,
-					title, description);
-		}
+		public HashMap<Integer,Ch> ch;
 	}
 
 	/**
@@ -520,6 +477,39 @@ public class GaraponClient {
 			this.ch = ch;
 			this.bc = bc;
 			this.bc_tags = bc_tags;
+		}
+
+		public Ch(JksnObject jo) {
+			ch = jo.getInt("ch");
+			bc = jo.getString("bc");
+			bc_tags = jo.getString("bc_tags");
+		}
+
+		public void write(JsonGenerator jg) throws JsonGenerationException, IOException {
+			jg.writeStartObject();
+			jg.writeNumberField("ch", ch);
+			jg.writeStringField("bc", bc);
+			jg.writeStringField("bc_tags", bc_tags);
+			jg.writeEndObject();
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o instanceof Ch) {
+				Ch x = (Ch)o;
+				return ch == x.ch
+						&& TextUtils.equals(bc, x.bc)
+						&& TextUtils.equals(bc_tags, x.bc_tags);
+			}
+			return super.equals(o);
+		}
+
+		@Override
+		public String toString() {
+			if (ch == 0) {
+				return bc;
+			}
+			return bc + " (" + ch + ")";
 		}
 	}
 

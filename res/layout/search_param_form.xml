@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="4dip"
+        android:paddingLeft="8dip"
+        android:paddingRight="8dip"
+        android:paddingTop="4dip" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eitherIsRequired"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dip"
+            android:paddingRight="8dip" >
+
+            <TextView
+                android:id="@+id/keywordAndLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/keywordAnd"
+                android:text="@string/keyword"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/keywordAnd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/keywordAndLabel"
+                android:hint="@string/keywordAnd" />
+
+            <!-- <TextView -->
+            <!-- android:id="@+id/textView2" -->
+            <!-- android:layout_width="wrap_content" -->
+            <!-- android:layout_height="wrap_content" -->
+            <!-- android:text="Small Text" -->
+            <!-- android:textAppearance="?android:attr/textAppearanceSmall" /> -->
+
+
+            <!-- <EditText -->
+            <!-- android:id="@+id/editText2" -->
+            <!-- android:layout_width="match_parent" -->
+            <!-- android:layout_height="wrap_content" /> -->
+
+            <TextView
+                android:id="@+id/chLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="48dip"
+                android:layout_alignTop="@+id/ch"
+                android:gravity="center_vertical"
+                android:text="@string/ch"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <Spinner
+                android:id="@+id/ch"
+                android:layout_width="match_parent"
+                android:layout_height="48dip"
+                android:layout_below="@+id/keywordAnd"
+                android:layout_toRightOf="@+id/chLabel" />
+
+            <TextView
+                android:id="@+id/genre"
+                android:layout_width="wrap_content"
+                android:layout_height="48dip"
+                android:layout_alignTop="@+id/genre0"
+                android:gravity="center_vertical"
+                android:text="@string/genre"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <Spinner
+                android:id="@+id/genre0"
+                android:layout_width="match_parent"
+                android:layout_height="48dip"
+                android:layout_below="@+id/ch"
+                android:layout_toRightOf="@+id/genre" />
+
+            <Spinner
+                android:id="@+id/genre1"
+                android:layout_width="match_parent"
+                android:layout_height="48dip"
+                android:layout_below="@+id/genre0"
+                android:layout_toRightOf="@+id/genre" />
+
+            <CheckBox
+                android:id="@+id/favoriteOnly"
+                android:layout_width="wrap_content"
+                android:layout_height="48dip"
+                android:layout_alignWithParentIfMissing="true"
+                android:layout_below="@+id/genre1"
+                android:text="@string/favoriteOnly" />
+        </RelativeLayout>
+        
+        <Button
+            android:id="@+id/save"
+            android:text="@string/saveSearchParam"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+            
+    </LinearLayout>
+
+</ScrollView>

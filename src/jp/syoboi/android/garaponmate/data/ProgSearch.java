@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.syoboi.android.garaponmate.GaraponClient.Program;
 import jp.syoboi.android.util.JksnUtils.JksnObject;
 
 import org.codehaus.jackson.JsonGenerationException;

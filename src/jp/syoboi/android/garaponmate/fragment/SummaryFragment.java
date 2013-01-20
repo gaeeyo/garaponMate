@@ -1,34 +1,61 @@
 package jp.syoboi.android.garaponmate.fragment;
 
+import android.app.Activity;
 import android.app.ListFragment;
-import android.content.Context;
+import android.content.Intent;
+import android.database.DataSetObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.format.DateUtils;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ListView;
 
 import java.util.Collections;
 import java.util.Comparator;
 
-import jp.syoboi.android.garaponmate.GaraponClient.Program;
-import jp.syoboi.android.garaponmate.GaraponClient.SearchResult;
-import jp.syoboi.android.garaponmate.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
+import jp.syoboi.android.garaponmate.adapter.SearchParamAdapter;
+import jp.syoboi.android.garaponmate.client.GaraponClient;
+import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
+import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.client.SearchParam;
+import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.view.BroadcastingView;
 import jp.syoboi.android.garaponmate.view.BroadcastingView.OnBroadcastingViewListener;
 
 public class SummaryFragment extends ListFragment {
+
+	private static final int REQUEST_NEW = 1;
 
 	BroadcastingView	mBcView;
 	View				mProgress;
 	RefreshTask			mRefreshTask;
 	Handler				mHandler = new Handler();
 	long				mPrevAutoRefreshTime;
+	SearchParamAdapter	mAdapter;
+	View				mSearchListHeader;
+	View				mSearchListEmpty;
+
+
+	DataSetObserver		mDataSetObserver = new DataSetObserver() {
+		@Override
+		public void onChanged() {
+			if (mAdapter != null) {
+				mAdapter.notifyDataSetChanged();
+				updateSearchListEmpty();
+			}
+		};
+	};
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -59,36 +86,110 @@ public class SummaryFragment extends ListFragment {
 			@Override
 			public void onClickProgram(Program p) {
 				if (getActivity() instanceof MainActivity) {
-					((MainActivity)getActivity()).setPlayerPage(p);
+					((MainActivity)getActivity()).playVideo(p);
 				}
 			}
 
 			@Override
 			public void onClickChannel(Program p) {
-
+				if (getActivity() instanceof MainActivity) {
+					SearchParam param = new SearchParam();
+					param.comment = getString(R.string.searchCh, p.ch.bc);
+					param.ch = p.ch.ch;
+					((MainActivity)getActivity()).search(param);
+				}
 			}
 		});
 
 		getListView().addHeaderView(mBcView);
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1);
-		setListAdapter(adapter);
+		// 検索リストのヘッダー
+		mSearchListHeader = View.inflate(getActivity(), R.layout.search_list_header, null);
+		mSearchListEmpty = mSearchListHeader.findViewById(R.id.searchListEmpty);
+		getListView().addHeaderView(mSearchListHeader);
 
+		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+			@Override
+			public void onCreateContextMenu(ContextMenu menu, View v,
+					ContextMenuInfo menuInfo) {
+				getActivity().getMenuInflater().inflate(R.menu.search_list_item_menu, menu);
+			}
+		});
+
+		App.getSearchParamList().registerDataSetObserver(mDataSetObserver);
+
+		mAdapter = new SearchParamAdapter(getActivity());
+		setListAdapter(mAdapter);
+
+		updateSearchListEmpty();
 		refresh();
 	}
 
 	@Override
-	public void onPause() {
-		super.onPause();
+	public void onDestroy() {
+		App.getSearchParamList().unregisterDataSetObserver(mDataSetObserver);
+		super.onDestroy();
+	}
+
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		ContextMenuInfo cmi = item.getMenuInfo();
+		if (cmi instanceof AdapterContextMenuInfo) {
+			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)cmi;
+			Object obj = getListView().getItemAtPosition(acmi.position);
+			if (obj instanceof SearchParam) {
+				SearchParam sp = (SearchParam)obj;
+				App.getSearchParamList().removeById(sp.id);
+			}
+		}
+		return super.onContextItemSelected(item);
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		switch (requestCode) {
+		case REQUEST_NEW:
+			if (resultCode == Activity.RESULT_OK) {
+				SearchParam sp = (SearchParam)data.getSerializableExtra(SearchParamEditFragment.EXTRA_SEARCH_PARAM);
+				search(sp);
+			}
+			break;
+		}
 	}
 
-	public void setSelected(String gtvid) {
+
+	@Override
+	public void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+
+		if (v == mSearchListHeader) {
+			SearchParamEditFragment f = SearchParamEditFragment.newInstance(new SearchParam());
+			f.setTargetFragment(this, REQUEST_NEW);
+			f.show(getFragmentManager(), "editDialog");
+		}
+		else {
+			Object obj = l.getItemAtPosition(position);
+			if (obj instanceof SearchParam) {
+				search((SearchParam)obj);
+			}
+		}
+	}
+
+	void search(SearchParam sp) {
+		if (getActivity() != null) {
+			((MainActivity)getActivity()).search(sp);
+		}
+	}
+
+	public void setVideo(String gtvid) {
 		mBcView.setSelected(gtvid);
+	}
+
+	void updateSearchListEmpty() {
+		mSearchListEmpty.setVisibility(mAdapter.getCount() > 0 ? View.GONE : View.VISIBLE);
+		getListView().requestLayout();
 	}
 
 	void refresh() {
@@ -107,9 +208,8 @@ public class SummaryFragment extends ListFragment {
 				}
 
 				if (result instanceof Throwable) {
-					ErrorDialogFragment f = ErrorDialogFragment.newInstance(getString(R.string.error),
+					ErrorDialogFragment.show(getFragmentManager(),
 							(Throwable)result);
-					f.show(getFragmentManager(), "dialog");
 				}
 				else if (result instanceof SearchResult) {
 					SearchResult sr = (SearchResult)result;
@@ -132,7 +232,7 @@ public class SummaryFragment extends ListFragment {
 			}
 
 		};
-		mRefreshTask.execute(getActivity());
+		mRefreshTask.execute();
 	}
 
 	private class RefreshTask extends AsyncTask<Object,Object,Object> {
@@ -140,9 +240,11 @@ public class SummaryFragment extends ListFragment {
 		@Override
 		protected Object doInBackground(Object... params) {
 			try {
-				Context context = (Context) params[0];
-
 				SearchResult sr = GaraponClientUtils.searchNowBroadcasting();
+
+				if (sr.status == GaraponClient.STATUS_SUCCESS) {
+					App.getChList().setCh(sr.ch.values());
+				}
 
 				Collections.sort(sr.program, new Comparator<Program>() {
 					@Override

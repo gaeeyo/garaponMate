@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.Typeface;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -17,9 +19,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import jp.syoboi.android.garaponmate.GaraponClient.Program;
 import jp.syoboi.android.garaponmate.R;
-import jp.syoboi.android.garaponmate.Utils;
+import jp.syoboi.android.garaponmate.data.Program;
+import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class BroadcastingView extends FrameLayout {
 
@@ -34,6 +36,11 @@ public class BroadcastingView extends FrameLayout {
 	int				mTimeBarHeight;
 	int				mNowStartedBackgroundColor;
 	int				mSelectedBackgroundColor;
+	int				mBorderColor;
+	int				mTimeTextColor;
+	float			mBorderWidth;
+	float			mTimeBarTextSize;
+	Time			mTmpTime = new Time();
 	String			mSelectedGtvid;
 	OnBroadcastingViewListener	mListener;
 
@@ -46,12 +53,17 @@ public class BroadcastingView extends FrameLayout {
 		Resources res = context.getResources();
 		mTimeBarColor = res.getColor(R.color.timeBarColor);
 		mBroadcastTimeBarColor = res.getColor(R.color.broadcastTimeBarColor);
-		mTimeBarHeight = res.getDimensionPixelOffset(R.dimen.timeBarHeight);
+		mTimeBarHeight = res.getDimensionPixelSize(R.dimen.timeBarHeight);
 		mNowStartedBackgroundColor = res.getColor(R.color.nowStartedBackgroundColor);
 		mSelectedBackgroundColor = res.getColor(R.color.selectedColor);
+		mBorderColor = res.getColor(R.color.timetableBorderColor);
+		mBorderWidth = res.getDimensionPixelSize(R.dimen.timeBorderWidth);
+		mTimeBarTextSize = res.getDimensionPixelSize(R.dimen.timeBarTextSize);
+		mTimeTextColor = res.getColor(R.color.timeColor);
 
 		mTable = (TableLayout) v.findViewById(R.id.broadcastingTable);
 		mPaint.setAntiAlias(true);
+		mPaint.setTypeface(Typeface.DEFAULT_BOLD);
 		setWillNotDraw(false);
 	}
 
@@ -96,7 +108,7 @@ public class BroadcastingView extends FrameLayout {
 			mTable.addView(row);
 		}
 
-		Time t = new Time();
+		Time t = mTmpTime;
 		SpannableStringBuilder ssb = new SpannableStringBuilder();
 
 		for (int j=mItems.size()-1; j>=0; j--) {
@@ -156,26 +168,40 @@ public class BroadcastingView extends FrameLayout {
 				maxEnd = end;
 			}
 		}
+		Time t = mTmpTime;
 
 		long range = (maxEnd - minStart);
-		minStart -= range / 20;
-		maxEnd += range / 20;
+		minStart = minStart / DateUtils.HOUR_IN_MILLIS * DateUtils.HOUR_IN_MILLIS;
+		maxEnd = maxEnd / DateUtils.HOUR_IN_MILLIS * DateUtils.HOUR_IN_MILLIS + DateUtils.HOUR_IN_MILLIS;
+
+		minStart -= range / 8;
+		maxEnd += range / 8;
 		range = maxEnd - minStart;
+
+		// hour
+		t.set(minStart + DateUtils.HOUR_IN_MILLIS - 1);
+		t.minute = 0;
+		t.second = 0;
+		int hourLineStartHour = t.hour;
+		long hourLineStart = t.toMillis(true);
 
 		final Paint paint = mPaint;
 		long now = System.currentTimeMillis();
-		int topOffset = mTable.getTop();
+		int tableTop = mTable.getTop();
+
+		paint.setStyle(Style.FILL);
 
 		for (int j=0; j<childCount; j++) {
 			Program p = mItems.get(j);
 
 			long startOffset = p.startdate - minStart;
 			int left = displayLeft + Math.round((float)displayWidth * startOffset / range);
-			int right = left + Math.round((float)displayWidth * p.duration / range);
-			int nowRight = left + Math.round((float)displayWidth * (now - p.startdate) / range);
+			int right = displayLeft + Math.round((float)displayWidth * (p.startdate - minStart + p.duration) / range);
+			int nowRight = displayLeft + Math.round((float)displayWidth * (now - minStart) / range);
 
 			View child = mTable.getChildAt(j);
-			int top = child.getTop() + topOffset;
+			int top = child.getTop() + tableTop;
+			int bottom = child.getBottom() + tableTop;
 
 			if (TextUtils.equals(mSelectedGtvid, p.gtvid)) {
 				paint.setColor(mSelectedBackgroundColor);
@@ -183,19 +209,60 @@ public class BroadcastingView extends FrameLayout {
 						top + child.getHeight(), paint);
 			}
 
+			// 放送中の番組の背景色を変える
 			if (p.startdate <= now && now < p.startdate + 1 * DateUtils.MINUTE_IN_MILLIS) {
 				paint.setColor(mNowStartedBackgroundColor);
 				canvas.drawRect(displayLeft, top, left + displayWidth,
 						top + child.getHeight(), paint);
 			}
 
+			// 棒
 			paint.setColor(mTimeBarColor);
-			canvas.drawRect(left, top, right, top + mTimeBarHeight, paint);
+			canvas.drawRect(left, bottom - mTimeBarHeight,
+					right, bottom - 1, paint);
 			paint.setColor(mBroadcastTimeBarColor);
-			canvas.drawRect(left, top, nowRight, top + mTimeBarHeight, paint);
+			canvas.drawRect(left, bottom - mTimeBarHeight,
+					nowRight, bottom - 1, paint);
+
+
 
 			if (p.startdate + p.duration < now) {
 
+			}
+		}
+
+		// 時間のラベルを描画
+		{
+
+			int bottom = mTable.getTop() - 1;
+
+			int hour = hourLineStartHour;
+			paint.setTextSize(mTimeBarTextSize);
+			paint.setStrokeWidth(mBorderWidth);
+
+			for (long x=hourLineStart; x<maxEnd; x += DateUtils.HOUR_IN_MILLIS, hour++) {
+				int left = displayLeft + Math.round((float)displayWidth * (x - minStart) / range);
+
+				paint.setStyle(Style.FILL);
+				paint.setColor(mTimeTextColor);
+				canvas.drawText(String.valueOf(hour % 24),
+						left + mBorderWidth * 2, bottom - 1, paint);
+
+				paint.setColor(mBorderColor);
+				canvas.drawRect(left, bottom - mTimeBarHeight,
+						left + mBorderWidth, bottom, paint);
+
+//				paint.setColor(0x88ffffff);
+				paint.setColor(0x44000000);
+				for (int j=0; j<childCount; j++) {
+					Program p = mItems.get(j);
+					if (p.startdate <= x && x <= p.startdate + p.duration) {
+						int childBottom = mTable.getChildAt(j).getBottom() + tableTop;
+						canvas.drawRect(left,
+								childBottom - mTimeBarHeight,
+								left + mBorderWidth, childBottom - 1, paint);
+					}
+				}
 			}
 		}
 

@@ -7,15 +7,39 @@
     <color name="popupMessageTextColor">#fff3f3f3</color>
     
     <color name="timetableBorderColor">#ffbbbbbb</color>
-    <color name="timeBarColor">#ffD6ADEB</color>
-    <color name="broadcastTimeBarColor">#ff8AD5F0</color>
+    <color name="timeBarColor">#ff6DCAEC</color>
+    <color name="broadcastTimeBarColor">#ffCF9FE7</color>
     
-    <dimen name="timeBarHeight">6dip</dimen>
+    <dimen name="timeBorderWidth">1dip</dimen>
+    <dimen name="timeBarHeight">7dip</dimen>
+    <dimen name="timeBarTextSize">14sp</dimen>
     
     <color name="chNameColor">#ff008800</color>
-    <color name="timeColor">#ff333333</color>
+    <color name="timeColor">#ff555555</color>
     <color name="titleColor">#ff000000</color>
+    <color name="descriptionColor">#ff777777</color>
     <color name="nowStartedBackgroundColor">#ffFFFFBB</color>
+    
+    <style name="chNameStyle">
+        <item name="android:textColor">@color/chNameColor</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+    
+    <style name="timeStyle">
+        <item name="android:textColor">@color/timeColor</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    
+    <style name="titleStyle">
+        <item name="android:textColor">@color/titleColor</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    
+    <style name="descriptionStyle">
+        <item name="android:textColor">@color/descriptionColor</item>
+        <item name="android:textSize">14sp</item>
+    </style>
     
     <style name="popupMessage">
         <item name="android:background">@drawable/popup_message_bg</item>

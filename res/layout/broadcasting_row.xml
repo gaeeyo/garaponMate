@@ -2,17 +2,17 @@
 <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="48dip"
     android:background="@drawable/timetable_top_border"
+    android:minHeight="48dip"
     android:orientation="horizontal" >
 
     <FrameLayout
-        android:id="@+id/ch"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@drawable/timetable_right_border" >
 
         <LinearLayout
+            android:id="@+id/ch"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@drawable/timetable_cell_background"
@@ -26,31 +26,29 @@
 
             <TextView
                 android:id="@+id/chName"
+                style="@style/chNameStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:lineSpacingExtra="0dip"
                 android:scrollHorizontally="true"
                 android:text="chName"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/chNameColor"
-                android:textSize="16sp" />
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <TextView
                 android:id="@+id/time"
+                style="@style/timeStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:lineSpacingExtra="0dip"
                 android:scrollHorizontally="true"
                 android:text="00:00 (00:00)"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/timeColor"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
     </FrameLayout>
 
     <TextView
         android:id="@+id/title"
+        style="@style/titleStyle"
         android:layout_width="0dip"
         android:layout_height="match_parent"
         android:layout_weight="1"
@@ -63,8 +61,6 @@
         android:paddingRight="4dip"
         android:paddingTop="2dip"
         android:text="@string/title"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/titleColor"
-        android:textSize="18sp" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </TableRow>
