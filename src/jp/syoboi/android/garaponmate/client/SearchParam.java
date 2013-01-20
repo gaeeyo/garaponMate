@@ -42,7 +42,7 @@ public class SearchParam implements Serializable {
 	public long sdate;
 	public long edate;
 	public int rank;
-	public int sort = SORT_STA;
+	public int sort = SORT_STD;
 	public int video;
 
 	public SearchParam() {

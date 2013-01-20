@@ -114,8 +114,6 @@ public class GaraponClientUtils {
 	 */
 	public static SearchResult searchNowBroadcasting() throws MalformedURLException, IOException, NoSuchAlgorithmException, NotFoundException, JSONException, GaraponClientException {
 
-		ensureAuth();
-
 		SearchParam param = new SearchParam();
 		long now = System.currentTimeMillis();
 		param.count = 50;
@@ -125,14 +123,7 @@ public class GaraponClientUtils {
 		param.sort = SearchParam.SORT_STA;
 		param.video = SearchParam.VIDEO_ALL;
 
-		String host = Prefs.getGaraponHost();
-		String sessionId = Prefs.getGtvSessionId();
-
-		SearchResult sr = GaraponClient.search(host, sessionId, param);
-		if (sr.status == 0) {
-			login();
-			sr = GaraponClient.search(host, sessionId, param);
-		}
+		SearchResult sr = search(param);
 
 		for (int j=sr.program.size()-1; j>=0; j--) {
 			Program p = sr.program.get(j);
