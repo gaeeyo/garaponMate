@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.data.Program;
@@ -86,12 +87,15 @@ public class ProgramAdapter extends BaseAdapter {
 		return v;
 	}
 
+	static final int STARTTIME_FMT = DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME
+			| DateUtils.FORMAT_SHOW_WEEKDAY;
+	static final int ENDTIME_FMT = DateUtils.FORMAT_SHOW_TIME;
+
 	private static class ViewHolder {
 		TextView	mTime;
 		TextView	mChName;
 		TextView	mTitle;
 		TextView	mDescription;
-
 
 		public ViewHolder(View v) {
 			mTime = (TextView) v.findViewById(R.id.time);
@@ -101,10 +105,15 @@ public class ProgramAdapter extends BaseAdapter {
 		}
 		public void setItem(Program p) {
 			Context context = mTime.getContext();
-			mTime.setText(DateUtils.formatDateTime(context,
-					p.startdate,
-					DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME |
-					DateUtils.FORMAT_SHOW_WEEKDAY));
+			int min = (int)(p.duration / 1000 / 60);
+
+			String timeStr = String.format(Locale.ENGLISH, "%s - %s (%d:%02d)",
+					DateUtils.formatDateTime(context, p.startdate, STARTTIME_FMT),
+					DateUtils.formatDateTime(context, p.startdate + p.duration, ENDTIME_FMT),
+					min / 60, min % 60
+					);
+
+			mTime.setText(timeStr);
 			mChName.setText(Utils.convertCoolTitle(p.ch.bc));
 			mTitle.setText(Utils.convertCoolTitle(p.title));
 			mDescription.setText(Utils.convertCoolTitle(p.description));
