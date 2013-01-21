@@ -51,8 +51,9 @@
 
                 <ImageButton
                     android:id="@+id/special"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48sp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:singleLine="true"
                     android:src="@drawable/ic_grid_light" />
 
@@ -84,7 +85,6 @@
                     android:id="@+id/settings"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dip"
                     android:text="@string/settings" />
             </LinearLayout>
 
