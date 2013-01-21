@@ -8,10 +8,14 @@
         android:key="password"
         android:title="@string/password" />
 
-<!--     <Preference  -->
-<!--         android:key="searchListSettings" -->
-<!--         android:title="@string/searchListSettings" /> -->
-    
+    <CheckBoxPreference
+        android:key="useVideoView"
+        android:summary="@string/useVideoViewSummary"
+        android:title="@string/useVideoView" />
+    <!-- <Preference -->
+    <!-- android:key="searchListSettings" -->
+    <!-- android:title="@string/searchListSettings" /> -->
+
     <jp.syoboi.android.garaponmate.preference.HelpPreference />
 
 </PreferenceScreen>

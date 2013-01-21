@@ -24,6 +24,7 @@ public class Prefs {
 	private static final String COMMON_SESSION_ID = "commonSessionId";
 	private static final String PROG_SEARCH_LIST = "progSearchList";
 
+	private static final String USE_VIDEO_VIEW = "useVideoView";
 
 	private static SharedPreferences sPrefs;
 
@@ -149,4 +150,7 @@ public class Prefs {
 		return sPrefs.getString(PROG_SEARCH_LIST, "");
 	}
 
+	public static boolean useVideoView() {
+		return sPrefs.getBoolean(USE_VIDEO_VIEW, false);
+	}
 }

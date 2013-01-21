@@ -32,6 +32,8 @@
     <string name="saveSearchParam">検索条件を保存</string>
     <string name="notSelected">(未選択)</string>
     <string name="searchHitCount">%1$d 件</string>
+    <string name="useVideoView">Flashを使わない</string>
+    <string name="useVideoViewSummary">Flashを使わない方法で動画を再生します。Flashを使った場合より安定性や性能が悪くなる場合があります。</string>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
     
