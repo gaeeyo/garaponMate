@@ -18,6 +18,8 @@ public class PlayerWebView implements PlayerInterface {
 
 	WebView			mWebView;
 	int				mEmbedToolbarHeight;
+	boolean			mPlaying;
+	boolean			mPlayOnResume;
 
 	@SuppressWarnings("deprecation")
 	@SuppressLint("SetJavaScriptEnabled")
@@ -67,21 +69,25 @@ public class PlayerWebView implements PlayerInterface {
 
 	@Override
 	public void setVideo(String id) {
+		mPlaying = true;
 		setVideoInternal(id);
 	}
 
 	@Override
 	public void play() {
+		mPlaying = true;
 		playerCtrl(true, "player:jsPlay", "");
 	}
 
 	@Override
 	public void stop() {
+		mPlaying = false;
 		playerCtrl(true, "player:jsStop", "");
 	}
 
 	@Override
 	public void pause() {
+		mPlaying = false;
 		playerCtrl(true, "player:jsPause", "");
 	}
 
@@ -96,12 +102,21 @@ public class PlayerWebView implements PlayerInterface {
 
 	@Override
 	public void onPause() {
+		if (mPlaying) {
+			mPlayOnResume = true;
+			pause();
+		} else {
+			mPlayOnResume = false;
+		}
 		mWebView.onPause();
 	}
 
 	@Override
 	public void onResume() {
 		mWebView.onResume();
+		if (mPlayOnResume) {
+			play();
+		}
 	}
 
 	@Override
