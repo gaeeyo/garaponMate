@@ -68,7 +68,13 @@ public class SearchParamList {
 		if (p.id == 0) {
 			p.id = newId();
 		}
-		mItems.add(p);
+		int idx = findById(p.id);
+		if (idx != -1) {
+			mItems.remove(idx);
+			mItems.add(idx, p);
+		} else {
+			mItems.add(p);
+		}
 		saveToFile(mFile);
 	}
 
