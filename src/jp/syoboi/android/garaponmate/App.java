@@ -10,7 +10,6 @@ import java.io.File;
 import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.data.ChList;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
-import jp.syoboi.android.garaponmate.data.ProgManager;
 import jp.syoboi.android.garaponmate.data.SearchParamList;
 
 public class App extends Application {
@@ -42,9 +41,6 @@ public class App extends Application {
 
 		Prefs.init(this);
 		GaraponClient.init(this);
-
-		File dir = getExternalCacheDir();
-		ProgManager.init(this, new File(dir, "prog"));
 	}
 
 	public static SearchParamList getSearchParamList() {
