@@ -3,9 +3,11 @@
 
     <EditTextPreference
         android:key="user"
+        android:singleLine="true"
         android:title="@string/user" />
     <EditTextPreference
         android:key="password"
+        android:singleLine="true"
         android:title="@string/password" />
 
     <CheckBoxPreference
