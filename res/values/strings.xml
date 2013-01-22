@@ -27,6 +27,8 @@
     <string name="eitherIsRequired">いずれかが必須</string>
     <string name="eitherIsOptioinal">オプション</string>
     <string name="genre">ジャンル</string>
+    <string name="genre0">ジャンル(大)</string>
+    <string name="genre1">ジャンル(小)</string>
     <string name="save">保存</string>
     <string name="apply">適用</string>
     <string name="saveSearchParam">検索条件を保存</string>

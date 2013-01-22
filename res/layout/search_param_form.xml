@@ -36,8 +36,11 @@
                 android:id="@+id/keywordAnd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="8dip"
                 android:layout_toRightOf="@+id/keywordAndLabel"
-                android:hint="@string/keywordAnd" />
+                android:hint="@string/keywordAnd"
+                android:imeOptions="actionDone"
+                android:singleLine="true" />
 
             <!-- <TextView -->
             <!-- android:id="@+id/textView2" -->
@@ -66,15 +69,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dip"
                 android:layout_below="@+id/keywordAnd"
+                android:layout_marginLeft="8dip"
                 android:layout_toRightOf="@+id/chLabel" />
 
             <TextView
-                android:id="@+id/genre"
+                android:id="@+id/genre0Label"
                 android:layout_width="wrap_content"
                 android:layout_height="48dip"
                 android:layout_alignTop="@+id/genre0"
                 android:gravity="center_vertical"
-                android:text="@string/genre"
+                android:text="@string/genre0"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <Spinner
@@ -82,14 +86,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dip"
                 android:layout_below="@+id/ch"
-                android:layout_toRightOf="@+id/genre" />
+                android:layout_marginLeft="8dip"
+                android:layout_toRightOf="@+id/genre0Label" />
+
+            <TextView
+                android:id="@+id/genre1Label"
+                android:layout_width="wrap_content"
+                android:layout_height="48dip"
+                android:layout_alignTop="@+id/genre1"
+                android:gravity="center_vertical"
+                android:text="@string/genre0"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <Spinner
                 android:id="@+id/genre1"
                 android:layout_width="match_parent"
                 android:layout_height="48dip"
                 android:layout_below="@+id/genre0"
-                android:layout_toRightOf="@+id/genre" />
+                android:layout_marginLeft="8dip"
+                android:layout_toRightOf="@+id/genre1Label" />
 
             <CheckBox
                 android:id="@+id/favoriteOnly"
@@ -99,14 +114,13 @@
                 android:layout_below="@+id/genre1"
                 android:text="@string/favoriteOnly" />
         </RelativeLayout>
-        
+
         <Button
             android:id="@+id/save"
-            android:text="@string/saveSearchParam"
-            android:layout_gravity="center_horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-            
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/saveSearchParam" />
     </LinearLayout>
 
 </ScrollView>

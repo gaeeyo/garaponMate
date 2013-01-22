@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CheckBox;
@@ -62,6 +63,9 @@ public class SearchParamEditFragment extends DialogFragment {
 		.setPositiveButton(android.R.string.ok, (OnClickListener)null)
 		.setNeutralButton(android.R.string.cancel, (OnClickListener)null)
 		.create();
+
+		dlg.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
+				|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
 		View v = View.inflate(dlg.getContext(), R.layout.search_param_form, null);
 
