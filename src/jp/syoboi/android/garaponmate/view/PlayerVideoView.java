@@ -21,6 +21,7 @@ public class PlayerVideoView implements PlayerInterface {
 	boolean		mStopped = true;
 	int			mDuration;
 	int			mCurPos;
+	int			mSeekPos;
 	boolean		mSeeking;
 	String		mPendingId;
 
@@ -52,6 +53,11 @@ public class PlayerVideoView implements PlayerInterface {
 					@Override
 					public void onSeekComplete(MediaPlayer mp) {
 						mSeeking = false;
+						if (mSeekPos != 0) {
+							int seekPos = mSeekPos;
+							mSeekPos = 0;
+							seek(seekPos);
+						}
 					}
 				});
 				mp.setScreenOnWhilePlaying(true);
@@ -121,19 +127,22 @@ public class PlayerVideoView implements PlayerInterface {
 
 	@Override
 	public void jump(int sec) {
-		mSeeking = true;
-		int curPos = mVideoView.getCurrentPosition();
-//		Log.v(TAG, "curPos: " + curPos + " duration: "+ mVideoView.getDuration());
-		if (sec > 0) {
-			mCurPos = curPos + sec * 1000;
-			if (mVideoView.canSeekForward()) {
-				mVideoView.seekTo(mCurPos);
+		if (!mSeeking) {
+			mSeeking = true;
+			int curPos = mVideoView.getCurrentPosition();
+			if (sec > 0) {
+				mCurPos = curPos + sec * 1000;
+				if (mVideoView.canSeekForward()) {
+					mVideoView.seekTo(mCurPos);
+				}
+			} else {
+				mCurPos = curPos + sec * 1000;
+				if (mVideoView.canSeekBackward()) {
+					mVideoView.seekTo(mCurPos);
+				}
 			}
 		} else {
-			mCurPos = curPos + sec * 1000;
-			if (mVideoView.canSeekBackward()) {
-				mVideoView.seekTo(mCurPos);
-			}
+			mSeekPos = mCurPos + sec * 1000;
 		}
 	}
 
@@ -144,10 +153,13 @@ public class PlayerVideoView implements PlayerInterface {
 
 	@Override
 	public void seek(int msec) {
-		mSeeking = true;
-		mCurPos = msec;
-		mVideoView.seekTo(msec);
-
+		if (!mSeeking) {
+			mSeeking = true;
+			mCurPos = msec;
+			mVideoView.seekTo(msec);
+		} else {
+			mSeekPos = msec;
+		}
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package jp.syoboi.android.garaponmate.view;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -10,9 +11,14 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
+
+import java.util.Locale;
 
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.activity.MainActivity;
+import jp.syoboi.android.garaponmate.data.Program;
 
 public class PlayerView extends RelativeLayout {
 
@@ -32,6 +38,8 @@ public class PlayerView extends RelativeLayout {
 	SeekBar			mSeekBar;
 	int				mCurPos;
 	boolean			mUseVideoView;
+	TextView		mTime;
+	TextView		mTitle;
 
 	PlayerInterface	mPlayer;
 
@@ -46,6 +54,19 @@ public class PlayerView extends RelativeLayout {
 
 		mSeekBar = (SeekBar) findViewById(R.id.seekBar);
 		mPlayerViewContainer = (FrameLayout)findViewById(R.id.playerViewContainer);
+		mTime = (TextView) findViewById(R.id.time);
+		mTitle = (TextView) findViewById(R.id.title);
+
+		findViewById(R.id.returnToFullScreen).setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Context context = getContext();
+				if (context instanceof MainActivity) {
+					((MainActivity) context).expandPlayer(false);
+				}
+			}
+		});
 
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
@@ -98,14 +119,27 @@ public class PlayerView extends RelativeLayout {
 					mCurPos = curPos;
 					if (mDuration > 0) {
 						mSeekBar.setProgress(curPos);
+						mTime.setText(getTimeStr(mCurPos) + " / "
+								+ getTimeStr(mDuration));
 					}
 				}
 				if (!mPause) {
-					mHandler.postDelayed(mIntervalRunnable, INTERVAL);
+
+					mHandler.postDelayed(mIntervalRunnable, INTERVAL - (curPos % 1000) );
 				}
 			}
 		}
 	};
+
+	String getTimeStr(int millis) {
+		int sec = millis / 1000;
+		if (sec > 60*60) {
+			int min = sec / 60;
+			return String.format(Locale.ENGLISH, "%d:%02d:%02d",
+					min / 60, min % 60, sec % 60);
+		}
+		return String.format(Locale.ENGLISH, "%d:%02d", sec / 60, sec % 60);
+	}
 
 	public void showToolbar(boolean show) {
 		if (show) {
@@ -182,7 +216,22 @@ public class PlayerView extends RelativeLayout {
 		}
 	}
 
-	public void setVideo(final String id) {
+	public void setVideo(String id) {
+		mTitle.setText(id);
+		mDuration = 0;
+		mTime.setText(null);
+		setVideoInternal(id);
+	}
+
+	public void setVideo(Program p) {
+		mTitle.setText(p.title);
+		mDuration = (int) p.duration;
+		mTime.setText(getTimeStr(mDuration));
+		setVideoInternal(p.gtvid);
+	}
+
+	void setVideoInternal(final String id) {
+		Log.v(TAG, "setVideoInternal id:" + id);
 
 		boolean useVideoView = Prefs.useVideoView();
 		if (mPlayer != null && useVideoView != mUseVideoView) {

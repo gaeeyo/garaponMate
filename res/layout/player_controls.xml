@@ -8,28 +8,73 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/playerToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="32dip"
         android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dip"
+            android:background="@drawable/video_toolbar_bg" >
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:paddingLeft="16dip"
+                android:paddingRight="16dip"
+                android:text="@string/title"
+                android:textAppearance="?android:attr/textAppearanceMediumInverse" />
+
+            <ImageButton
+                android:id="@+id/returnToFullScreen"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/returnFromFullScreen"
+                android:minWidth="56dip"
+                android:src="@drawable/ic_return_from_fullscreen" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/seekBar"
+            android:gravity="center"
+            android:shadowColor="#ff000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="1"
+            android:text="@string/duration"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#ffffffff"
+            android:textStyle="bold" />
 
         <SeekBar
             android:id="@+id/seekBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/bottomButtons"
             android:layout_marginBottom="32dip"
             android:layout_marginLeft="16dip"
             android:layout_marginRight="16dip" />
 
         <LinearLayout
+            android:id="@+id/bottomButtons"
             android:layout_width="300dip"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
             android:layout_marginLeft="16dip"
             android:layout_marginRight="16dip"
+            android:background="@drawable/video_toolbar_bg"
             android:orientation="horizontal" >
 
             <ImageButton
@@ -37,6 +82,8 @@
                 android:layout_width="48sp"
                 android:layout_height="64dip"
                 android:layout_weight="1"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/pause"
                 android:src="@drawable/ic_media_pause" />
 
             <ImageButton
@@ -44,6 +91,8 @@
                 android:layout_width="48sp"
                 android:layout_height="64dip"
                 android:layout_weight="1"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/previous"
                 android:src="@drawable/ic_media_previous"
                 android:visibility="gone" />
 
@@ -52,6 +101,8 @@
                 android:layout_width="48sp"
                 android:layout_height="64dip"
                 android:layout_weight="1"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/rew"
                 android:src="@drawable/ic_media_rew" />
 
             <ImageButton
@@ -59,6 +110,8 @@
                 android:layout_width="48sp"
                 android:layout_height="64dip"
                 android:layout_weight="1"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/ff"
                 android:src="@drawable/ic_media_ff" />
 
             <ImageButton
@@ -66,10 +119,12 @@
                 android:layout_width="48sp"
                 android:layout_height="64dip"
                 android:layout_weight="1"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/next"
                 android:src="@drawable/ic_media_next"
                 android:visibility="gone" />
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
     <View
         android:id="@+id/playerViewOverlay"

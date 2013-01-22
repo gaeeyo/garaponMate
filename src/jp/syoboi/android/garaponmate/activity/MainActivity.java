@@ -522,12 +522,17 @@ public class MainActivity extends Activity  {
 	 * @param id
 	 */
 	public void playVideo(String id) {
-		Log.v(TAG, "setPlayerPage id:" + id);
 		mPlayer.setVideo(id);
 
 		expandPlayer(false);
-
 		onVideoChanged(id);
+	}
+
+	public void playVideo(Program p) {
+		mPlayer.setVideo(p);
+
+		expandPlayer(false);
+		onVideoChanged(p.gtvid);
 	}
 
 	void onVideoChanged(String id) {
@@ -542,9 +547,6 @@ public class MainActivity extends Activity  {
 		}
 	}
 
-	public void playVideo(Program p) {
-		playVideo(p.gtvid);
-	}
 
 	public void playVideoExternal(Program p) {
 		Uri uri = Uri.parse("http://" + Prefs.getIpAdr()
@@ -561,7 +563,7 @@ public class MainActivity extends Activity  {
 	 * Player部分のサイズを変更
 	 * @param expand
 	 */
-	void expandPlayer(boolean expand) {
+	public void expandPlayer(boolean expand) {
 
 		mPlayerExpanded = expand;
 

@@ -34,6 +34,12 @@
     <string name="searchHitCount">%1$d 件</string>
     <string name="useVideoView">Flashを使わない</string>
     <string name="useVideoViewSummary">Flashを使わない方法で動画を再生します。Flashを使った場合より安定性や性能が悪くなる場合があります。</string>
+    <string name="returnFromFullScreen">フルスクリーン解除</string>
+    <string name="pause">一時停止</string>
+    <string name="ff">早送り</string>
+    <string name="rew">巻き戻し</string>
+    <string name="previous">前へ</string>
+    <string name="next">次へ</string>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
     
