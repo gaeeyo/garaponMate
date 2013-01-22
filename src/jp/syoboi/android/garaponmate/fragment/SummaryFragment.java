@@ -153,7 +153,9 @@ public class SummaryFragment extends ListFragment {
 		case REQUEST_NEW:
 			if (resultCode == Activity.RESULT_OK) {
 				SearchParam sp = (SearchParam)data.getSerializableExtra(SearchParamEditFragment.EXTRA_SEARCH_PARAM);
-				search(sp);
+				if (sp.id == 0) {
+					search(sp);
+				}
 			}
 			break;
 		}
