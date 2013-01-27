@@ -11,9 +11,8 @@ import android.webkit.WebSettings.PluginState;
 import android.webkit.WebView;
 
 import jp.syoboi.android.garaponmate.Prefs;
-import jp.syoboi.android.garaponmate.view.PlayerView.PlayerInterface;
 
-public class PlayerWebView implements PlayerInterface {
+public class PlayerWebView implements PlayerViewInterface {
 	private static final String TAG = "PlayerWebView";
 
 	WebView			mWebView;

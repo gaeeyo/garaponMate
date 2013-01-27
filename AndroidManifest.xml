@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.syoboi.android.garaponmate"
-    android:versionCode="8"
-    android:versionName="0.0.8" >
+    android:versionCode="9"
+    android:versionName="0.0.9" >
 
     <uses-sdk
         android:minSdkVersion="11"
         android:targetSdkVersion="16" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-<!--     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> -->
-<!--     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> -->
+    <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> -->
+    <!-- <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name=".App"
@@ -42,6 +43,13 @@
                 <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
         </activity>
+
+        <activity android:name=".activity.PlayerActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale" 
+            android:launchMode="singleInstance"/>
+        
+        <service android:name=".service.PlayerService" />
+
     </application>
 
 </manifest>

@@ -10,10 +10,13 @@
         android:singleLine="true"
         android:title="@string/password" />
 
-    <CheckBoxPreference
-        android:key="useVideoView"
-        android:summary="@string/useVideoViewSummary"
-        android:title="@string/useVideoView" />
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/playerEntries"
+        android:entryValues="@array/playerEntryValues"
+        android:key="player"
+        android:title="@string/player" />
+
     <!-- <Preference -->
     <!-- android:key="searchListSettings" -->
     <!-- android:title="@string/searchListSettings" /> -->

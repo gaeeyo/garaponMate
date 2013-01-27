@@ -30,16 +30,26 @@
                 android:paddingLeft="16dip"
                 android:paddingRight="16dip"
                 android:text="@string/title"
-                android:textAppearance="?android:attr/textAppearanceMediumInverse" />
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#fff" />
 
             <ImageButton
-                android:id="@+id/returnToFullScreen"
+                android:id="@+id/returnFromFullScreen"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:background="@drawable/transparent_button_bg_dark"
                 android:contentDescription="@string/returnFromFullScreen"
                 android:minWidth="56dip"
                 android:src="@drawable/ic_return_from_fullscreen" />
+
+            <ImageButton
+                android:id="@+id/close"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/returnFromFullScreen"
+                android:minWidth="56dip"
+                android:src="@drawable/ic_close" />
         </LinearLayout>
 
         <TextView
@@ -125,6 +135,15 @@
                 android:visibility="gone" />
         </LinearLayout>
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/video_toolbar_bg"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#fff" />
 
     <View
         android:id="@+id/playerViewOverlay"

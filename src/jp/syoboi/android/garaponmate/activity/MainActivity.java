@@ -17,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -35,6 +34,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
@@ -43,6 +43,7 @@ import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.fragment.ErrorDialogFragment;
 import jp.syoboi.android.garaponmate.fragment.SearchResultFragment;
 import jp.syoboi.android.garaponmate.fragment.SummaryFragment;
+import jp.syoboi.android.garaponmate.service.PlayerService;
 import jp.syoboi.android.garaponmate.task.ProgressDialogTask;
 import jp.syoboi.android.garaponmate.view.PlayerView;
 
@@ -73,7 +74,6 @@ public class MainActivity extends Activity  {
 	View			mSummaryPage;
 	View			mSearchPage;
 	boolean			mPlayerExpanded;
-	boolean			mFullScreen;
 	boolean			mTitleExtracting;
 	boolean			mReloadAfterLogin;
 	int				mPage;
@@ -190,27 +190,10 @@ public class MainActivity extends Activity  {
 		webSettings.setSavePassword(false);
 		webSettings.setDomStorageEnabled(true);
 
-		mPlayer.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-			@Override
-			public void onSystemUiVisibilityChange(int visibility) {
-				final int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-				if (mFullScreen) {
-					if ((visibility & FS_FLAGS) == 0) {
-						// フルスクリーンが解除された
-						cancelFullScreen();
-						startFullScreenDelay();
-					}
-				}
-
-			}
-		});
-
 		mPlayerClose.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				mPlayer.stop();
-				mPlayer.setVisibility(View.GONE);
-				onVideoChanged(null);
+				closePlayer();
 			}
 		});
 
@@ -236,25 +219,7 @@ public class MainActivity extends Activity  {
 					}
 					return true;
 				} else {
-					switch (event.getAction()) {
-					case MotionEvent.ACTION_DOWN:
-						if (mFullScreen) {
-							touching = true;
-							cancelFullScreen();
-						} else {
-							startFullScreenDelay();
-						}
-						break;
-					case MotionEvent.ACTION_UP:
-					case MotionEvent.ACTION_CANCEL:
-						startFullScreenDelay();
-						if (touching) {
-							touching = false;
-							return true;
-						}
-						break;
-					}
-					return touching;
+					return false;
 				}
 			}
 		});
@@ -350,7 +315,7 @@ public class MainActivity extends Activity  {
 					@Override
 					public void run() {
 //						mWebView.stopLoading();
-						playVideo(id);
+						playVideo(new Program(id));
 					}
 				});
 				return true;
@@ -380,7 +345,7 @@ public class MainActivity extends Activity  {
 					@Override
 					public void run() {
 						mWebView.stopLoading();
-						playVideo(id);
+						playVideo(new Program(id));
 					}
 				});
 				return true;
@@ -389,7 +354,7 @@ public class MainActivity extends Activity  {
 		// site.garapon.tv の画像をローカルで開く
 		if (url.contains("/play?")) {
 			final String id = getGtvIdFromUrl(url, "gtvid");
-			playVideo(id);
+			playVideo(new Program(id));
 			return true;
 		}
 
@@ -453,11 +418,8 @@ public class MainActivity extends Activity  {
 	@Override
 	public void onBackPressed() {
 		// フルスクリーンだったら解除
-		if (mFullScreen) {
-			cancelFullScreen();
-			startFullScreenDelay();
-			return;
-		}
+		mPlayer.setFullScreen(false);
+
 		// プレイヤーが拡大されていたら縮小
 		if (mPlayerExpanded) {
 			expandPlayer(false);
@@ -521,18 +483,36 @@ public class MainActivity extends Activity  {
 	 * Playerで再生
 	 * @param id
 	 */
-	public void playVideo(String id) {
-		mPlayer.setVideo(id);
+	public void playVideo(Program p, int playerId) {
+		switch (playerId) {
+		case App.PLAYER_POPUP:
+			{
+				Intent i = new Intent(this, PlayerService.class);
+				i.setAction(PlayerService.ACTION_SET_VIDEO);
+				i.putExtra(App.EXTRA_PROGRAM, p);
+				startService(i);
+			}
+			return;
+		case App.PLAYER_EXTERNAL:
+			playVideoExternal(p);
+			return;
+		}
 
-		expandPlayer(false);
-		onVideoChanged(id);
-	}
-
-	public void playVideo(Program p) {
-		mPlayer.setVideo(p);
+		mPlayer.setVideo(p, playerId);
 
 		expandPlayer(false);
 		onVideoChanged(p.gtvid);
+	}
+
+	public void playVideo(Program p) {
+		playVideo(p, Prefs.getPlayerId());
+	}
+
+	public void closePlayer() {
+		mPlayer.destroy();
+		expandPlayer(false);
+		mPlayer.setVisibility(View.GONE);
+		onVideoChanged(null);
 	}
 
 	void onVideoChanged(String id) {
@@ -567,6 +547,8 @@ public class MainActivity extends Activity  {
 
 		mPlayerExpanded = expand;
 
+		mPlayer.setAutoFullScreen(expand);
+
 		mPlayerClose.setVisibility(expand ? View.GONE : View.VISIBLE);
 
 		mPlayer.setVisibility(View.VISIBLE);
@@ -574,59 +556,6 @@ public class MainActivity extends Activity  {
 		mWebViewContainer.setVisibility(expand ? View.GONE : View.VISIBLE);
 
 		updatePlayerContainerSize();
-
-		if (expand) {
-			startFullScreenDelay();
-		} else {
-			cancelFullScreen();
-		}
-	}
-
-	Runnable mChangeFullScreenRunnable = new Runnable() {
-		@Override
-		public void run() {
-			setFullScreen(true);
-		};
-	};
-
-	/**
-	 * フルスクリーンへの自動的な移行を開始
-	 */
-	void startFullScreenDelay() {
-		mHandler.removeCallbacks(mChangeFullScreenRunnable);
-		mHandler.postDelayed(mChangeFullScreenRunnable, CHANGE_FULLSCREEN_DELAY);
-	}
-
-	/**
-	 * フルスクリーンへの移行をキャンセル
-	 */
-	void cancelFullScreen() {
-		mHandler.removeCallbacks(mChangeFullScreenRunnable);
-		if (mFullScreen) {
-			setFullScreen(false);
-		}
-	}
-
-	/**
-	 * フルスクリーン設定
-	 * @param fullscreen
-	 */
-	void setFullScreen(boolean fullscreen) {
-		int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-
-		int systemUiVisibility = mPlayer.getSystemUiVisibility();
-		if (fullscreen) {
-			systemUiVisibility |= FS_FLAGS;
-			mFullScreen = true;
-			mPlayer.showToolbar(false);
-			getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		} else {
-			systemUiVisibility &= FS_FLAGS;
-			mFullScreen = false;
-			mPlayer.showToolbar(true);
-			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		}
-		mPlayer.setSystemUiVisibility(systemUiVisibility);
 	}
 
 	/**

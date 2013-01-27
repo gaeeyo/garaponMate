@@ -2,9 +2,11 @@ package jp.syoboi.android.garaponmate.view;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -15,16 +17,17 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
-import jp.syoboi.android.garaponmate.Prefs;
+import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
 import jp.syoboi.android.garaponmate.data.Program;
 
-public class PlayerView extends RelativeLayout {
+public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	private static final String TAG = "PlayerView";
 
 	private static final int INTERVAL = 500;
+	private static final int CHANGE_FULLSCREEN_DELAY = 3000;
 
 	private static final int [] PLAYER_BUTTONS = { R.id.pause, R.id.previous, R.id.rew, R.id.ff, R.id.next };
 
@@ -40,8 +43,11 @@ public class PlayerView extends RelativeLayout {
 	boolean			mUseVideoView;
 	TextView		mTime;
 	TextView		mTitle;
+	TextView		mMessage;
+	boolean			mFullScreen;
+	boolean			mAutoFullScreen;
 
-	PlayerInterface	mPlayer;
+	PlayerViewInterface	mPlayer;
 
 	public PlayerView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -56,15 +62,21 @@ public class PlayerView extends RelativeLayout {
 		mPlayerViewContainer = (FrameLayout)findViewById(R.id.playerViewContainer);
 		mTime = (TextView) findViewById(R.id.time);
 		mTitle = (TextView) findViewById(R.id.title);
+		mMessage = (TextView) findViewById(R.id.message);
+		setMessage(null);
 
-		findViewById(R.id.returnToFullScreen).setOnClickListener(new OnClickListener() {
+		findViewById(R.id.close).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				performClose();
+			}
+		});
+
+		findViewById(R.id.returnFromFullScreen).setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				Context context = getContext();
-				if (context instanceof MainActivity) {
-					((MainActivity) context).expandPlayer(false);
-				}
+				performReturnFromFullScreen();
 			}
 		});
 
@@ -88,6 +100,21 @@ public class PlayerView extends RelativeLayout {
 			}
 		});
 
+		setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+			@Override
+			public void onSystemUiVisibilityChange(int visibility) {
+				final int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+				if (mFullScreen) {
+					if ((visibility & FS_FLAGS) == 0) {
+						// フルスクリーンが解除された
+						cancelFullScreen();
+						startFullScreenDelay();
+					}
+				}
+			}
+		});
+
+
 		// ボタン
 		mToolbar = findViewById(R.id.playerToolbar);
 		for (int id: PLAYER_BUTTONS) {
@@ -98,6 +125,52 @@ public class PlayerView extends RelativeLayout {
 
 		// オーバーレイ
 		mOverlay = findViewById(R.id.playerViewOverlay);
+	}
+
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+		switch (ev.getAction() & MotionEvent.ACTION_MASK) {
+		case MotionEvent.ACTION_DOWN:
+			if (mFullScreen) {
+				cancelFullScreen();
+			}
+			break;
+		case MotionEvent.ACTION_UP:
+			if (!mFullScreen) {
+				startFullScreenDelay();
+			}
+			break;
+		}
+		return super.dispatchTouchEvent(ev);
+	}
+
+	public void setAutoFullScreen(boolean fullScreen) {
+		mAutoFullScreen = fullScreen;
+		if (fullScreen) {
+			if (!mPause) {
+				startFullScreenDelay();
+			}
+		} else {
+			cancelFullScreen();
+		}
+	}
+
+	public boolean isFullScreen() {
+		return mFullScreen;
+	}
+
+	protected void performClose() {
+		Context context = getContext();
+		if (context instanceof MainActivity) {
+			((MainActivity) context).closePlayer();
+		}
+	}
+
+	protected void performReturnFromFullScreen() {
+		Context context = getContext();
+		if (context instanceof MainActivity) {
+			((MainActivity) context).expandPlayer(false);
+		}
 	}
 
 	Runnable	mIntervalRunnable = new Runnable() {
@@ -151,6 +224,10 @@ public class PlayerView extends RelativeLayout {
 			mToolbar.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.GONE);
 		}
+	}
+
+	public boolean isToolbarShown() {
+		return mToolbar.getVisibility() == View.VISIBLE;
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -208,36 +285,32 @@ public class PlayerView extends RelativeLayout {
 	public void destroy() {
 		mHandler.removeCallbacks(mIntervalRunnable);
 		if (mPlayer != null) {
-			if (mPlayer != null) {
-				mPlayer.destroy();
-				mPlayerViewContainer.removeAllViews();
-				mPlayer = null;
-			}
+			mPlayer.destroy();
+			mPlayer = null;
 		}
+		mPlayerViewContainer.removeAllViews();
 	}
 
-	public void setVideo(String id) {
-		mTitle.setText(id);
-		mDuration = 0;
-		mTime.setText(null);
-		setVideoInternal(id);
-	}
-
-	public void setVideo(Program p) {
+	public void setVideo(Program p, int playerId) {
+		startFullScreenDelay();
 		mTitle.setText(p.title);
 		mDuration = (int) p.duration;
-		mTime.setText(getTimeStr(mDuration));
-		setVideoInternal(p.gtvid);
+		if (p.duration != 0) {
+			mTime.setText(getTimeStr(mDuration));
+		} else {
+			mTime.setText(null);
+		}
+		setVideoInternal(p.gtvid, playerId);
 	}
 
-	void setVideoInternal(final String id) {
+	void setVideoInternal(final String id, int playerId) {
 		Log.v(TAG, "setVideoInternal id:" + id);
 
-		boolean useVideoView = Prefs.useVideoView();
-		if (mPlayer != null && useVideoView != mUseVideoView) {
+		boolean useVideoView = (playerId == App.PLAYER_VIDEOVIEW);
+//		if (mPlayer != null && useVideoView != mUseVideoView) {
 			mUseVideoView = useVideoView;
 			destroy();
-		}
+//		}
 
 		if (mPlayer == null) {
 			if (useVideoView) {
@@ -257,12 +330,12 @@ public class PlayerView extends RelativeLayout {
 		mHandler.postDelayed(mIntervalRunnable, INTERVAL);
 	}
 
-	PlayerInterface createPlayerWebView() {
+	PlayerViewInterface createPlayerWebView() {
 		return new PlayerWebView(getContext());
 	}
 
-	PlayerInterface createPlayerVideoView() {
-		return new PlayerVideoView(getContext());
+	PlayerViewInterface createPlayerVideoView() {
+		return new PlayerVideoView(getContext(), this);
 	}
 
 	public void jump(int sec) {
@@ -272,6 +345,7 @@ public class PlayerView extends RelativeLayout {
 	}
 
 	public void play() {
+		startFullScreenDelay();
 		if (mPlayer != null) {
 			mPlayer.play();
 		}
@@ -285,24 +359,81 @@ public class PlayerView extends RelativeLayout {
 		mHandler.removeCallbacks(mIntervalRunnable, INTERVAL);
 	}
 
-	public void stop() {
+//	public void stop() {
+//		if (mPlayer != null) {
+//			mPlayer.stop();
+//		}
+//	}
+
+	public View getPlayerView() {
 		if (mPlayer != null) {
-			mPlayer.stop();
+			return mPlayer.getView();
+		}
+		return null;
+	}
+
+	@Override
+	public void onMessage(String message) {
+		cancelFullScreen();
+		setMessage(message);
+	}
+
+	void setMessage(String message) {
+		if (TextUtils.isEmpty(message)) {
+			mMessage.setVisibility(View.GONE);
+		} else {
+			mMessage.setVisibility(View.VISIBLE);
+			mMessage.setText(message);
 		}
 	}
 
-	public static interface PlayerInterface {
-		public void setVideo(String id);
-		public void play();
-		public void stop();
-		public void pause();
-		public void onPause();
-		public void onResume();
-		public void destroy();
-		public void seek(int msec);
-		public int getDuration();
-		public int getCurrentPos();
-		public void jump(int msec);
-		public View getView();
+	Runnable mChangeFullScreenRunnable = new Runnable() {
+		@Override
+		public void run() {
+			setFullScreen(true);
+		};
+	};
+
+	/**
+	 * フルスクリーンへの自動的な移行を開始
+	 */
+	void startFullScreenDelay() {
+		mHandler.removeCallbacks(mChangeFullScreenRunnable);
+		if (mAutoFullScreen) {
+			mHandler.postDelayed(mChangeFullScreenRunnable, CHANGE_FULLSCREEN_DELAY);
+		}
+	}
+
+	/**
+	 * フルスクリーンへの移行をキャンセル
+	 */
+	void cancelFullScreen() {
+		mHandler.removeCallbacks(mChangeFullScreenRunnable);
+		if (mFullScreen) {
+			setFullScreen(false);
+		}
+	}
+
+	/**
+	 * フルスクリーン設定
+	 * @param fullScreen
+	 */
+	public void setFullScreen(boolean fullScreen) {
+		int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_LOW_PROFILE;
+		View view = this;
+
+		int systemUiVisibility = view.getSystemUiVisibility();
+		if (fullScreen) {
+			systemUiVisibility |= FS_FLAGS;
+			mFullScreen = true;
+			showToolbar(false);
+		} else {
+			systemUiVisibility &= ~FS_FLAGS;
+			mFullScreen = false;
+			showToolbar(true);
+		}
+		view.setSystemUiVisibility(systemUiVisibility);
 	}
 }

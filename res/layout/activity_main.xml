@@ -31,7 +31,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
                 android:layout_margin="8dip"
-                android:background="@drawable/timetable_cell_background"
+                android:background="@drawable/transparent_button_bg_dark"
                 android:src="@drawable/ic_menu_close_clear_cancel" />
         </jp.syoboi.android.garaponmate.view.PlayerView>
 

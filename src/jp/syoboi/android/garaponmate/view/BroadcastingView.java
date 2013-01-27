@@ -105,6 +105,13 @@ public class BroadcastingView extends FrameLayout {
 					mListener.onClickProgram(mItems.get(idx));
 				}
 			});
+			row.findViewById(R.id.title).setOnLongClickListener(new OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					int idx = mTable.indexOfChild(row);
+					return mListener.onLongClickProgram(mItems.get(idx));
+				}
+			});
 			mTable.addView(row);
 		}
 
@@ -291,6 +298,7 @@ public class BroadcastingView extends FrameLayout {
 	public static interface OnBroadcastingViewListener {
 		public void onExpire();
 		public void onClickProgram(Program p);
+		public boolean onLongClickProgram(Program p);
 		public void onClickChannel(Program p);
 	}
 }

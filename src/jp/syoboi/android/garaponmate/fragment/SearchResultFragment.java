@@ -5,21 +5,27 @@ import android.app.ListFragment;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
+import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
 import jp.syoboi.android.garaponmate.adapter.ProgramAdapter;
+import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.client.SearchParam;
-import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.task.SearchTask;
 import jp.syoboi.android.garaponmate.view.LoadingRowWrapper;
@@ -106,6 +112,15 @@ public class SearchResultFragment extends ListFragment {
 			}
 		});
 
+		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+			@Override
+			public void onCreateContextMenu(ContextMenu menu, View v,
+					ContextMenuInfo menuInfo) {
+				getActivity().getMenuInflater().inflate(R.menu.prog_item_menu, menu);
+			}
+		});
+
+		registerForContextMenu(getListView());
 
 		mSearchParam.page = mPage;
 		mSearchParam.count = PAGE_COUNT;
@@ -134,6 +149,28 @@ public class SearchResultFragment extends ListFragment {
 			f.setTargetFragment(this, REQUEST_EDIT);
 			f.show(getFragmentManager(), "searchParamDialog");
 		}
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		getActivity().getMenuInflater().inflate(R.menu.prog_item_menu, menu);
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)item.getMenuInfo();
+		if (acmi.targetView.getParent() == getListView()) {
+			Object obj = getListView().getItemAtPosition(acmi.position);
+			if (obj instanceof Program) {
+				Program p = (Program)obj;
+				int playerId = App.PlayerResIdToPlayerId(item.getItemId());
+				((MainActivity)getActivity()).playVideo(p, playerId);
+			}
+			return true;
+		}
+		return super.onContextItemSelected(item);
 	}
 
 	@Override

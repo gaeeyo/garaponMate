@@ -37,11 +37,31 @@
     <string name="useVideoView">Flashを使わない</string>
     <string name="useVideoViewSummary">Flashを使わない方法で動画を再生します。Flashを使った場合より安定性や性能が悪くなる場合があります。</string>
     <string name="returnFromFullScreen">フルスクリーン解除</string>
+    <string name="bufferingFmt">バッファリング中…(%1$d%%)</string>
     <string name="pause">一時停止</string>
     <string name="ff">早送り</string>
     <string name="rew">巻き戻し</string>
     <string name="previous">前へ</string>
     <string name="next">次へ</string>
+    <string name="player">再生方法</string>
+    <string name="playPopup">ポップアップで再生</string>
+    <string name="playWebView">Flashで再生</string>
+    <string name="playVideoView">VideoViewで再生</string>
+    <string name="playExternal">他のアプリで再生</string>
+    
+    <string-array name="playerEntries">
+        <item>Flash</item>
+        <item>VideoView</item>
+        <item>ポップアップ(VideoView)</item>
+        <item>他のアプリ</item>
+    </string-array>
+    
+    <string-array name="playerEntryValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
     

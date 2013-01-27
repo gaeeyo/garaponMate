@@ -18,20 +18,24 @@ table b { color:#900; }
 <h1>ヘルプ</h1>
 <h2>概要</h2>
 ガラポンTVの簡易ブラウザです。<br>
-端末に <a href="http://helpx.adobe.com/flash-player/kb/archived-flash-player-versions.html">Flash Player</a> がインストールされている必要があります。<br>
+基本的には <a href="http://helpx.adobe.com/flash-player/kb/archived-flash-player-versions.html">Flash Player</a> が必要です。Adobe のサイトから Android 用 Flash Player をダウンロードしてインストールしてください。<br>
 <br>
-その他、以下のような動作が加えられています。
-<ul>
-<li>動画の大きさを画面の幅に合わせる
-<li>トップページの「ガラポンテレビサイト」のリンクを、自分のガラポンで直接開く
-</ul>
+<h1>設定</h1>
 <h2>ガラポンID、パスワード</h2>
 ガラポンのIDとパスワードを設定します。
+<h2>再生方法</h2>
+再生方法を4種類から選択できます。
+<table>
+<tr><td>Flash</td><td>Flash Player を使用します。<br>プロトコルはRTMPです。<br>もっともパフォーマンスや安定性が良いです。<br>ただしガラポンTVのRTMPサーバが止まって使えなくなることがよくあります。</td></tr>
+<tr><td>VideoView</td><td>Android標準の VideoView を使用します。<br>プロトコルは HTTP Live Streaming です。<br>端末によってパフォーマンスや安定性にばらつきがあります。<br>放送中の番組は再生を開始した時点の終了部分までしか再生できません。</td></tr>
+<tr><td>ポップアップ<br>(VideoView)</td><td>再生画面をポップアップ表示します。<br>他のアプリに切り替えてもそのまま表示され続けるので「ながら見」ができます。</td></tr>
+<tr><td>他のアプリ</td><td>端末にインストールされている他のアプリで再生します。<br>プロトコルは HTTP Live Streaming です。<br><a href="https://play.google.com/store/apps/details?id=com.bsplayer.bspandroid.free">BSPlayer</a> などが使え、パフォーマンスが良い場合があります。</td></tr>
+</table>
 <h2>画面のボタン等</h2>
 <table>
 <tr><td class="center">fav1～3</td><td>お気に入り1～3。<br>長押しすると現在のWebページがセットされます。</td></tr>
-<tr><td class="center">◀</td><td>15秒戻る。</td></tr>
-<tr><td class="center">▶</td><td>30秒進む。</td></tr>
+<tr><td class="center">◀◀</td><td>15秒戻る。</td></tr>
+<tr><td class="center">▶▶</td><td>30秒進む。</td></tr>
 <tr><td class="center">設定</td><td>設定を開きます。<br><b>長押しするとトップページに移動します。</b></td></tr>
 </table>
 

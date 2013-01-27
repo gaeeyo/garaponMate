@@ -67,6 +67,17 @@ public class Program implements Serializable {
 				| ("1".equals(jo.getString("favorite", "0")) ? FLAG_FAVORITE : 0);
 	}
 
+	public Program(String gtvid) {
+		this.gtvid = gtvid;
+		startdate = 0;
+		duration = 0;
+		title = gtvid;
+		description = null;
+		genre = new int [0];
+		ch = null;
+		flag = 0;
+	}
+
 	public void write(JsonGenerator jg) throws JsonGenerationException, IOException {
 		jg.writeStartObject();
 		jg.writeStringField("gtvid", gtvid);

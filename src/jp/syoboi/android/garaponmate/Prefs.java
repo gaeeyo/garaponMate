@@ -24,7 +24,8 @@ public class Prefs {
 	private static final String COMMON_SESSION_ID = "commonSessionId";
 	private static final String PROG_SEARCH_LIST = "progSearchList";
 
-	private static final String USE_VIDEO_VIEW = "useVideoView";
+	//private static final String USE_VIDEO_VIEW = "useVideoView";	// 廃止
+	private static final String PLAYER = "player";
 
 	private static SharedPreferences sPrefs;
 
@@ -150,7 +151,13 @@ public class Prefs {
 		return sPrefs.getString(PROG_SEARCH_LIST, "");
 	}
 
-	public static boolean useVideoView() {
-		return sPrefs.getBoolean(USE_VIDEO_VIEW, false);
+	public static int getPlayerId() {
+		try {
+			String value = sPrefs.getString(PLAYER, null);
+			int id = Integer.valueOf(value);
+			return id;
+		} catch (Exception e) {
+			return App.PLAYER_WEBVIEW;
+		}
 	}
 }

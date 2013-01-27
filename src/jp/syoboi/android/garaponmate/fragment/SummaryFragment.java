@@ -13,7 +13,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
@@ -91,6 +90,13 @@ public class SummaryFragment extends ListFragment {
 			}
 
 			@Override
+			public boolean onLongClickProgram(Program p) {
+				mBcView.setTag(p);
+				mBcView.showContextMenu();
+				return true;
+			}
+
+			@Override
 			public void onClickChannel(Program p) {
 				if (getActivity() instanceof MainActivity) {
 					SearchParam param = new SearchParam();
@@ -108,13 +114,7 @@ public class SummaryFragment extends ListFragment {
 		mSearchListEmpty = mSearchListHeader.findViewById(R.id.searchListEmpty);
 		getListView().addHeaderView(mSearchListHeader);
 
-		getListView().setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
-			@Override
-			public void onCreateContextMenu(ContextMenu menu, View v,
-					ContextMenuInfo menuInfo) {
-				getActivity().getMenuInflater().inflate(R.menu.search_list_item_menu, menu);
-			}
-		});
+		registerForContextMenu(getListView());
 
 		App.getSearchParamList().registerDataSetObserver(mDataSetObserver);
 
@@ -131,16 +131,41 @@ public class SummaryFragment extends ListFragment {
 		super.onDestroy();
 	}
 
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+
+		if (menuInfo instanceof AdapterContextMenuInfo) {
+			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)menuInfo;
+			if (acmi.targetView == mBcView) {
+				getActivity().getMenuInflater().inflate(R.menu.prog_item_menu, menu);
+			}
+			else if (v == getListView()) {
+				Object obj = getListView().getItemAtPosition(acmi.position);
+				if (obj != null) {
+					getActivity().getMenuInflater().inflate(R.menu.search_list_item_menu, menu);
+				}
+			}
+		}
+	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		ContextMenuInfo cmi = item.getMenuInfo();
 		if (cmi instanceof AdapterContextMenuInfo) {
 			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)cmi;
-			Object obj = getListView().getItemAtPosition(acmi.position);
-			if (obj instanceof SearchParam) {
-				SearchParam sp = (SearchParam)obj;
-				App.getSearchParamList().removeById(sp.id);
+			if (acmi.targetView == mBcView) {
+				Program p = (Program)mBcView.getTag();
+				((MainActivity)getActivity()).playVideo(p,
+						App.PlayerResIdToPlayerId(item.getItemId()));
+			}
+			else if (acmi.targetView.getParent() == getListView()) {
+				Object obj = getListView().getItemAtPosition(acmi.position);
+				if (obj instanceof SearchParam) {
+					SearchParam sp = (SearchParam)obj;
+					App.getSearchParamList().removeById(sp.id);
+				}
 			}
 		}
 		return super.onContextItemSelected(item);

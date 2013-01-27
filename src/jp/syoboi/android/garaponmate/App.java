@@ -17,6 +17,17 @@ public class App extends Application {
 	public static boolean DEBUG = false;
 	public static String VERSION = "?";
 
+	public static final String PKG = "jp.syoboi.android.garaponmate";
+	public static final String ACTION_PLAYER_ACTIVITY_FINISH = PKG + ".playerActivity.finish";
+	public static final String ACTION_PLAYER_ACTIVITY_FULLSCREEN = PKG + ".playerActivity.fullScreen";
+
+	public static final String EXTRA_PROGRAM = "program";
+
+	public static final int PLAYER_WEBVIEW = 0;
+	public static final int PLAYER_VIDEOVIEW = 1;
+	public static final int PLAYER_POPUP = 2;
+	public static final int PLAYER_EXTERNAL = 3;
+
 	private static SearchParamList 	sSearchParamList;
 	private static ChList			sChList;
 
@@ -49,5 +60,19 @@ public class App extends Application {
 
 	public static ChList getChList() {
 		return sChList;
+	}
+
+	public static int PlayerResIdToPlayerId(int menuId) {
+		switch (menuId) {
+		case R.id.playVideoView:
+			return PLAYER_VIDEOVIEW;
+		case R.id.playPopup:
+			return PLAYER_POPUP;
+		case R.id.playExternal:
+			return PLAYER_EXTERNAL;
+		case R.id.playWebView:
+			default:
+			return PLAYER_WEBVIEW;
+		}
 	}
 }
