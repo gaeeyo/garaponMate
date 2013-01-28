@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.syoboi.android.garaponmate"
-    android:versionCode="9"
-    android:versionName="0.0.9" >
+    android:versionCode="10"
+    android:versionName="0.1.0" >
 
     <uses-sdk
         android:minSdkVersion="11"
         android:targetSdkVersion="16" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!-- <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
@@ -49,17 +49,18 @@
             android:launchMode="singleInstance" />
 
         <!-- ダイアログだけ表示 -->
-        <activity android:name=".activity.DialogActivity" 
-            android:theme="@android:style/Theme.Translucent"/>
-        
+        <activity
+            android:name=".activity.DialogActivity"
+            android:theme="@android:style/Theme.Translucent" />
+
         <!-- BroadcastReceiver -->
-        <receiver android:name=".receiver.Receiver">
+        <receiver android:name=".receiver.Receiver" >
+
             <!-- ダウンロードマネージャからの通知 -->
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
             </intent-filter>
         </receiver>
-        
 
         <service android:name=".service.PlayerService" />
     </application>
