@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.util.SparseIntArray;
 
 import java.io.File;
 
@@ -30,6 +31,7 @@ public class App extends Application {
 
 	private static SearchParamList 	sSearchParamList;
 	private static ChList			sChList;
+	private static SparseIntArray	sPlayerResIdToPlayerId = getPlayerResIdToPlayerIdMap();
 
 	@Override
 	public void onCreate() {
@@ -62,17 +64,25 @@ public class App extends Application {
 		return sChList;
 	}
 
-	public static int PlayerResIdToPlayerId(int menuId) {
-		switch (menuId) {
-		case R.id.playVideoView:
-			return PLAYER_VIDEOVIEW;
-		case R.id.playPopup:
-			return PLAYER_POPUP;
-		case R.id.playExternal:
-			return PLAYER_EXTERNAL;
-		case R.id.playWebView:
-			default:
-			return PLAYER_WEBVIEW;
+	private static SparseIntArray getPlayerResIdToPlayerIdMap() {
+		SparseIntArray a = new SparseIntArray();
+		a.append(R.id.playWebView, PLAYER_WEBVIEW);
+		a.append(R.id.playVideoView, PLAYER_VIDEOVIEW);
+		a.append(R.id.playPopup, PLAYER_POPUP);
+		a.append(R.id.playExternal, PLAYER_EXTERNAL);
+		return a;
+	}
+
+	public static int playerResIdToPlayerId(int menuId, int fallback) {
+		return sPlayerResIdToPlayerId.get(menuId, fallback);
+	}
+
+	public static int playerIdToResId(int playerId, int fallback) {
+		for (int j=0; j<sPlayerResIdToPlayerId.size(); j++) {
+			if (sPlayerResIdToPlayerId.valueAt(j) == playerId) {
+				return sPlayerResIdToPlayerId.keyAt(playerId);
+			}
 		}
+		return fallback;
 	}
 }

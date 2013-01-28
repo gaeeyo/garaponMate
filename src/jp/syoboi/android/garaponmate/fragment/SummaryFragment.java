@@ -1,7 +1,6 @@
 package jp.syoboi.android.garaponmate.fragment;
 
 import android.app.Activity;
-import android.app.ListFragment;
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.AsyncTask;
@@ -29,10 +28,11 @@ import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.client.SearchParam;
 import jp.syoboi.android.garaponmate.data.Program;
+import jp.syoboi.android.garaponmate.fragment.base.MainBaseFragment;
 import jp.syoboi.android.garaponmate.view.BroadcastingView;
 import jp.syoboi.android.garaponmate.view.BroadcastingView.OnBroadcastingViewListener;
 
-public class SummaryFragment extends ListFragment {
+public class SummaryFragment extends MainBaseFragment {
 
 	private static final int REQUEST_NEW = 1;
 
@@ -84,9 +84,7 @@ public class SummaryFragment extends ListFragment {
 
 			@Override
 			public void onClickProgram(Program p) {
-				if (getActivity() instanceof MainActivity) {
-					((MainActivity)getActivity()).playVideo(p);
-				}
+				playVideo(p);
 			}
 
 			@Override
@@ -134,7 +132,6 @@ public class SummaryFragment extends ListFragment {
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
 
 		if (menuInfo instanceof AdapterContextMenuInfo) {
 			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)menuInfo;
@@ -148,6 +145,7 @@ public class SummaryFragment extends ListFragment {
 				}
 			}
 		}
+		super.onCreateContextMenu(menu, v, menuInfo);
 	}
 
 	@Override
@@ -157,8 +155,7 @@ public class SummaryFragment extends ListFragment {
 			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)cmi;
 			if (acmi.targetView == mBcView) {
 				Program p = (Program)mBcView.getTag();
-				((MainActivity)getActivity()).playVideo(p,
-						App.PlayerResIdToPlayerId(item.getItemId()));
+				execCommand(item.getItemId(), p);
 			}
 			else if (acmi.targetView.getParent() == getListView()) {
 				Object obj = getListView().getItemAtPosition(acmi.position);
