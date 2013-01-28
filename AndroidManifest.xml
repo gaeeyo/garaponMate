@@ -43,13 +43,25 @@
                 <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.PlayerActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"
+            android:launchMode="singleInstance" />
 
-        <activity android:name=".activity.PlayerActivity"
-            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale" 
-            android:launchMode="singleInstance"/>
+        <!-- ダイアログだけ表示 -->
+        <activity android:name=".activity.DialogActivity" 
+            android:theme="@android:style/Theme.Translucent"/>
         
-        <service android:name=".service.PlayerService" />
+        <!-- BroadcastReceiver -->
+        <receiver android:name=".receiver.Receiver">
+            <!-- ダウンロードマネージャからの通知 -->
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
+            </intent-filter>
+        </receiver>
+        
 
+        <service android:name=".service.PlayerService" />
     </application>
 
 </manifest>

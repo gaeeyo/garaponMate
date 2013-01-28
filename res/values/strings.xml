@@ -20,6 +20,8 @@
     <string name="minute">分</string>
     <string name="ch">チャンネル</string>
     <string name="keyword">キーワード</string>
+    <string name="download">ダウンロード</string>
+    <string name="confirmCancelDownload">ダウンロードをキャンセルしますか?</string>
     <string name="favoriteOnly">お気に入りのみ</string>
     <string name="chName">チャンネル名</string>
     <string name="nowBroadcasting">放送中</string>

@@ -1,12 +1,19 @@
 package jp.syoboi.android.garaponmate.fragment.base;
 
+import android.app.DownloadManager;
 import android.app.ListFragment;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.text.format.Time;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
+
+import java.io.File;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
@@ -40,6 +47,9 @@ public class MainBaseFragment extends ListFragment {
 		switch (id) {
 		case R.id.share:
 			shareProgram(p);
+			break;
+		case R.id.download:
+			downloadProgram(p);
 			break;
 		case R.id.playWebView:
 		case R.id.playVideoView:
@@ -78,5 +88,35 @@ public class MainBaseFragment extends ListFragment {
 			e.printStackTrace();
 			ErrorDialogFragment.show(getFragmentManager(), e);
 		}
+	}
+
+	protected void downloadProgram(Program p) {
+		String url = "http://" + Prefs.getGaraponHost() + "/cgi-bin/play/ts.cgi?file="
+				+ p.ch.ch + "/" + p.gtvid + ".ts";
+
+		String filename =  p.title;
+		if (filename == null) {
+			filename = p.gtvid;
+		}
+		Time t = new Time();
+		t.set(p.startdate);
+		String dateTimeText = t.format("%Y%m%d-%H%M");
+
+		filename = dateTimeText + " " + filename.replaceAll("./:\\*\\?\\|<>", "_")
+				+ " [" + p.ch.bc + "]";
+
+		File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+		File file = new File(dir, filename + ".ts");
+		downloadUrl(url, file, p.title);
+	}
+
+	protected void downloadUrl(String url, File path, String title) {
+		DownloadManager dm = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
+		DownloadManager.Request req = new DownloadManager.Request(Uri.parse(url));
+		req.allowScanningByMediaScanner();
+		req.setTitle(title);
+		req.setDescription(path.getPath());
+		req.setDestinationUri(Uri.fromFile(path));
+		dm.enqueue(req);
 	}
 }
