@@ -100,6 +100,8 @@ public class GaraponClientUtils {
 		.putString(Prefs.TS_PORT, result.get("port2"))
 		.commit();
 
+		REFRESH_AUTH = false;
+
 		return ipaddr + ":" + port;
 	}
 
