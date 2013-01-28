@@ -1,6 +1,7 @@
 package jp.syoboi.android.garaponmate.adapter;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
 
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.data.Program;
@@ -22,10 +24,14 @@ public class ProgramAdapter extends BaseAdapter {
 	Context				mContext;
 	String				mSelection;
 	int					mSelectedBackgroundColor;
+	Matcher				mHighlightMatcher;
+	int					mHighlightBgColor;
 
 	public ProgramAdapter(Context context) {
 		mContext = context;
-		mSelectedBackgroundColor = context.getResources().getColor(R.color.selectedColor);
+		Resources res = context.getResources();
+		mSelectedBackgroundColor = res.getColor(R.color.selectedColor);
+		mHighlightBgColor = res.getColor(R.color.searchHighlightBgColor);
 	}
 
 	public void setItems(List<Program> programs) {
@@ -79,12 +85,17 @@ public class ProgramAdapter extends BaseAdapter {
 		}
 
 		Program p = mItems.get(position);
-		vh.setItem(p);
+		vh.setItem(p, mHighlightMatcher, mHighlightBgColor);
 
 		boolean selected = TextUtils.equals(p.gtvid, mSelection);
 		v.setBackgroundColor(selected ? mSelectedBackgroundColor : 0);
 
 		return v;
+	}
+
+	public void setHighlightMatcher(Matcher m) {
+		mHighlightMatcher = m;
+		notifyDataSetChanged();
 	}
 
 	static final int STARTTIME_FMT = DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME
@@ -103,7 +114,8 @@ public class ProgramAdapter extends BaseAdapter {
 			mTitle = (TextView) v.findViewById(R.id.title);
 			mDescription = (TextView) v.findViewById(R.id.description);
 		}
-		public void setItem(Program p) {
+
+		public void setItem(Program p, Matcher m, int highlightColor) {
 			Context context = mTime.getContext();
 			int min = (int)(p.duration / 1000 / 60);
 
@@ -115,8 +127,13 @@ public class ProgramAdapter extends BaseAdapter {
 
 			mTime.setText(timeStr);
 			mChName.setText(Utils.convertCoolTitle(p.ch.bc));
-			mTitle.setText(Utils.convertCoolTitle(p.title));
-			mDescription.setText(Utils.convertCoolTitle(p.description));
+			mTitle.setText(deco(p.title, m, highlightColor));
+			mDescription.setText(deco(p.description, m, highlightColor));
+		}
+
+		CharSequence deco(CharSequence text, Matcher m, int bgColor) {
+			text = Utils.convertCoolTitle(text);
+			return Utils.highlightText(text, m, 0, bgColor);
 		}
 	}
 

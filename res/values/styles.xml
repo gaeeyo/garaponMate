@@ -9,6 +9,7 @@
     <color name="timetableBorderColor">#ffbbbbbb</color>
     <color name="timeBarColor">#ff6DCAEC</color>
     <color name="broadcastTimeBarColor">#ffCF9FE7</color>
+    <color name="searchHighlightBgColor">#FFFF99</color>
     
     <dimen name="timeBorderWidth">1dip</dimen>
     <dimen name="timeBarHeight">7dip</dimen>

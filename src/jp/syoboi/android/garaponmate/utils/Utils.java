@@ -1,6 +1,10 @@
 package jp.syoboi.android.garaponmate.utils;
 
 import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 
@@ -40,7 +44,7 @@ public class Utils {
 	 * @param text
 	 * @return
 	 */
-	public synchronized static String convertCoolTitle(String text) {
+	public synchronized static CharSequence convertCoolTitle(CharSequence text) {
 		final Matcher m = UNCOOL_MATCHER;
 
 		if (!m.reset(text).find()) {
@@ -115,5 +119,30 @@ public class Utils {
 		}
 	}
 
+	public static CharSequence highlightText(CharSequence text, Matcher m,
+			int textColor, int bgColor) {
 
+		m.reset(text);
+		if (!m.find()) {
+			return text;
+		}
+
+		SpannableString ss = new SpannableString(text);
+		int start;
+		do {
+			int spanStart = m.start();
+			int spanEnd = m.end();
+			if (textColor != 0) {
+				ss.setSpan(new ForegroundColorSpan(textColor),
+						spanStart, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+			if (bgColor != 0) {
+				ss.setSpan(new BackgroundColorSpan(bgColor),
+						spanStart, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+			start = m.end();
+		} while (m.find(start));
+
+		return ss;
+	}
 }

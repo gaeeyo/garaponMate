@@ -2,6 +2,7 @@ package jp.syoboi.android.garaponmate.client;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 import jp.syoboi.android.util.JksnUtils.JksnObject;
 
@@ -87,5 +88,22 @@ public class SearchParam implements Serializable {
 		j.writeNumberField("sortAscent", sort);
 		j.writeNumberField("videoAll", video);
 		j.writeEndObject();
+	}
+
+	public Pattern createHighlightPattern() {
+		String words [] = keyword.split("[ 　]+");
+		StringBuilder sb = new StringBuilder();
+		for (String word: words) {
+			if (word.length() < 1) {
+				continue;
+			}
+			if (sb.length() > 0) {
+				sb.append('|');
+			}
+			sb.append(Pattern.quote(word));
+		}
+
+		return Pattern.compile(sb.toString(),
+				Pattern.UNICODE_CASE | Pattern.DOTALL);
 	}
 }
