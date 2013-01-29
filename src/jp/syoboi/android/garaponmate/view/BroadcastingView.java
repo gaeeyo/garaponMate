@@ -198,6 +198,7 @@ public class BroadcastingView extends FrameLayout {
 
 		paint.setStyle(Style.FILL);
 
+		int barBottomMargin = Math.round(1 * getResources().getDisplayMetrics().density);
 		for (int j=0; j<childCount; j++) {
 			Program p = mItems.get(j);
 
@@ -208,7 +209,7 @@ public class BroadcastingView extends FrameLayout {
 
 			View child = mTable.getChildAt(j);
 			int top = child.getTop() + tableTop;
-			int bottom = child.getBottom() + tableTop;
+			int bottom = child.getBottom() + tableTop - barBottomMargin;
 
 			if (TextUtils.equals(mSelectedGtvid, p.gtvid)) {
 				paint.setColor(mSelectedBackgroundColor);
@@ -264,7 +265,7 @@ public class BroadcastingView extends FrameLayout {
 				for (int j=0; j<childCount; j++) {
 					Program p = mItems.get(j);
 					if (p.startdate <= x && x <= p.startdate + p.duration) {
-						int childBottom = mTable.getChildAt(j).getBottom() + tableTop;
+						int childBottom = mTable.getChildAt(j).getBottom() + tableTop - barBottomMargin;
 						canvas.drawRect(left,
 								childBottom - mTimeBarHeight,
 								left + mBorderWidth, childBottom - 1, paint);

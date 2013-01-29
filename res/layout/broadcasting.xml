@@ -8,6 +8,7 @@
         android:id="@+id/tableTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/list_header_bg"
         android:paddingBottom="4dip"
         android:paddingLeft="8dip"
         android:paddingRight="8dip"
@@ -22,8 +23,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical" />
 
-    <ImageView 
-        android:background="@drawable/timetable_top_border"
-        android:layout_width="match_parent"
-        android:layout_height="1dip"/>
+<!--     <ImageView -->
+<!--         android:layout_width="match_parent" -->
+<!--         android:layout_height="1dip" -->
+<!--         android:background="@drawable/timetable_top_border" /> -->
+
 </LinearLayout>

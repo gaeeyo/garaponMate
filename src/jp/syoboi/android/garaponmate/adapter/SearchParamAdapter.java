@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import jp.syoboi.android.garaponmate.App;
+import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.client.SearchParam;
 
@@ -39,7 +40,7 @@ public class SearchParamAdapter extends ArrayAdapter<SearchParam> {
 	@Override
 	public View getView(int position, View v, ViewGroup parent) {
 		if (v == null) {
-			v = View.inflate(getContext(), android.R.layout.simple_list_item_1, null);
+			v = View.inflate(getContext(), R.layout.search_param_row, null);
 		}
 		TextView tv = (TextView) v;
 		SearchParam p = getItem(position);

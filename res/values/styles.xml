@@ -2,7 +2,7 @@
 
     <color name="pressedColor">#cc33B5E5</color>
     <color name="focusedColor">#6633B5E5</color>
-    <color name="selectedColor">#3333B5E5</color>
+    <color name="selectedColor">#40FF8800</color>
     <color name="popupMessageBgColor">#88000000</color>
     <color name="popupMessageTextColor">#fff3f3f3</color>
     
@@ -65,7 +65,7 @@
         -->
     </style>
 
-    <color name="windowBackgroundColor">#fff3f3f3</color>
+    <color name="windowBackgroundColor">#ffffffff</color>
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">

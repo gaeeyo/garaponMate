@@ -6,6 +6,7 @@
     android:paddingBottom="4dip"
     android:paddingLeft="8dip"
     android:paddingRight="8dip"
+    android:background="@drawable/list_row_bg"
     android:paddingTop="4dip" >
 
     <TextView

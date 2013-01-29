@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:paddingBottom="4dip"
     android:paddingLeft="8dip"
+    android:background="@drawable/list_header_bg"
     android:paddingRight="8dip"
     android:paddingTop="4dip" >
 

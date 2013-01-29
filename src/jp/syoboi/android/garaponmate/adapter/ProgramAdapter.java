@@ -2,6 +2,7 @@ package jp.syoboi.android.garaponmate.adapter;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.View;
@@ -23,14 +24,12 @@ public class ProgramAdapter extends BaseAdapter {
 	ArrayList<Program>	mItems = new ArrayList<Program>();
 	Context				mContext;
 	String				mSelection;
-	int					mSelectedBackgroundColor;
 	Matcher				mHighlightMatcher;
 	int					mHighlightBgColor;
 
 	public ProgramAdapter(Context context) {
 		mContext = context;
 		Resources res = context.getResources();
-		mSelectedBackgroundColor = res.getColor(R.color.selectedColor);
 		mHighlightBgColor = res.getColor(R.color.searchHighlightBgColor);
 	}
 
@@ -77,7 +76,7 @@ public class ProgramAdapter extends BaseAdapter {
 	public View getView(int position, View v, ViewGroup parent) {
 		ViewHolder vh;
 		if (v == null) {
-			v = View.inflate(mContext, R.layout.program, null);
+			v = View.inflate(mContext, R.layout.search_result_row, null);
 			vh = new ViewHolder(v);
 			v.setTag(vh);
 		} else {
@@ -88,7 +87,8 @@ public class ProgramAdapter extends BaseAdapter {
 		vh.setItem(p, mHighlightMatcher, mHighlightBgColor);
 
 		boolean selected = TextUtils.equals(p.gtvid, mSelection);
-		v.setBackgroundColor(selected ? mSelectedBackgroundColor : 0);
+		Drawable d = v.getBackground();
+		d.setLevel(selected ? 1 : 0);
 
 		return v;
 	}
