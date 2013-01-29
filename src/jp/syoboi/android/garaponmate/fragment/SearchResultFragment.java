@@ -89,7 +89,7 @@ public class SearchResultFragment extends MainBaseFragment {
 		getListView().addFooterView(mLoadingRow.getView());
 
 		mAdapter = new ProgramAdapter(getActivity());
-		mAdapter.setHighlightMatcher(mSearchParam.createHighlightPattern().matcher(""));
+		mAdapter.setHighlightMatcher(mSearchParam.createMatcher());
 		setListAdapter(mAdapter);
 
 		getListView().setOnScrollListener(new OnScrollListener() {

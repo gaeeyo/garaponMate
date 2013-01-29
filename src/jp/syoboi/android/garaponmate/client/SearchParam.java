@@ -2,6 +2,7 @@ package jp.syoboi.android.garaponmate.client;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jp.syoboi.android.util.JksnUtils.JksnObject;
@@ -90,7 +91,15 @@ public class SearchParam implements Serializable {
 		j.writeEndObject();
 	}
 
-	public Pattern createHighlightPattern() {
+	public Matcher createMatcher() {
+		Pattern ptn = createPattern();
+		if (ptn == null) {
+			return null;
+		}
+		return ptn.matcher("");
+	}
+
+	public Pattern createPattern() {
 		String words [] = keyword.split("[ 　]+");
 		StringBuilder sb = new StringBuilder();
 		for (String word: words) {
@@ -101,6 +110,10 @@ public class SearchParam implements Serializable {
 				sb.append('|');
 			}
 			sb.append(Pattern.quote(word));
+		}
+
+		if (sb.length() == 0) {
+			return null;
 		}
 
 		return Pattern.compile(sb.toString(),

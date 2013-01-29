@@ -122,6 +122,10 @@ public class Utils {
 	public static CharSequence highlightText(CharSequence text, Matcher m,
 			int textColor, int bgColor) {
 
+		if (m == null) {
+			return text;
+		}
+
 		m.reset(text);
 		if (!m.find()) {
 			return text;
@@ -132,6 +136,9 @@ public class Utils {
 		do {
 			int spanStart = m.start();
 			int spanEnd = m.end();
+			if (spanStart == spanEnd) {
+				return text;
+			}
 			if (textColor != 0) {
 				ss.setSpan(new ForegroundColorSpan(textColor),
 						spanStart, spanEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
