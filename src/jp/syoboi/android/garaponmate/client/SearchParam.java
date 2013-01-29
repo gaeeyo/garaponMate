@@ -1,5 +1,7 @@
 package jp.syoboi.android.garaponmate.client;
 
+import android.text.TextUtils;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.regex.Matcher;
@@ -100,6 +102,9 @@ public class SearchParam implements Serializable {
 	}
 
 	public Pattern createPattern() {
+		if (TextUtils.isEmpty(keyword)) {
+			return null;
+		}
 		String words [] = keyword.split("[ 　]+");
 		StringBuilder sb = new StringBuilder();
 		for (String word: words) {
