@@ -118,29 +118,6 @@ public class Prefs {
 		.commit();
 	}
 
-	public static String getFavTitle(int j) {
-		return sPrefs.getString("fav" + j + "title", "");
-	}
-
-	public static String getFavUrl(int j) {
-		String url = sPrefs.getString("fav" + j + "url", "");
-		int pos = url.indexOf("//");
-		if (pos != -1) {
-			pos = url.indexOf("/", pos + 2);
-			if (pos != -1) {
-				url = getBaseUrl() + url.substring(pos);
-			}
-		}
-		return url;
-	}
-
-	public static void setFav(int j, String title, String url) {
-		sPrefs.edit()
-		.putString("fav" + j + "title", title)
-		.putString("fav" + j + "url", url)
-		.commit();
-	}
-
 	public static void setSearch(ProgSearchList ps) {
 		sPrefs.edit()
 		.putString(PROG_SEARCH_LIST, ps.toJson())

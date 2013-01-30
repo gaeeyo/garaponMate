@@ -14,6 +14,7 @@
     <dimen name="timeBorderWidth">1dip</dimen>
     <dimen name="timeBarHeight">7dip</dimen>
     <dimen name="timeBarTextSize">14sp</dimen>
+    <dimen name="bottomToolbarHeight">52dip</dimen>
     
     <color name="chNameColor">#ff008800</color>
     <color name="timeColor">#ff555555</color>

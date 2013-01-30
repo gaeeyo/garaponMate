@@ -23,6 +23,8 @@
     <string name="download">ダウンロード</string>
     <string name="confirmCancelDownload">ダウンロードをキャンセルしますか?</string>
     <string name="favoriteOnly">お気に入りのみ</string>
+    <string name="home">ホーム</string>
+    <string name="webBrowser">ブラウザ</string>
     <string name="chName">チャンネル名</string>
     <string name="nowBroadcasting">放送中</string>
     <string name="loading">読み込み中…</string>
@@ -67,10 +69,6 @@
     </string-array>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
-    
-    <string name="fav0">fav0</string>
-    <string name="fav1">fav1</string>
-    <string name="fav2">fav2</string>
     
     <string name="searchCondition">検索条件</string>
     <string name="searchConditionEmpty">「キーワード」「チャンネル」「ジャンル」「お気に入りのみ」のどれかを必ず設定する必要があります</string>

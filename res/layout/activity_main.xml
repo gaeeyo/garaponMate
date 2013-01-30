@@ -41,51 +41,54 @@
             android:layout_height="match_parent"
             android:contentDescription="webViewContainer" >
 
+            <fragment
+                android:id="@+id/summaryFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                class="jp.syoboi.android.garaponmate.fragment.SummaryFragment" />
+
+            <FrameLayout
+                android:id="@+id/searchResultFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="192dip"
+                android:layout_height="@dimen/bottomToolbarHeight"
                 android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/video_toolbar_bg"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal" >
 
                 <ImageButton
                     android:id="@+id/special"
-                    android:layout_width="48sp"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:singleLine="true"
-                    android:src="@drawable/ic_grid_light" />
+                    android:contentDescription="@string/home"
+                    android:background="@drawable/transparent_button_bg_dark"
+                    android:src="@drawable/ic_grid" />
 
-                <Button
-                    android:id="@+id/fav0"
-                    android:layout_width="48sp"
-                    android:layout_height="wrap_content"
+                <ImageButton
+                    android:id="@+id/web"
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:singleLine="true"
-                    android:text="@string/fav0" />
+                    android:contentDescription="@string/webBrowser"
+                    android:background="@drawable/transparent_button_bg_dark"
+                    android:src="@drawable/ic_web" />
 
-                <Button
-                    android:id="@+id/fav1"
-                    android:layout_width="48sp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:singleLine="true"
-                    android:text="@string/fav1" />
-
-                <Button
-                    android:id="@+id/fav2"
-                    android:layout_width="48sp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:singleLine="true"
-                    android:text="@string/fav2" />
-
-                <Button
+                <ImageButton
                     android:id="@+id/settings"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings" />
+                    android:layout_width="0dip"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/settings"
+                    android:background="@drawable/transparent_button_bg_dark"
+                    android:src="@drawable/ic_settings" />
             </LinearLayout>
 
             <WebView
@@ -93,20 +96,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_above="@+id/toolbar" />
-
-            <fragment
-                android:id="@+id/summaryFragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_above="@+id/toolbar"
-                class="jp.syoboi.android.garaponmate.fragment.SummaryFragment" />
-
-            <FrameLayout
-                android:id="@+id/searchResultFragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_above="@+id/toolbar"
-                android:visibility="gone" />
 
             <ProgressBar
                 android:id="@+id/progress"

@@ -93,6 +93,8 @@ public class SearchResultFragment extends MainBaseFragment {
 
 		getListView().addHeaderView(mHeader);
 		getListView().addFooterView(mLoadingRow.getView());
+		getListView().addFooterView(View.inflate(getActivity(), R.layout.dummy_row, null),
+				null, false);
 
 		if (mAdapter == null) {
 			mAdapter = new ProgramAdapter(getActivity());

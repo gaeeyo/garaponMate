@@ -111,6 +111,8 @@ public class SummaryFragment extends MainBaseFragment {
 		mSearchListHeader = View.inflate(getActivity(), R.layout.search_list_header, null);
 		mSearchListEmpty = mSearchListHeader.findViewById(R.id.searchListEmpty);
 		getListView().addHeaderView(mSearchListHeader);
+		getListView().addFooterView(View.inflate(getActivity(), R.layout.dummy_row, null),
+				null, false);
 
 		registerForContextMenu(getListView());
 

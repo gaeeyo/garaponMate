@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,12 +26,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
@@ -52,7 +47,6 @@ public class MainActivity extends Activity  {
 	static final String TAG = "MainActivity";
 
 	static final int FLAG_AUTO_LOGIN_PROGRESS = 1;
-	static final int [] FAV_BUTTONS = { R.id.fav0, R.id.fav1, R.id.fav2 };
 	static final long CHANGE_FULLSCREEN_DELAY = 3000;
 
 	static final String SPECIAL_PAGE_PATH = "/garaponMate";
@@ -103,37 +97,11 @@ public class MainActivity extends Activity  {
 			case R.id.settings:
 				startSettingsActivity();
 				break;
-			default:
-				Object tag = v.getTag();
-				if (tag instanceof String) {
-					String tagName = tag.toString();
-					if (tagName.startsWith("fav")) {
-						if (!navigateFav((String)v.getTag())) {
-							loadUrl(Prefs.getBaseUrl());
-						}
-					}
-				}
+			case R.id.web:
+				switchPage(PAGE_WEB);
+				mWebView.loadUrl(Prefs.getBaseUrl());
 				break;
 			}
-		}
-	};
-
-	View.OnLongClickListener mOnLongClickListener = new View.OnLongClickListener() {
-		@Override
-		public boolean onLongClick(View v) {
-			extractTitle();
-
-			final String tag = (String)v.getTag();
-
-			mHandler.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-					String title = getTitle().toString();
-					String url = mWebView.getUrl();
-					saveFav(tag, title, url);
-				}
-			}, 500);
-			return true;
 		}
 	};
 
@@ -151,27 +119,13 @@ public class MainActivity extends Activity  {
 		}
 
 		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
-		reloadSettings();
 
 		mSummaryPage = findViewById(R.id.summaryFragment);
 		mSearchPage = findViewById(R.id.searchResultFragment);
 
-		int favIndex = 0;
-		for (int id: FAV_BUTTONS) {
-			View v = findViewById(id);
-			v.setTag("fav" + (favIndex++));
-			v.setOnClickListener(mOnClickListener);
-			v.setOnLongClickListener(mOnLongClickListener);
-		}
 		findViewById(R.id.special).setOnClickListener(mOnClickListener);
+		findViewById(R.id.web).setOnClickListener(mOnClickListener);
 		findViewById(R.id.settings).setOnClickListener(mOnClickListener);
-		findViewById(R.id.settings).setOnLongClickListener(new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				loadUrl(Prefs.getBaseUrl());
-				return true;
-			}
-		});
 
 		mMainContainer = (LinearLayout) findViewById(R.id.mainContainer);
 		mPlayer = (PlayerView) findViewById(R.id.player);
@@ -181,6 +135,7 @@ public class MainActivity extends Activity  {
 
 		mProgress = (ProgressBar) findViewById(R.id.progress);
 		mProgress.setMax(100);
+
 
 		updateMainContainer();
 
@@ -325,9 +280,6 @@ public class MainActivity extends Activity  {
 			if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) != 0) {
 				// ログインが完了したら fav0 を開く
 				mFlags &= ~FLAG_AUTO_LOGIN_PROGRESS;
-				if (navigateFav("fav0")) {
-					return true;
-				}
 			}
 		}
 		if (url.endsWith("/auth/login.garapon")) {
@@ -395,7 +347,6 @@ public class MainActivity extends Activity  {
 
 		// 設定が変更されていたら読み直してログインしなおす
 		if (mSettingChanged) {
-			reloadSettings();
 			loginBackground();
 		}
 	}
@@ -454,25 +405,6 @@ public class MainActivity extends Activity  {
 	void startSettingsActivity() {
 		Intent i = new Intent(MainActivity.this, SettingActivity.class);
 		startActivity(i);
-	}
-
-	/**
-	 * 設定をリロード
-	 */
-	void reloadSettings() {
-		mSettingChanged = false;
-
-		// お気に入りボタンのラベルに反映
-		int idx = 0;
-		for (int id: FAV_BUTTONS) {
-			TextView tv = (TextView) findViewById(id);
-			String title = Prefs.getFavTitle(idx);
-			if (TextUtils.isEmpty(title)) {
-				title = "fav" + idx;
-			}
-			tv.setText(title);
-			idx++;
-		}
 	}
 
 	String getGtvIdFromUrl(String url, String key) {
@@ -619,53 +551,9 @@ public class MainActivity extends Activity  {
 		loadUrl(script);
 	}
 
-	/**
-	 * お気に入りを開く
-	 * @param tag
-	 * @return
-	 */
-	boolean navigateFav(String tag) {
-		int idx = favTagToIndex(tag);
-		if (idx != -1) {
-			String url = Prefs.getFavUrl(idx);
-			if (!TextUtils.isEmpty(url)) {
-				loadUrl(url);
-				return true;
-			}
-		}
-		return false;
-	}
-
 	void loadUrl(String url) {
 		switchPage(PAGE_WEB);
 		mWebView.loadUrl(url);
-	}
-
-	/**
-	 * お気に入りに保存(登録)
-	 * @param tag
-	 * @param title
-	 * @param url
-	 */
-	void saveFav(String tag, String title, String url) {
-		int idx = favTagToIndex(tag);
-		if (idx != -1) {
-			Prefs.setFav(idx, title, url);
-
-			String msg = "★" + title + "\n"
-					+ "URL:" + url;
-			Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-			reloadSettings();
-		}
-	}
-
-	int favTagToIndex(String tag) {
-		Matcher m = Pattern.compile("\\d+").matcher(tag);
-
-		if (m.find()) {
-			return Integer.valueOf(m.group());
-		}
-		return -1;
 	}
 
 
@@ -729,9 +617,7 @@ public class MainActivity extends Activity  {
 						mReloadAfterLogin = false;
 						mWebView.reload();
 					} else {
-						if (!navigateFav("fav0")) {
-							loadUrl(Prefs.getBaseUrl());
-						}
+						loadUrl(Prefs.getBaseUrl());
 					}
 				}
 			}
