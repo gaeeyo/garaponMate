@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.text.format.Time;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -19,8 +20,10 @@ import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
+import jp.syoboi.android.garaponmate.client.SearchParam;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.fragment.ErrorDialogFragment;
+import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class MainBaseFragment extends ListFragment {
 
@@ -30,11 +33,12 @@ public class MainBaseFragment extends ListFragment {
 		}
 	}
 
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
+	public void inflateProgramMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo, Program p) {
+		// Program 関連のメニューを追加
+		MenuInflater inflater = getActivity().getMenuInflater();
+		inflater.inflate(R.menu.prog_item_menu, menu);
 
+		// デフォルトのプレイヤーをメニューから隠す
 		int playerId = Prefs.getPlayerId();
 		int resId = App.playerIdToResId(playerId, -1);
 		if (resId != -1) {
@@ -59,6 +63,14 @@ public class MainBaseFragment extends ListFragment {
 				MainActivity activity = (MainActivity) getActivity();
 				int playerId = App.playerResIdToPlayerId(id, App.PLAYER_WEBVIEW);
 				activity.playVideo(p, playerId);
+			}
+			break;
+		case R.id.search:
+			if (getActivity() instanceof MainActivity) {
+				MainActivity activity = (MainActivity)getActivity();
+				SearchParam sp = new SearchParam();
+				sp.keyword = Utils.createSearchTitle(p.title);
+				activity.search(sp);
 			}
 			break;
 		}

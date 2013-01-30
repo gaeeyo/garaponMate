@@ -3,6 +3,7 @@ package jp.syoboi.android.garaponmate.utils;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.widget.Spinner;
@@ -151,5 +152,20 @@ public class Utils {
 		} while (m.find(start));
 
 		return ss;
+	}
+
+	/**
+	 * タイトル検索用のタイトルを作成
+	 * @param title
+	 * @return
+	 */
+	public static String createSearchTitle(String title) {
+		if (!TextUtils.isEmpty(title)) {
+			String newTitle = title.replaceAll("▽.*|「.*」|#.*|～.*～|第.*?話|\\(\\d+\\)|\\[.\\]|[ 　].*|＃.*", "").trim();
+			if (!TextUtils.isEmpty(newTitle)) {
+				title = newTitle;
+			}
+		}
+		return title;
 	}
 }
