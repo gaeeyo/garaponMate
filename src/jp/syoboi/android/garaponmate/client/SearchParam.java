@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.syoboi.android.garaponmate.utils.Utils;
 import jp.syoboi.android.util.JksnUtils.JksnObject;
 
 import org.codehaus.jackson.JsonGenerationException;
@@ -121,7 +122,7 @@ public class SearchParam implements Serializable {
 			return null;
 		}
 
-		return Pattern.compile(sb.toString(),
+		return Pattern.compile(Utils.convertCoolTitle(sb.toString()).toString(),
 				Pattern.UNICODE_CASE | Pattern.DOTALL);
 	}
 }
