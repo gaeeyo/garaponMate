@@ -166,27 +166,30 @@ public class GaraponClientUtils {
 
 	public static String formatSearchParam(Context context, SearchParam p) {
 
-		final String separator = ", ";
+		final String separator = " ";
 		StringBuilder sb = new StringBuilder();
+
 		if (!TextUtils.isEmpty(p.keyword)) {
 			sb.append(separator)
-			.append(context.getString(R.string.keyword))
-			.append(":").append(p.keyword);
+			.append('"')
+			.append(p.keyword)
+			.append('"');
 		}
 		if (p.ch != 0) {
 			Ch chInfo = App.getChList().getCh(p.ch);
 
 			sb.append(separator)
-			.append(context.getString(R.string.ch))
-			.append(":").append(chInfo != null ? chInfo.bc : String.valueOf(p.ch));
+			.append('[')
+			.append(chInfo != null ? chInfo.bc : String.valueOf(p.ch))
+			.append(']');
 		}
 		if (p.genre0 != SearchParam.GENRE_EMPTY) {
 			GenreGroupList ggl = GenreGroupList.getInstance(context);
 			GenreGroup gg = ggl.findByValue(p.genre0);
 			if (gg != null) {
 				sb.append(separator)
-				.append(context.getString(R.string.genre))
-				.append(":").append(gg.name);
+				.append('(')
+				.append(gg.name);
 				if (p.genre1 != SearchParam.GENRE_EMPTY) {
 					Genre g = gg.findByValue(p.genre1);
 					if (g != null) {
@@ -194,6 +197,7 @@ public class GaraponClientUtils {
 						.append(g.name);
 					}
 				}
+				sb.append(')');
 			}
 		}
 		if (p.rank == SearchParam.RANK_FAVORITE) {
