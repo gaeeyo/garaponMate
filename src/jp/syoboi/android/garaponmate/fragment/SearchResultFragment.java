@@ -69,6 +69,12 @@ public class SearchResultFragment extends MainBaseFragment {
 	}
 
 	@Override
+	public void onDestroyView() {
+		setListAdapter(null);
+		super.onDestroyView();
+	}
+
+	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
@@ -88,9 +94,13 @@ public class SearchResultFragment extends MainBaseFragment {
 		getListView().addHeaderView(mHeader);
 		getListView().addFooterView(mLoadingRow.getView());
 
-		mAdapter = new ProgramAdapter(getActivity());
-		mAdapter.setHighlightMatcher(mSearchParam.createMatcher());
-		setListAdapter(mAdapter);
+		if (mAdapter == null) {
+			mAdapter = new ProgramAdapter(getActivity());
+			mAdapter.setHighlightMatcher(mSearchParam.createMatcher());
+			setListAdapter(mAdapter);
+		} else {
+			setListAdapter(mAdapter);
+		}
 
 		getListView().setOnScrollListener(new OnScrollListener() {
 
@@ -112,6 +122,7 @@ public class SearchResultFragment extends MainBaseFragment {
 
 		registerForContextMenu(getListView());
 
+		updateTitle();
 		mSearchParam.page = mPage;
 		mSearchParam.count = PAGE_COUNT;
 	}
@@ -141,8 +152,15 @@ public class SearchResultFragment extends MainBaseFragment {
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
-		getActivity().getMenuInflater().inflate(R.menu.prog_item_menu, menu);
 		super.onCreateContextMenu(menu, v, menuInfo);
+
+		AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)menuInfo;
+		if (acmi.targetView.getParent() == getListView()) {
+			Object obj = getListView().getItemAtPosition(acmi.position);
+			if (obj instanceof Program) {
+				inflateProgramMenu(menu, v, menuInfo, (Program)obj);
+			}
+		}
 	}
 
 	@Override
@@ -168,6 +186,7 @@ public class SearchResultFragment extends MainBaseFragment {
 				mSearchParam = (SearchParam) data.getSerializableExtra(SearchParamEditFragment.EXTRA_SEARCH_PARAM);
 				mPage = 1;
 				mAdapter.clear();
+				updateTitle();
 				cancelSearchTask();
 				loadNext();
 			}
@@ -186,13 +205,16 @@ public class SearchResultFragment extends MainBaseFragment {
 		mAdapter.setSelection(id);
 	}
 
+	void updateTitle() {
+		mTitle.setText(GaraponClientUtils.formatSearchParam(getActivity(), mSearchParam));
+	}
+
 	void loadNext() {
 		if (mPage == -1 || mSearchTask != null) {
 			return;
 		}
 
 		mSearchParam.page = mPage;
-		mTitle.setText(GaraponClientUtils.formatSearchParam(getActivity(), mSearchParam));
 		mLoadingRow.setLoading();
 		mSearchTask = new SearchTask(mSearchParam) {
 			@Override

@@ -426,11 +426,20 @@ public class MainActivity extends Activity  {
 			return;
 		}
 
+		if (mPage == PAGE_SEARCH) {
+			if (getFragmentManager().getBackStackEntryCount() > 0) {
+				if (getFragmentManager().getBackStackEntryCount() == 1) {
+					switchPage(PAGE_SUMMARY);
+				}
+				getFragmentManager().popBackStack();
+				return;
+			}
+		}
+
 		if (mPage != PAGE_SUMMARY) {
 			switchPage(PAGE_SUMMARY);
 			return;
 		}
-
 //		//ページが戻れる状態だったら戻る
 //		if (mWebView.canGoBack()) {
 //			mWebView.goBack();
@@ -752,6 +761,7 @@ public class MainActivity extends Activity  {
 				searchParam);
 
 		getFragmentManager().beginTransaction()
+		.addToBackStack("search")
 		.replace(R.id.searchResultFragment, f)
 		.commit();
 	}

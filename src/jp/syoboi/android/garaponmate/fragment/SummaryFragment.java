@@ -124,6 +124,12 @@ public class SummaryFragment extends MainBaseFragment {
 	}
 
 	@Override
+	public void onDestroyView() {
+		setListAdapter(null);
+		super.onDestroyView();
+	}
+
+	@Override
 	public void onDestroy() {
 		App.getSearchParamList().unregisterDataSetObserver(mDataSetObserver);
 		super.onDestroy();
@@ -136,7 +142,8 @@ public class SummaryFragment extends MainBaseFragment {
 		if (menuInfo instanceof AdapterContextMenuInfo) {
 			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)menuInfo;
 			if (acmi.targetView == mBcView) {
-				getActivity().getMenuInflater().inflate(R.menu.prog_item_menu, menu);
+				Program p = (Program)mBcView.getTag();
+				inflateProgramMenu(menu, v, menuInfo, p);
 
 				MenuItem mi = menu.findItem(R.id.download);
 				if (mi != null) {
