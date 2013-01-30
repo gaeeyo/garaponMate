@@ -430,9 +430,11 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			mFullScreen = true;
 			showToolbar(false);
 		} else {
-			systemUiVisibility &= ~FS_FLAGS;
-			mFullScreen = false;
-			showToolbar(true);
+			if ((systemUiVisibility & FS_FLAGS) != 0) {
+				systemUiVisibility &= ~FS_FLAGS;
+				mFullScreen = false;
+				showToolbar(true);
+			}
 		}
 		view.setSystemUiVisibility(systemUiVisibility);
 	}
