@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import jp.syoboi.android.garaponmate.App;
@@ -23,6 +24,7 @@ import jp.syoboi.android.garaponmate.data.GenreGroup;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
+import jp.syoboi.android.garaponmate.data.SearchParam.PostMatcher;
 
 import org.json.JSONException;
 
@@ -160,6 +162,18 @@ public class GaraponClientUtils {
 			login();
 			sr = GaraponClient.search(Prefs.getGaraponHost(),
 					Prefs.getGtvSessionId(), param);
+
+		}
+
+		if (sr.program != null) {
+			ArrayList<Program> items = new ArrayList<Program>();
+			PostMatcher m = param.createPostMatcher();
+			for (Program p: sr.program) {
+				if (m.match(p)) {
+					items.add(p);
+				}
+			}
+			sr.program = items;
 		}
 
 		return sr;
@@ -205,6 +219,24 @@ public class GaraponClientUtils {
 			sb.append(separator)
 			.append(context.getString(R.string.favoriteOnly));
 		}
+		if (p.durationMin != 0 && p.durationMax != 0) {
+			sb.append(separator)
+			.append(context.getString(R.string.durationMinFmt,
+					p.durationMin / DateUtils.MINUTE_IN_MILLIS,
+					p.durationMax / DateUtils.MINUTE_IN_MILLIS));
+		}
+		else if (p.durationMin != 0) {
+			sb.append(separator)
+			.append(context.getString(R.string.durationMinFmt,
+					p.durationMin / DateUtils.MINUTE_IN_MILLIS));
+		}
+		else if (p.durationMax != 0) {
+			sb.append(separator)
+			.append(context.getString(R.string.durationMaxFmt,
+					p.durationMax / DateUtils.MINUTE_IN_MILLIS));
+		}
+
+
 		if (sb.length() > 0) {
 			return sb.substring(separator.length());
 		}

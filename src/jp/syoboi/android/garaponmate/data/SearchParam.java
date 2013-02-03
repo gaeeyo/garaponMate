@@ -21,6 +21,9 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 	public long id;
 	public String comment;
 
+	public int durationMin;
+	public int durationMax;
+
 	public SearchParam() {
 		page = 1;
 		count = 50;
@@ -43,6 +46,9 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 		rank = j.getInt("rank", 0);
 		sort = j.getInt("sort", SORT_STD);
 		video = j.getInt("video", 0);
+
+		durationMin = j.getInt("durationMin", 0);
+		durationMax = j.getInt("durationMax", 0);
 	}
 
 	public void write(JsonGenerator j) throws JsonGenerationException, IOException {
@@ -62,6 +68,8 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 		j.writeNumberField("rank", rank);
 		j.writeNumberField("sortAscent", sort);
 		j.writeNumberField("videoAll", video);
+		j.writeNumberField("durationMin", durationMin);
+		j.writeNumberField("durationMax", durationMax);
 		j.writeEndObject();
 	}
 
@@ -95,5 +103,27 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 
 		return Pattern.compile(Utils.convertCoolTitle(sb.toString()).toString(),
 				Pattern.UNICODE_CASE | Pattern.DOTALL);
+	}
+
+	public PostMatcher createPostMatcher() {
+		return new PostMatcher(this);
+	}
+
+	public static class PostMatcher {
+		SearchParam mSearchParam;
+		int durationMin;
+		int durationMax;
+
+		public PostMatcher(SearchParam p) {
+			mSearchParam = p;
+			durationMin = p.durationMin;
+			durationMax = (p.durationMax != 0 ? p.durationMax : Integer.MAX_VALUE);
+		}
+		public boolean match(Program p) {
+			if (p.duration < durationMin || p.duration > durationMax) {
+				return false;
+			}
+			return true;
+		}
 	}
 }

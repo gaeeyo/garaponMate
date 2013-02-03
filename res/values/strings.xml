@@ -33,10 +33,14 @@
     <string name="genre">ジャンル</string>
     <string name="genre0">ジャンル(大)</string>
     <string name="genre1">ジャンル(小)</string>
+    <string name="filter">フィルタ</string>
     <string name="save">保存</string>
     <string name="apply">適用</string>
     <string name="saveSearchParam">検索条件を保存</string>
     <string name="notSelected">(未選択)</string>
+    <string name="durationMinFmt">≧%1$d分</string>
+    <string name="durationMaxFmt">≦%1$d分</string>
+    <string name="durationMinMaxFmt">%1$d～%2$d分</string>
     <string name="searchHitCount">%1$d 件</string>
     <string name="useVideoView">Flashを使わない</string>
     <string name="useVideoViewSummary">Flashを使わない方法で動画を再生します。Flashを使った場合より安定性や性能が悪くなる場合があります。</string>

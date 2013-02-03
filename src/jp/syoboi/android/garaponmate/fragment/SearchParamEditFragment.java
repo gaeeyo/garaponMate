@@ -10,6 +10,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -27,6 +28,7 @@ import jp.syoboi.android.garaponmate.data.GenreGroup;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.utils.Utils;
+import jp.syoboi.android.garaponmate.utils.WidgetUtils;
 
 public class SearchParamEditFragment extends DialogFragment {
 
@@ -37,6 +39,8 @@ public class SearchParamEditFragment extends DialogFragment {
 	Spinner			mCh;
 	Spinner			mGenre0;
 	Spinner			mGenre1;
+	TextView		mDurationMin;
+	TextView		mDurationMax;
 	CheckBox		mFavoriteOnly;
 	GenreGroupList	mGenreGroupList;
 
@@ -74,6 +78,8 @@ public class SearchParamEditFragment extends DialogFragment {
 		mGenre0 = (Spinner) v.findViewById(R.id.genre0);
 		mGenre1 = (Spinner) v.findViewById(R.id.genre1);
 		mFavoriteOnly = (CheckBox) v.findViewById(R.id.favoriteOnly);
+		mDurationMin = (TextView) v.findViewById(R.id.durationMin);
+		mDurationMax = (TextView) v.findViewById(R.id.durationMax);
 		View saveBtn = v.findViewById(R.id.save);
 
 		// 保存ボタン
@@ -126,7 +132,6 @@ public class SearchParamEditFragment extends DialogFragment {
 
 			}
 		});
-
 
 		dlg.setView(v);
 
@@ -194,6 +199,8 @@ public class SearchParamEditFragment extends DialogFragment {
 		mSearchParam.genre0 = genre0;
 		mSearchParam.genre1 = genre1;
 		mSearchParam.rank = (favoriteOnly ? SearchParam.RANK_FAVORITE : 0);
+		mSearchParam.durationMin = (int)(WidgetUtils.getInt(mDurationMin, 0) * DateUtils.MINUTE_IN_MILLIS);
+		mSearchParam.durationMax = (int)(WidgetUtils.getInt(mDurationMax, 0) * DateUtils.MINUTE_IN_MILLIS);
 	}
 
 	public void setToView(SearchParam p) {
@@ -204,5 +211,12 @@ public class SearchParamEditFragment extends DialogFragment {
 		Utils.spinnerSetSelectionById(mGenre1, p.genre1);
 
 		mFavoriteOnly.setChecked(p.rank == SearchParam.RANK_FAVORITE);
+
+		if (p.durationMin > 0) {
+			mDurationMin.setText(String.valueOf(p.durationMin / DateUtils.MINUTE_IN_MILLIS));
+		}
+		if (p.durationMax > 0) {
+			mDurationMax.setText(String.valueOf(p.durationMax / DateUtils.MINUTE_IN_MILLIS));
+		}
 	}
 }
