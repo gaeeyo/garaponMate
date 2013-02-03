@@ -16,7 +16,10 @@
         android:layout_marginBottom="32dip"
         android:orientation="vertical" >
 
+        <!-- タイトルバー -->
+
         <LinearLayout
+            android:id="@+id/playerTitlebar"
             android:layout_width="match_parent"
             android:layout_height="48dip"
             android:background="@drawable/video_toolbar_bg" >
@@ -62,6 +65,8 @@
                 android:src="@drawable/ic_close" />
         </LinearLayout>
 
+        <!-- 時間 -->
+
         <TextView
             android:id="@+id/time"
             android:layout_width="match_parent"
@@ -77,6 +82,46 @@
             android:textColor="#ffffffff"
             android:textStyle="bold" />
 
+        <!-- 字幕 -->
+
+        <RelativeLayout
+            android:id="@+id/captionContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/time"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/playerTitlebar"
+            android:orientation="horizontal" >
+
+            <FrameLayout
+                android:id="@+id/captionSwitchContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/video_toolbar_bg" >
+
+                <CheckBox
+                    android:id="@+id/captionSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dip"
+                    android:background="@drawable/popleft_button_bg_dark"
+                    android:button="@drawable/popleft_button_dark"
+                    android:drawablePadding="32dip"
+                    android:text="@string/caption"
+                    android:textColor="#fff" />
+            </FrameLayout>
+
+            <ListView
+                android:id="@+id/captionList"
+                android:layout_width="250dip"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/captionSwitchContainer"
+                android:background="@drawable/video_caption_bg"
+                android:divider="#44ffffff" />
+        </RelativeLayout>
+
+        <!-- シークバー -->
+
         <SeekBar
             android:id="@+id/seekBar"
             android:layout_width="match_parent"
@@ -85,6 +130,8 @@
             android:layout_marginBottom="32dip"
             android:layout_marginLeft="16dip"
             android:layout_marginRight="16dip" />
+
+        <!-- ボタン -->
 
         <LinearLayout
             android:id="@+id/bottomButtons"

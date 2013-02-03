@@ -224,8 +224,10 @@ public class PlayerWebView implements PlayerViewInterface {
 	}
 
 	@Override
-	public void seek(int sec) {
-
+	public void seek(int msec) {
+		// 正確にシークできないので10秒で丸める
+		int sec = msec / 1000;
+		setPos((sec / 10) * 10);
 	}
 
 	@Override

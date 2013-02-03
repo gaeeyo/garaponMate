@@ -7,6 +7,11 @@ import android.text.TextUtils;
 import android.text.format.Time;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
+import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 
@@ -191,5 +196,26 @@ public class Utils {
 					sTime.hour, sTime.minute, sTime.second);
 
 		}
+	}
+
+	public static void showAnimation(View v, float fromX, float fromY, boolean show) {
+		float a1 = show ? 0 : 1;
+		float a2 = show ? 1 : 0;
+
+		float x1 = show ? fromX : 0;
+		float x2 = show ? 0 : fromX;
+		float y1 = show ? fromY : 0;
+		float y2 = show ? 0 : fromY;
+
+		AnimationSet animSet = new AnimationSet(true);
+		animSet.addAnimation(new AlphaAnimation(a1, a2));
+		animSet.addAnimation(new TranslateAnimation(
+				Animation.RELATIVE_TO_SELF, x1,
+				Animation.RELATIVE_TO_SELF, x2,
+				Animation.RELATIVE_TO_SELF, y1,
+				Animation.RELATIVE_TO_SELF, y2));
+		animSet.setDuration(250);
+		v.startAnimation(animSet);
+		v.setVisibility(show ? View.VISIBLE : View.GONE);
 	}
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:enterFadeDuration="125" android:exitFadeDuration="500">
+
+    <item android:state_focused="true">
+        <shape>
+            <solid android:color="@color/focusedColor" />
+            <padding android:left="32dip" android:right="8dip"/>
+        </shape>
+    </item>
+    <item android:state_pressed="true" >
+        <shape>
+            <solid android:color="@color/pressedColor"/>
+            <padding android:left="32dip" android:right="8dip"/>
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:color="@android:color/transparent" />
+            <padding android:left="32dip" android:right="8dip"/>
+        </shape>
+    </item>
+        
+</selector>

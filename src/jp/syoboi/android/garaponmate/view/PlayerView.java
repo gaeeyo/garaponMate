@@ -9,9 +9,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -22,10 +26,13 @@ import java.util.Locale;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
+import jp.syoboi.android.garaponmate.adapter.CaptionAdapter;
 import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.client.GaraponClient.ApiResult;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.data.Caption;
 import jp.syoboi.android.garaponmate.data.Program;
+import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
@@ -41,15 +48,21 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	View			mToolbar;
 	ImageView		mFavorite;
 	ImageButton		mPauseButton;
-	boolean			mPause;
+	View			mCaptionContainer;
+	CheckBox		mCaptionSwitch;
+	ListView		mCaptionList;
 	FrameLayout		mPlayerViewContainer;
-	int				mDuration;
 	SeekBar			mSeekBar;
-	int				mCurPos;
-	boolean			mUseVideoView;
 	TextView		mTime;
 	TextView		mTitle;
 	TextView		mMessage;
+
+	CaptionAdapter	mCaptionAdapter;
+
+	boolean			mPause;
+	int				mDuration;
+	int				mCurPos;
+	boolean			mUseVideoView;
 	boolean			mFullScreen;
 	boolean			mAutoFullScreen;
 	Program			mProgram;
@@ -71,8 +84,24 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		mTitle = (TextView) findViewById(R.id.title);
 		mMessage = (TextView) findViewById(R.id.message);
 		mFavorite = (ImageView) findViewById(R.id.favorite);
+		mCaptionSwitch = (CheckBox) findViewById(R.id.captionSwitch);
+		mCaptionContainer = findViewById(R.id.captionContainer);
+		mCaptionList = (ListView) findViewById(R.id.captionList);
 		mFavorite.setEnabled(false);
 		setMessage(null);
+
+		mCaptionSwitch.setOnClickListener(mOnClickListener);
+		mCaptionList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> lv, View view, int position,
+					long id) {
+				Object obj = lv.getItemAtPosition(position);
+				if (obj instanceof Caption) {
+					Caption caption = (Caption) obj;
+					seek((int)caption.time);
+				}
+			}
+		});
 
 		findViewById(R.id.close).setOnClickListener(mOnClickListener);
 		findViewById(R.id.returnFromFullScreen).setOnClickListener(mOnClickListener);
@@ -264,6 +293,11 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			case R.id.favorite:
 				performFavorite();
 				break;
+			case R.id.captionSwitch:
+				Utils.showAnimation(mCaptionList,
+						0.1f, 0,
+						mCaptionSwitch.isChecked());
+				break;
 			};
 		}
 	};
@@ -344,8 +378,15 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	}
 
 	public void setVideo(Program p, int playerId) {
-		mProgram = p;
+		setProgram(p);
 		startFullScreenDelay();
+		setVideoInternal(p.gtvid, playerId);
+		updateControls();
+	}
+
+	void setProgram(Program p) {
+		mProgram = p;
+
 		mTitle.setText(p.title);
 		mDuration = (int) p.duration;
 		if (p.duration != 0) {
@@ -353,14 +394,29 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		} else {
 			mTime.setText(null);
 		}
-		setVideoInternal(p.gtvid, playerId);
-		updateControls();
+
+		if (mCaptionAdapter == null) {
+			mCaptionAdapter = new CaptionAdapter(getContext());
+			mCaptionList.setAdapter(mCaptionAdapter);
+		}
+		mCaptionAdapter.clear();
+		if (p.caption != null) {
+			for (Caption c: p.caption) {
+				mCaptionAdapter.add(c);
+			}
+			if (mCaptionAdapter.getCount() > 0) {
+				if (!mCaptionSwitch.isChecked()) {
+					mCaptionSwitch.toggle();
+				}
+			}
+		}
 	}
 
 	void setVideoInternal(final String id, int playerId) {
 		Log.v(TAG, "setVideoInternal id:" + id);
 
 		boolean useVideoView = (playerId == App.PLAYER_VIDEOVIEW);
+		onMessage(null);
 //		if (mPlayer != null && useVideoView != mUseVideoView) {
 			mUseVideoView = useVideoView;
 			destroy();
@@ -390,6 +446,13 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	PlayerViewInterface createPlayerVideoView() {
 		return new PlayerVideoView(getContext(), this);
+	}
+
+
+	public void seek(int sec) {
+		if (mPlayer != null) {
+			mPlayer.seek(sec);
+		}
 	}
 
 	public void jump(int sec) {
@@ -497,11 +560,17 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		if (mProgram == null) {
 			mFavorite.setImageResource(R.drawable.ic_star_off);
 			mFavorite.setEnabled(false);
+
+			mCaptionContainer.setVisibility(View.GONE);
 		} else {
 			mFavorite.setEnabled(true);
 			boolean favorited = mProgram.hasFlag(Program.FLAG_FAVORITE);
 			mFavorite.setImageResource(
 					favorited ? R.drawable.ic_star_on : R.drawable.ic_star_off);
+
+			Caption [] captions = mProgram.caption;
+			mCaptionContainer.setVisibility(captions.length > 0 ? View.VISIBLE : View.GONE);
+//			mCaptionList.setVisibility(mCaptionSwitch.isChecked() ? View.VISIBLE : View.GONE);
 		}
 	}
 }
