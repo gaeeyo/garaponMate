@@ -22,10 +22,10 @@ import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.adapter.ChAdapter;
 import jp.syoboi.android.garaponmate.adapter.GenreAdapter;
-import jp.syoboi.android.garaponmate.client.SearchParam;
 import jp.syoboi.android.garaponmate.data.Genre;
 import jp.syoboi.android.garaponmate.data.GenreGroup;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
+import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class SearchParamEditFragment extends DialogFragment {

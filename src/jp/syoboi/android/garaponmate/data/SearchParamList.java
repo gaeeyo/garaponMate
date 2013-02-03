@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.syoboi.android.garaponmate.client.SearchParam;
 import jp.syoboi.android.util.JksnUtils;
 import jp.syoboi.android.util.JksnUtils.JksnArray;
 import jp.syoboi.android.util.JksnUtils.JksnObject;

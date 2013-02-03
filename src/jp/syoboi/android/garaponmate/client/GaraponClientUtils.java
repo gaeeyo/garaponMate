@@ -22,6 +22,7 @@ import jp.syoboi.android.garaponmate.data.Genre;
 import jp.syoboi.android.garaponmate.data.GenreGroup;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
 import jp.syoboi.android.garaponmate.data.Program;
+import jp.syoboi.android.garaponmate.data.SearchParam;
 
 import org.json.JSONException;
 

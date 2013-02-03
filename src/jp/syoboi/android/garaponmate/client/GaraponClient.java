@@ -220,7 +220,7 @@ public class GaraponClient {
 		}
 	}
 
-	public static SearchResult search(String ipaddr, String sessionId, SearchParam param) throws MalformedURLException, IOException {
+	public static SearchResult search(String ipaddr, String sessionId, Search param) throws MalformedURLException, IOException {
 		return search(ipaddr, sessionId,
 				param.count, param.page, param.searchType, param.keyword, param.gtvid,
 				param.genre0, param.genre1, param.ch, param.searchTime, param.sdate, param.edate,
@@ -273,9 +273,9 @@ public class GaraponClient {
 		if (gtvid != null) {
 			builder.appendQueryParameter("gtvid", gtvid);
 		}
-		if (genre0 != SearchParam.GENRE_EMPTY) {
+		if (genre0 != Search.GENRE_EMPTY) {
 			builder.appendQueryParameter("genre0", String.valueOf(genre0));
-			if (genre1 != SearchParam.GENRE_EMPTY) {
+			if (genre1 != Search.GENRE_EMPTY) {
 				builder.appendQueryParameter("genre1", String.valueOf(genre1));
 			}
 		}
@@ -283,20 +283,20 @@ public class GaraponClient {
 			builder.appendQueryParameter("ch", String.valueOf(ch));
 		}
 		switch (searchType) {
-		case SearchParam.STYPE_SUBTITLE:
+		case Search.STYPE_SUBTITLE:
 			builder.appendQueryParameter("s", "c");
 			break;
-		case SearchParam.STYPE_EPG:
+		case Search.STYPE_EPG:
 		default:
 			builder.appendQueryParameter("s", "e");
 			break;
 		}
 
 		switch (searchTime) {
-		case SearchParam.STIME_END:
+		case Search.STIME_END:
 			builder.appendQueryParameter("dt", "e");
 			break;
-		case SearchParam.STIME_START:
+		case Search.STIME_START:
 		default:
 			builder.appendQueryParameter("dt", "s");
 			break;
@@ -310,20 +310,20 @@ public class GaraponClient {
 		}
 
 		switch (rank) {
-		case SearchParam.RANK_FAVORITE:
+		case Search.RANK_FAVORITE:
 			builder.appendQueryParameter("rank", "all");
 		}
 
 		switch (sort) {
-		case SearchParam.SORT_STA:
+		case Search.SORT_STA:
 			builder.appendQueryParameter("sort", "sta");
 			break;
-		case SearchParam.SORT_STD:
+		case Search.SORT_STD:
 			builder.appendQueryParameter("sort", "std");
 			break;
 		}
 
-		if (video == SearchParam.VIDEO_ALL) {
+		if (video == Search.VIDEO_ALL) {
 			builder.appendQueryParameter("video", "all");
 		}
 
@@ -576,5 +576,38 @@ public class GaraponClient {
 		default:
 			return "ERROR login: " + login;
 		}
+	}
+
+	public static class Search {
+		public static final int GENRE_EMPTY = -1;
+
+		public static final int RANK_FAVORITE = 1;
+
+		public static final int STYPE_EPG = 0;
+		public static final int STYPE_SUBTITLE = 1;
+
+		public static final int STIME_START = 0;
+		public static final int STIME_END = 1;
+
+		public static final int SORT_STD = 0;
+		public static final int SORT_STA = 1;
+
+		public static final int VIDEO_ALL = 1;
+
+		public int count;
+		public int page;
+
+		public int searchType;
+		public String keyword;
+		public String gtvid;
+		public int genre0 = GENRE_EMPTY;
+		public int genre1 = GENRE_EMPTY;
+		public int ch;
+		public int searchTime;
+		public long sdate;
+		public long edate;
+		public int rank;
+		public int sort = SORT_STD;
+		public int video;
 	}
 }

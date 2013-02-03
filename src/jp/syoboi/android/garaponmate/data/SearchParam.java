@@ -1,4 +1,4 @@
-package jp.syoboi.android.garaponmate.client;
+package jp.syoboi.android.garaponmate.data;
 
 import android.text.TextUtils;
 
@@ -7,48 +7,19 @@ import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.utils.Utils;
 import jp.syoboi.android.util.JksnUtils.JksnObject;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 
-public class SearchParam implements Serializable {
+public class SearchParam extends GaraponClient.Search implements Serializable {
 	private static final long serialVersionUID = -1535056156459423850L;
 
-	public static final int GENRE_EMPTY = -1;
-
-	public static final int RANK_FAVORITE = 1;
-
-	public static final int STYPE_EPG = 0;
-	public static final int STYPE_SUBTITLE = 1;
-
-	public static final int STIME_START = 0;
-	public static final int STIME_END = 1;
-
-	public static final int SORT_STD = 0;
-	public static final int SORT_STA = 1;
-
-	public static final int VIDEO_ALL = 1;
 
 	public long id;
 	public String comment;
-
-	public int count;
-	public int page;
-
-	public int searchType;
-	public String keyword;
-	public String gtvid;
-	public int genre0 = GENRE_EMPTY;
-	public int genre1 = GENRE_EMPTY;
-	public int ch;
-	public int searchTime;
-	public long sdate;
-	public long edate;
-	public int rank;
-	public int sort = SORT_STD;
-	public int video;
 
 	public SearchParam() {
 		page = 1;

@@ -9,7 +9,7 @@ import android.widget.TextView;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
-import jp.syoboi.android.garaponmate.client.SearchParam;
+import jp.syoboi.android.garaponmate.data.SearchParam;
 
 public class SearchParamAdapter extends ArrayAdapter<SearchParam> {
 

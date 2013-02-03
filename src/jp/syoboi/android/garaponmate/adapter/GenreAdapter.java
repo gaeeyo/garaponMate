@@ -3,9 +3,9 @@ package jp.syoboi.android.garaponmate.adapter;
 import android.content.Context;
 import android.widget.ArrayAdapter;
 
-import jp.syoboi.android.garaponmate.client.SearchParam;
 import jp.syoboi.android.garaponmate.data.Genre;
 import jp.syoboi.android.garaponmate.data.GenreGroup;
+import jp.syoboi.android.garaponmate.data.SearchParam;
 
 public class GenreAdapter extends ArrayAdapter<Genre> {
 
