@@ -137,7 +137,13 @@ public class ProgramAdapter extends BaseAdapter {
 			mTime.setText(timeStr);
 			mChName.setText(Utils.convertCoolTitle(p.ch.bc));
 			mTitle.setText(deco(p.title, m, highlightColor));
-			mDescription.setText(deco(p.description, m, highlightColor));
+
+			if (TextUtils.isEmpty(p.description)) {
+				mDescription.setVisibility(View.GONE);
+			} else {
+				mDescription.setText(deco(p.description, m, highlightColor));
+				mDescription.setVisibility(View.VISIBLE);
+			}
 
 			if (p.caption.length > 0) {
 
