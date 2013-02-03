@@ -4,10 +4,12 @@ import android.text.format.Time;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Map;
 
 import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.client.GaraponClient.Ch;
+import jp.syoboi.android.garaponmate.utils.Utils;
 import jp.syoboi.android.util.JksnUtils.JksnArray;
 import jp.syoboi.android.util.JksnUtils.JksnObject;
 
@@ -23,7 +25,7 @@ public class Program implements Serializable {
 	 *
 	 */
 	private static final long serialVersionUID = -8125082259488349596L;
-
+	private static final Caption [] CAPTION_EMPTY = new Caption [0];
 
 	public static final int FLAG_TS = 1;
 	public static final int FLAG_TS_ONLY = 2;
@@ -38,6 +40,7 @@ public class Program implements Serializable {
 	public final String description;
 	public final int [] genre;
 	public final int flag;
+	public final Caption [] caption;
 
 	public Program(JksnObject jo, Map<Integer,Ch> chMap) {
 		gtvid = jo.getString("gtvid");
@@ -65,6 +68,17 @@ public class Program implements Serializable {
 				| ("1".equals(jo.getString("tsonly", "0")) ? FLAG_TS_ONLY : 0)
 				| ("1".equals(jo.getString("mp4", "0")) ? FLAG_MP4 : 0)
 				| ("1".equals(jo.getString("favorite", "0")) ? FLAG_FAVORITE : 0);
+
+		JksnArray captionArray = jo.getArray("caption");
+		if (captionArray != null && captionArray.size() > 0) {
+			int captionCount = captionArray.size();
+			caption = new Caption [captionCount];
+			for (int j=0; j<captionCount; j++) {
+				caption[j] = new Caption(captionArray.getObject(j));
+			}
+		} else {
+			caption = CAPTION_EMPTY;
+		}
 	}
 
 	public Program(String gtvid) {
@@ -76,13 +90,14 @@ public class Program implements Serializable {
 		genre = new int [0];
 		ch = null;
 		flag = 0;
+		caption = CAPTION_EMPTY;
 	}
 
 	public void write(JsonGenerator jg) throws JsonGenerationException, IOException {
 		jg.writeStartObject();
 		jg.writeStringField("gtvid", gtvid);
-		jg.writeStringField("startdate", formatDateTime(startdate));
-		jg.writeStringField("duration", formatDuration(duration));
+		jg.writeStringField("startdate", Utils.formatDateTime(startdate));
+		jg.writeStringField("duration", Utils.formatDuration(duration));
 		jg.writeStringField("ch", String.valueOf(ch.ch));
 		jg.writeStringField("title", title);
 		jg.writeFieldName("genre");
@@ -97,26 +112,6 @@ public class Program implements Serializable {
 		jg.writeStringField("ts", ((flag & FLAG_TS) != 0) ? "1" : "0");
 		jg.writeStringField("tsonly", ((flag & FLAG_TS_ONLY) != 0) ? "1" : "0");
 		jg.writeEndObject();
-	}
-
-	static Time sTime = new Time();
-	public String formatDateTime(long time) {
-		synchronized (sTime) {
-			sTime.set(time);
-			return String.format("%04d-%02d-%02d %02d:%02d:%02d",
-					sTime.year, sTime.month + 1, sTime.monthDay,
-					sTime.hour, sTime.minute, sTime.second);
-
-		}
-	}
-
-	public String formatDuration(long time) {
-		time /= 1000;
-		long sec = (time) % 60;
-		long minute = (time / 60) % 60;
-		long hour = (time / (60*60));
-		return String.format("%02d:%02d:%02d",
-				hour, minute, sec);
 	}
 
 	public static int parseGenreStr(String text) {
@@ -141,7 +136,8 @@ public class Program implements Serializable {
 		t.set(startdate);
 		long min = duration / 1000 / 60;
 
-		return String.format("%s [%02d:%02d] %s %s %s",
+		return String.format(Locale.ENGLISH,
+				"%s [%02d:%02d] %s %s %s",
 				t.format("%Y-%m-%d %H:%M:%S"),
 				min / 60, min % 60,
 				ch.bc,

@@ -13,34 +13,41 @@
     
     <dimen name="timeBorderWidth">1dip</dimen>
     <dimen name="timeBarHeight">7dip</dimen>
-    <dimen name="timeBarTextSize">14sp</dimen>
+    <dimen name="timeBarTextSize">15sp</dimen>
     <dimen name="bottomToolbarHeight">52dip</dimen>
     
     <color name="chNameColor">#ff008800</color>
     <color name="timeColor">#ff555555</color>
     <color name="titleColor">#ff000000</color>
-    <color name="descriptionColor">#ff777777</color>
+    <color name="descriptionColor">#ff506883</color>
+    <color name="captionColor">#ff844647</color>
     <color name="nowStartedBackgroundColor">#ffFFFFBB</color>
     
     <style name="chNameStyle">
         <item name="android:textColor">@color/chNameColor</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">15sp</item>
     </style>
     
     <style name="timeStyle">
         <item name="android:textColor">@color/timeColor</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">15sp</item>
     </style>
     
     <style name="titleStyle">
         <item name="android:textColor">@color/titleColor</item>
         <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
     
     <style name="descriptionStyle">
         <item name="android:textColor">@color/descriptionColor</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+    
+    <style name="captionStyle">
+        <item name="android:textColor">@color/captionColor</item>
+        <item name="android:textSize">15sp</item>
     </style>
     
     <style name="popupMessage">

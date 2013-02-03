@@ -283,7 +283,7 @@ public class GaraponClient {
 			builder.appendQueryParameter("ch", String.valueOf(ch));
 		}
 		switch (searchType) {
-		case Search.STYPE_SUBTITLE:
+		case Search.STYPE_CAPTION:
 			builder.appendQueryParameter("s", "c");
 			break;
 		case Search.STYPE_EPG:
@@ -584,7 +584,7 @@ public class GaraponClient {
 		public static final int RANK_FAVORITE = 1;
 
 		public static final int STYPE_EPG = 0;
-		public static final int STYPE_SUBTITLE = 1;
+		public static final int STYPE_CAPTION = 1;
 
 		public static final int STIME_START = 0;
 		public static final int STIME_END = 1;

@@ -23,6 +23,7 @@ import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.adapter.ChAdapter;
 import jp.syoboi.android.garaponmate.adapter.GenreAdapter;
+import jp.syoboi.android.garaponmate.client.GaraponClient.Search;
 import jp.syoboi.android.garaponmate.data.Genre;
 import jp.syoboi.android.garaponmate.data.GenreGroup;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
@@ -42,6 +43,7 @@ public class SearchParamEditFragment extends DialogFragment {
 	TextView		mDurationMin;
 	TextView		mDurationMax;
 	CheckBox		mFavoriteOnly;
+	CheckBox		mCaption;
 	GenreGroupList	mGenreGroupList;
 
 	public static SearchParamEditFragment newInstance(SearchParam sp) {
@@ -74,6 +76,7 @@ public class SearchParamEditFragment extends DialogFragment {
 		View v = View.inflate(dlg.getContext(), R.layout.search_param_form, null);
 
 		mKeyword = (TextView) v.findViewById(R.id.keywordAnd);
+		mCaption = (CheckBox) v.findViewById(R.id.caption);
 		mCh = (Spinner) v.findViewById(R.id.ch);
 		mGenre0 = (Spinner) v.findViewById(R.id.genre0);
 		mGenre1 = (Spinner) v.findViewById(R.id.genre1);
@@ -195,6 +198,7 @@ public class SearchParamEditFragment extends DialogFragment {
 		}
 
 		mSearchParam.keyword = keyword;
+		mSearchParam.searchType = mCaption.isChecked() ? Search.STYPE_CAPTION : Search.STYPE_EPG;
 		mSearchParam.ch = ch;
 		mSearchParam.genre0 = genre0;
 		mSearchParam.genre1 = genre1;
@@ -205,6 +209,7 @@ public class SearchParamEditFragment extends DialogFragment {
 
 	public void setToView(SearchParam p) {
 		mKeyword.setText(p.keyword);
+		mCaption.setChecked(p.searchType == Search.STYPE_CAPTION);
 
 		Utils.spinnerSetSelectionById(mCh, p.ch);
 		Utils.spinnerSetSelectionById(mGenre0, p.genre0);

@@ -46,6 +46,8 @@
     <string name="useVideoViewSummary">Flashを使わない方法で動画を再生します。Flashを使った場合より安定性や性能が悪くなる場合があります。</string>
     <string name="returnFromFullScreen">フルスクリーン解除</string>
     <string name="bufferingFmt">バッファリング中…(%1$d%%)</string>
+    <string name="caption">字幕</string>
+    <string name="searchCaption">字幕を検索する</string>
     <string name="share">共有</string>
     <string name="pause">一時停止</string>
     <string name="ff">早送り</string>

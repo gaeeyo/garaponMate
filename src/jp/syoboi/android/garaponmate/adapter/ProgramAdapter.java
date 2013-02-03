@@ -3,8 +3,11 @@ package jp.syoboi.android.garaponmate.adapter;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+import android.text.style.LeadingMarginSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -16,6 +19,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.data.Caption;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.utils.Utils;
 
@@ -102,17 +106,22 @@ public class ProgramAdapter extends BaseAdapter {
 			| DateUtils.FORMAT_SHOW_WEEKDAY;
 	static final int ENDTIME_FMT = DateUtils.FORMAT_SHOW_TIME;
 
+	static final SpannableStringBuilder sTmpSb = new SpannableStringBuilder();
+
 	private static class ViewHolder {
 		TextView	mTime;
 		TextView	mChName;
 		TextView	mTitle;
 		TextView	mDescription;
+		TextView	mCaption;
+		int			mIndent;
 
 		public ViewHolder(View v) {
 			mTime = (TextView) v.findViewById(R.id.time);
 			mChName = (TextView) v.findViewById(R.id.chName);
 			mTitle = (TextView) v.findViewById(R.id.title);
 			mDescription = (TextView) v.findViewById(R.id.description);
+			mCaption = (TextView) v.findViewById(R.id.caption);
 		}
 
 		public void setItem(Program p, Matcher m, int highlightColor) {
@@ -129,6 +138,33 @@ public class ProgramAdapter extends BaseAdapter {
 			mChName.setText(Utils.convertCoolTitle(p.ch.bc));
 			mTitle.setText(deco(p.title, m, highlightColor));
 			mDescription.setText(deco(p.description, m, highlightColor));
+
+			if (p.caption.length > 0) {
+
+				if (mIndent == 0) {
+					mIndent = (int)mDescription.getPaint().measureText("00:00:00 ");
+				}
+
+				SpannableStringBuilder sb = sTmpSb;
+				sb.clear();
+
+				int start = sb.length();
+				for (Caption caption: p.caption) {
+					if (sb.length() > 0) {
+						sb.append('\n');
+					}
+					sb.append(Utils.formatDuration(caption.time))
+					.append(" ")
+					.append(deco(caption.text, m, highlightColor));
+
+				}
+				sb.setSpan(new LeadingMarginSpan.Standard(0, mIndent), start, sb.length(),
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				mCaption.setText(sb);
+				mCaption.setVisibility(View.VISIBLE);
+			} else {
+				mCaption.setVisibility(View.GONE);
+			}
 		}
 
 		CharSequence deco(CharSequence text, Matcher m, int bgColor) {

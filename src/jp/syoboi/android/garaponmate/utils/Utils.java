@@ -4,6 +4,7 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.format.Time;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.widget.Spinner;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -167,5 +169,27 @@ public class Utils {
 			}
 		}
 		return title;
+	}
+
+	public static String formatDuration(long time) {
+		time /= 1000;
+		long sec = (time) % 60;
+		long minute = (time / 60) % 60;
+		long hour = (time / (60*60));
+		return String.format(Locale.ENGLISH,
+				"%02d:%02d:%02d",
+				hour, minute, sec);
+	}
+
+	static Time sTime = new Time();
+	public static String formatDateTime(long time) {
+		synchronized (sTime) {
+			sTime.set(time);
+			return String.format(Locale.ENGLISH,
+					"%04d-%02d-%02d %02d:%02d:%02d",
+					sTime.year, sTime.month + 1, sTime.monthDay,
+					sTime.hour, sTime.minute, sTime.second);
+
+		}
 	}
 }

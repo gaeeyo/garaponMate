@@ -18,6 +18,7 @@ import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.GaraponClient.Ch;
 import jp.syoboi.android.garaponmate.client.GaraponClient.GaraponClientException;
+import jp.syoboi.android.garaponmate.client.GaraponClient.Search;
 import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.data.Genre;
 import jp.syoboi.android.garaponmate.data.GenreGroup;
@@ -186,8 +187,12 @@ public class GaraponClientUtils {
 
 		if (!TextUtils.isEmpty(p.keyword)) {
 			sb.append(separator)
-			.append('"')
-			.append(p.keyword)
+			.append('"');
+			if (p.searchType == Search.STYPE_CAPTION) {
+				sb.append(context.getString(R.string.caption))
+				.append(':');
+			}
+			sb.append(p.keyword)
 			.append('"');
 		}
 		if (p.ch != 0) {
