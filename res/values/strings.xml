@@ -23,6 +23,7 @@
     <string name="download">ダウンロード</string>
     <string name="confirmCancelDownload">ダウンロードをキャンセルしますか?</string>
     <string name="favoriteOnly">お気に入りのみ</string>
+    <string name="favorite">お気に入り</string>
     <string name="home">ホーム</string>
     <string name="webBrowser">ブラウザ</string>
     <string name="chName">チャンネル名</string>

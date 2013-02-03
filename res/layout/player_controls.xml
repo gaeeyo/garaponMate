@@ -27,11 +27,21 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
+                android:maxLines="2"
                 android:paddingLeft="16dip"
                 android:paddingRight="16dip"
                 android:text="@string/title"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#fff" />
+
+            <ImageButton
+                android:id="@+id/favorite"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/transparent_button_bg_dark"
+                android:contentDescription="@string/favorite"
+                android:minWidth="56dip"
+                android:src="@drawable/ic_star_on" />
 
             <ImageButton
                 android:id="@+id/returnFromFullScreen"

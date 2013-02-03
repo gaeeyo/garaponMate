@@ -1,6 +1,7 @@
 package jp.syoboi.android.garaponmate.view;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -10,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -20,6 +22,9 @@ import java.util.Locale;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
+import jp.syoboi.android.garaponmate.client.GaraponClient;
+import jp.syoboi.android.garaponmate.client.GaraponClient.ApiResult;
+import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.data.Program;
 
 public class PlayerView extends RelativeLayout implements PlayerViewCallback {
@@ -34,6 +39,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	Handler			mHandler = new Handler();
 	View			mOverlay;
 	View			mToolbar;
+	ImageView		mFavorite;
 	ImageButton		mPauseButton;
 	boolean			mPause;
 	FrameLayout		mPlayerViewContainer;
@@ -46,6 +52,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	TextView		mMessage;
 	boolean			mFullScreen;
 	boolean			mAutoFullScreen;
+	Program			mProgram;
 
 	PlayerViewInterface	mPlayer;
 
@@ -63,22 +70,14 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		mTime = (TextView) findViewById(R.id.time);
 		mTitle = (TextView) findViewById(R.id.title);
 		mMessage = (TextView) findViewById(R.id.message);
+		mFavorite = (ImageView) findViewById(R.id.favorite);
+		mFavorite.setEnabled(false);
 		setMessage(null);
 
-		findViewById(R.id.close).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				performClose();
-			}
-		});
+		findViewById(R.id.close).setOnClickListener(mOnClickListener);
+		findViewById(R.id.returnFromFullScreen).setOnClickListener(mOnClickListener);
 
-		findViewById(R.id.returnFromFullScreen).setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				performReturnFromFullScreen();
-			}
-		});
+		mFavorite.setOnClickListener(mOnClickListener);
 
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
@@ -126,6 +125,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		// オーバーレイ
 		mOverlay = findViewById(R.id.playerViewOverlay);
 	}
+
 
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -255,6 +255,15 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			case R.id.next:
 				jump(30);
 				break;
+			case R.id.returnFromFullScreen:
+				performReturnFromFullScreen();
+				break;
+			case R.id.close:
+				performClose();
+				break;
+			case R.id.favorite:
+				performFavorite();
+				break;
 			};
 		}
 	};
@@ -265,6 +274,49 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 				? R.drawable.ic_media_play
 				: R.drawable.ic_media_pause);
 	}
+
+	protected void performFavorite() {
+		if (mProgram != null) {
+			mFavorite.setEnabled(false);
+
+			final String gtvid = mProgram.gtvid;
+			final boolean setFavorite = !mProgram.hasFlag(Program.FLAG_FAVORITE);
+
+			new AsyncTask<Object,Object,Object>() {
+				@Override
+				protected Object doInBackground(Object... params) {
+					try {
+						return GaraponClientUtils.favorite(gtvid, setFavorite);
+					} catch (Exception e) {
+						return e;
+					}
+				}
+				@Override
+				protected void onPostExecute(Object result) {
+					mFavorite.setEnabled(true);
+					if (result instanceof ApiResult) {
+						ApiResult r = (ApiResult) result;
+						if (r.status == GaraponClient.STATUS_SUCCESS) {
+							if (gtvid.equals(mProgram.gtvid)) {
+								if (setFavorite) {
+									mProgram.addFlag(Program.FLAG_FAVORITE);
+								} else {
+									mProgram.clearFlag(Program.FLAG_FAVORITE);
+								}
+							}
+						}
+						updateControls();
+					}
+					else if (result instanceof Exception) {
+						Exception e = (Exception) result;
+						onMessage(e.toString());
+					}
+				}
+			}
+			.execute();
+		}
+	}
+
 
 	public void onPause() {
 		mHandler.removeCallbacks(mIntervalRunnable);
@@ -292,6 +344,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	}
 
 	public void setVideo(Program p, int playerId) {
+		mProgram = p;
 		startFullScreenDelay();
 		mTitle.setText(p.title);
 		mDuration = (int) p.duration;
@@ -301,6 +354,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			mTime.setText(null);
 		}
 		setVideoInternal(p.gtvid, playerId);
+		updateControls();
 	}
 
 	void setVideoInternal(final String id, int playerId) {
@@ -430,12 +484,24 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			mFullScreen = true;
 			showToolbar(false);
 		} else {
-			if ((systemUiVisibility & FS_FLAGS) != 0) {
+			if (mFullScreen || (systemUiVisibility & FS_FLAGS) != 0) {
 				systemUiVisibility &= ~FS_FLAGS;
 				mFullScreen = false;
 				showToolbar(true);
 			}
 		}
 		view.setSystemUiVisibility(systemUiVisibility);
+	}
+
+	public void updateControls() {
+		if (mProgram == null) {
+			mFavorite.setImageResource(R.drawable.ic_star_off);
+			mFavorite.setEnabled(false);
+		} else {
+			mFavorite.setEnabled(true);
+			boolean favorited = mProgram.hasFlag(Program.FLAG_FAVORITE);
+			mFavorite.setImageResource(
+					favorited ? R.drawable.ic_star_on : R.drawable.ic_star_off);
+		}
 	}
 }

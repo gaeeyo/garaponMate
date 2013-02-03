@@ -39,7 +39,7 @@ public class Program implements Serializable {
 	public final String title;
 	public final String description;
 	public final int [] genre;
-	public final int flag;
+	public int flag;
 	public final Caption [] caption;
 
 	public Program(JksnObject jo, Map<Integer,Ch> chMap) {
@@ -142,5 +142,17 @@ public class Program implements Serializable {
 				min / 60, min % 60,
 				ch.bc,
 				title, description);
+	}
+
+	public boolean hasFlag(int flagMask) {
+		return (flag & flagMask) != 0;
+	}
+
+	public void addFlag(int value) {
+		flag |= value;
+	}
+
+	public void clearFlag(int value) {
+		flag &= ~value;
 	}
 }

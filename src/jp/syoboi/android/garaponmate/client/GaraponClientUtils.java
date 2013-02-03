@@ -16,6 +16,7 @@ import java.util.HashMap;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.client.GaraponClient.ApiResult;
 import jp.syoboi.android.garaponmate.client.GaraponClient.Ch;
 import jp.syoboi.android.garaponmate.client.GaraponClient.GaraponClientException;
 import jp.syoboi.android.garaponmate.client.GaraponClient.Search;
@@ -178,6 +179,18 @@ public class GaraponClientUtils {
 		}
 
 		return sr;
+	}
+
+	public static ApiResult favorite(String gtvid, boolean favorite) throws MalformedURLException, IOException, NoSuchAlgorithmException, NotFoundException, GaraponClientException, JSONException {
+		ensureAuth();
+		ApiResult r = GaraponClient.favorite(Prefs.getGaraponHost(),
+				Prefs.getGtvSessionId(), gtvid, favorite);
+		if (r.status == 0) {
+			login();
+			r = GaraponClient.favorite(Prefs.getGaraponHost(),
+					Prefs.getGtvSessionId(), gtvid, favorite);
+		}
+		return r;
 	}
 
 	public static String formatSearchParam(Context context, SearchParam p) {

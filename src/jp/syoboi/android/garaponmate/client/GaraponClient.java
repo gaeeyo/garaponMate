@@ -51,6 +51,7 @@ public class GaraponClient {
 	public static final String WEB_LOGIN_PATH = "/";
 	public static final String LOGIN_PATH = "/gapi/v2/auth";
 	public static final String SEARCH_PATH = "/gapi/v2/search";
+	public static final String FAVORITE_PATH = "/gapi/v2/favorite";
 
 	public static final int STATUS_SUCCESS = 1;
 	public static final int LOGIN_SUCCESS = 1;
@@ -351,6 +352,14 @@ public class GaraponClient {
 
 	}
 
+	public static JksnObject parseResult(InputStream is) throws IOException {
+		try {
+			return (JksnObject) JksnUtils.parseJson(is, null);
+		} finally {
+			is.close();
+		}
+	}
+
 	public static SearchResult parseSearchResult(InputStream is) throws JsonParseException, IOException {
 		try {
 			final HashMap<Integer,Ch>	chMap = new HashMap<Integer,Ch>();
@@ -374,8 +383,7 @@ public class GaraponClient {
 				}
 			});
 
-			SearchResult sr = new SearchResult();
-			sr.status = jo.getInt("status", 0);
+			SearchResult sr = new SearchResult(jo);
 			sr.hit = Integer.valueOf(jo.getString("hit", "-1"), 10);
 			sr.program = programs;
 			sr.ch = chMap;
@@ -383,6 +391,37 @@ public class GaraponClient {
 			return sr;
 		} finally {
 			is.close();
+		}
+	}
+
+	public static ApiResult favorite(String ipaddr, String sessionId, String gtvid, boolean favorite) throws MalformedURLException, IOException {
+		Uri.Builder builder = new Uri.Builder();
+
+		builder.appendQueryParameter("gtvid", gtvid);
+		builder.appendQueryParameter("rank", (favorite ? "1" : "0"));
+
+		String query = builder.build().getEncodedQuery();
+		if (App.DEBUG) {
+			Log.i(TAG, "favorite favorite:" + favorite);
+		}
+
+		HttpURLConnection con = (HttpURLConnection)new URL("http://" + ipaddr + FAVORITE_PATH
+				+ "?gtvsession=" + sessionId)
+			.openConnection();
+
+		try {
+			con.setDoOutput(true);
+			con.setRequestMethod("POST");
+
+			con.getOutputStream().write(query.getBytes());
+			con.connect();
+
+			JksnObject jo = parseResult(con.getInputStream());
+			ApiResult result = new ApiResult(jo);
+
+			return result;
+		} finally {
+			con.disconnect();
 		}
 	}
 
@@ -450,17 +489,34 @@ public class GaraponClient {
 		START, END
 	}
 
-	public static class SearchResult {
+	public static class ApiResult {
 		public int status;
+		public String version;
+
+		public ApiResult(JksnObject j) {
+			status = j.getInt("status", 0);
+			version = j.getString("version", null);
+		}
+	}
+
+	public static class SearchResult extends ApiResult {
 		public int hit;
 		public ArrayList<Program> program;
 		public HashMap<Integer,Ch> ch;
+		public SearchResult(JksnObject j) {
+			super(j);
+		}
 	}
 
 	/**
 	 * チャンネル
 	 */
 	public static class Ch implements Serializable {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -5970947698044309849L;
+
 		public int ch;
 		public String bc;
 		public String bc_tags;
