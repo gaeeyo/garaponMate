@@ -90,7 +90,7 @@ public class GaraponClient {
 			String query = new Uri.Builder()
 			.appendQueryParameter("user", id)
 			.appendQueryParameter("md5passwd", md5(pass))
-			.build().getQuery();
+			.build().getEncodedQuery();
 
 			con.getOutputStream().write(query.getBytes());
 			con.connect();
@@ -152,7 +152,7 @@ public class GaraponClient {
 				.appendQueryParameter("type", "login")
 				.appendQueryParameter("loginid", id)
 				.appendQueryParameter("md5pswd", md5(pass))
-				.build().getQuery();
+				.build().getEncodedQuery();
 
 			con.getOutputStream().write(query.getBytes());
 			con.connect();
@@ -193,7 +193,7 @@ public class GaraponClient {
 			String query = new Uri.Builder()
 				.appendQueryParameter("LoginID", id)
 				.appendQueryParameter("Passwd", pass)
-				.build().getQuery();
+				.build().getEncodedQuery();
 
 			con.getOutputStream().write(query.getBytes());
 			con.connect();
@@ -257,8 +257,7 @@ public class GaraponClient {
 			int searchTime, long sdate, long edate,
 			int rank, int sort, int video) throws MalformedURLException, IOException {
 
-		Uri.Builder builder = new Uri.Builder()
-		.appendQueryParameter("gtvsession", sessionId);
+		Uri.Builder builder = new Uri.Builder();
 
 		if (count != 0) {
 			builder.appendQueryParameter("n", String.valueOf(count));
@@ -327,16 +326,7 @@ public class GaraponClient {
 			builder.appendQueryParameter("video", "all");
 		}
 
-//		builder.clearQuery();
-//		builder//.appendQueryParameter("gtvsession", sessionId)
-//		.appendQueryParameter("sdate", "2013-01-12 22:13:00")
-//		.appendQueryParameter("edate", "2013-01-12 23:11:00")
-//		.appendQueryParameter("dt", "e")
-//		.appendQueryParameter("key", "")
-//		.appendQueryParameter("video", "all");
-
-
-		String query = builder.build().getQuery();
+		String query = builder.build().getEncodedQuery();
 		if (App.DEBUG) {
 			Log.i(TAG, "検索 " + query);
 		}
