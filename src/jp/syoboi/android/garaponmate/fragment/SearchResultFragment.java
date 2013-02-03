@@ -102,6 +102,7 @@ public class SearchResultFragment extends MainBaseFragment {
 			setListAdapter(mAdapter);
 		} else {
 			setListAdapter(mAdapter);
+			updateLoadingRow();
 		}
 
 		getListView().setOnScrollListener(new OnScrollListener() {
@@ -211,6 +212,12 @@ public class SearchResultFragment extends MainBaseFragment {
 		mTitle.setText(GaraponClientUtils.formatSearchParam(getActivity(), mSearchParam));
 	}
 
+	void updateLoadingRow() {
+		if (mPage == -1) {
+			mLoadingRow.setMessage(getString(R.string.searchHitCount, mAdapter.getCount()));
+		}
+	}
+
 	void loadNext() {
 		if (mPage == -1 || mSearchTask != null) {
 			return;
@@ -240,10 +247,9 @@ public class SearchResultFragment extends MainBaseFragment {
 						mPage++;
 					} else {
 						mPage = -1;
-						mLoadingRow.setMessage(getString(R.string.searchHitCount, mAdapter.getCount()));
-						//getListView().removeFooterView(mLoadingRow.getView());
 					}
 				}
+				updateLoadingRow();
 			}
 			@Override
 			protected void onCancelled() {
