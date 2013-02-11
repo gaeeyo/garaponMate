@@ -24,6 +24,8 @@ public class Prefs {
 	private static final String COMMON_SESSION_ID = "commonSessionId";
 	private static final String PROG_SEARCH_LIST = "progSearchList";
 
+	private static final String START_PAGE = "startPage";
+
 	//private static final String USE_VIDEO_VIEW = "useVideoView";	// 廃止
 	private static final String PLAYER = "player";
 
@@ -135,6 +137,16 @@ public class Prefs {
 			return id;
 		} catch (Exception e) {
 			return App.PLAYER_WEBVIEW;
+		}
+	}
+
+	public static int getStartPage(int defaultValue) {
+		return sPrefs.getInt(START_PAGE, defaultValue);
+	}
+
+	public static void setStartPage(int page) {
+		if (getStartPage(-1) != page) {
+			sPrefs.edit().putInt(START_PAGE, page).commit();
 		}
 	}
 }

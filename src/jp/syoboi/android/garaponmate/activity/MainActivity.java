@@ -149,6 +149,11 @@ public class MainActivity extends Activity  {
 				getFragmentManager(), getApplicationContext());
 		mViewPager.setAdapter(mPagerAdapter);
 
+		int viewPagerPage = Prefs.getStartPage(0);
+		if (0 <= viewPagerPage && viewPagerPage < mPagerAdapter.getCount()) {
+			mViewPager.setCurrentItem(viewPagerPage);
+		}
+
 		updateMainContainer();
 
 		WebSettings webSettings = mWebView.getSettings();
@@ -270,7 +275,6 @@ public class MainActivity extends Activity  {
 		int page = (savedInstanceState == null
 				? PAGE_PAGER : savedInstanceState.getInt("page"));
 		switchPage(page);
-
 //		ProgManager.getInstance().refresh();
 	}
 
@@ -349,6 +353,8 @@ public class MainActivity extends Activity  {
 		super.onPause();
 		mWebView.onPause();
 		mPlayer.onPause();
+
+		Prefs.setStartPage(mViewPager.getCurrentItem());
 	}
 
 	@Override
