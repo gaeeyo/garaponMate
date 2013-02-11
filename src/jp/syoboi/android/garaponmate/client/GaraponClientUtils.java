@@ -73,7 +73,7 @@ public class GaraponClientUtils {
 		Prefs.setGtvSessionId(gtvsessionid);
 	}
 
-	static String ensureAuth() throws MalformedURLException, NoSuchAlgorithmException, NotFoundException, IOException, GaraponClientException {
+	static synchronized String ensureAuth() throws MalformedURLException, NoSuchAlgorithmException, NotFoundException, IOException, GaraponClientException {
 		SharedPreferences prefs = Prefs.getInstance();
 		String user = prefs.getString(Prefs.USER, null);
 		String pass = prefs.getString(Prefs.PASSWORD, null);
