@@ -624,7 +624,7 @@ public class GaraponClient {
 		}
 	}
 
-	public static class Search {
+	public static class Search implements Serializable {
 		public static final int GENRE_EMPTY = -1;
 
 		public static final int RANK_FAVORITE = 1;
