@@ -87,8 +87,8 @@ public class App extends Application {
 	}
 
 	public static File getSearchResultCache(Context context, long id) {
-//		File dir = new File(context.getCacheDir(), "search");
-		File dir = new File(context.getExternalCacheDir(), "search");
+		File dir = new File(context.getCacheDir(), "search");
+//		File dir = new File(context.getExternalCacheDir(), "search");
 		dir.mkdirs();
 		return new File(dir, String.valueOf(id));
 	}
