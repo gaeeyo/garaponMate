@@ -1,8 +1,10 @@
 package jp.syoboi.android.garaponmate.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -42,6 +44,8 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	private static final int CHANGE_FULLSCREEN_DELAY = 3000;
 
 	private static final int [] PLAYER_BUTTONS = { R.id.pause, R.id.previous, R.id.rew, R.id.ff, R.id.next };
+
+	public static Program	sLatestProgram;
 
 	Handler			mHandler = new Handler();
 	View			mOverlay;
@@ -368,7 +372,18 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		}
 	}
 
+
 	public void destroy() {
+		destroyInternal(true);
+	}
+
+	void destroyInternal(boolean notification) {
+		if (notification) {
+			sLatestProgram = null;
+			LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getContext());
+			lbm.sendBroadcast(new Intent(App.ACTION_STOP));
+		}
+
 		mHandler.removeCallbacks(mIntervalRunnable);
 		if (mPlayer != null) {
 			mPlayer.destroy();
@@ -382,6 +397,13 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		startFullScreenDelay();
 		setVideoInternal(p.gtvid, playerId);
 		updateControls();
+
+		// 通知
+		sLatestProgram = p;
+		LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getContext());
+		Intent intent = new Intent(App.ACTION_PLAY);
+		intent.putExtra(App.EXTRA_PROGRAM, p);
+		lbm.sendBroadcast(intent);
 	}
 
 	void setProgram(Program p) {
@@ -419,7 +441,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		onMessage(null);
 //		if (mPlayer != null && useVideoView != mUseVideoView) {
 			mUseVideoView = useVideoView;
-			destroy();
+			destroyInternal(false);
 //		}
 
 		if (mPlayer == null) {
@@ -572,5 +594,9 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			mCaptionContainer.setVisibility(captions.length > 0 ? View.VISIBLE : View.GONE);
 //			mCaptionList.setVisibility(mCaptionSwitch.isChecked() ? View.VISIBLE : View.GONE);
 		}
+	}
+
+	public static String getLatestPlayingId() {
+		return sLatestProgram != null ? sLatestProgram.gtvid : null;
 	}
 }

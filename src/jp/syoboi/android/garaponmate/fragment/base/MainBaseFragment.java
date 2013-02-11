@@ -3,10 +3,14 @@ package jp.syoboi.android.garaponmate.fragment.base;
 import android.app.DownloadManager;
 import android.app.ListFragment;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.format.Time;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -27,10 +31,45 @@ import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class MainBaseFragment extends ListFragment {
 
+	private static final IntentFilter sIntentFilter = new IntentFilter();
+
+	static {
+		sIntentFilter.addAction(App.ACTION_PLAY);
+		sIntentFilter.addAction(App.ACTION_STOP);
+	}
+
+	private BroadcastReceiver	mReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			onReceiveLocalBroadcast(context, intent);
+		}
+	};
+
+	public void onReceiveLocalBroadcast(Context context, Intent intent) {
+
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver, sIntentFilter);
+	}
+
+	@Override
+	public void onDestroy() {
+		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mReceiver);
+		super.onDestroy();
+	}
+
+
 	protected void playVideo(Program p) {
 		if (getActivity() instanceof MainActivity) {
 			((MainActivity)getActivity()).playVideo(p);
 		}
+	}
+
+	public CharSequence getTitle() {
+		return "";
 	}
 
 	public void inflateProgramMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo, Program p) {

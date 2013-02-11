@@ -1,5 +1,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <color name="tabPagerBackgroundColor">#00000000</color>
+    <color name="tabPagerTextColor">#ff33B5E5</color>
+    
     <color name="pressedColor">#cc33B5E5</color>
     <color name="focusedColor">#6633B5E5</color>
     <color name="selectedColor">#40FF8800</color>
@@ -73,7 +76,7 @@
         -->
     </style>
 
-    <color name="windowBackgroundColor">#ffffffff</color>
+    <color name="windowBackgroundColor">#fff3f3f3</color>
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">

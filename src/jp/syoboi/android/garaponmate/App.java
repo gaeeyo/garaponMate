@@ -19,10 +19,18 @@ public class App extends Application {
 	public static String VERSION = "?";
 
 	public static final String PKG = "jp.syoboi.android.garaponmate";
+
+	// Broadcast
 	public static final String ACTION_PLAYER_ACTIVITY_FINISH = PKG + ".playerActivity.finish";
 	public static final String ACTION_PLAYER_ACTIVITY_FULLSCREEN = PKG + ".playerActivity.fullScreen";
 
+	// LocalBroadcastManager
+	public static final String ACTION_PLAY = PKG + ".play";
+	public static final String ACTION_STOP = PKG + ".stop";
+
+	// Extras
 	public static final String EXTRA_PROGRAM = "program";
+	public static final String EXTRA_SEARCH_PARAM = "searchParam";
 
 	public static final int PLAYER_WEBVIEW = 0;
 	public static final int PLAYER_VIDEOVIEW = 1;

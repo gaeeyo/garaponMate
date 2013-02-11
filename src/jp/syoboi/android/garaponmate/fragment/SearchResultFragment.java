@@ -1,6 +1,11 @@
 package jp.syoboi.android.garaponmate.fragment;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
+import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.adapter.ProgramAdapter;
 import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
@@ -26,6 +32,7 @@ import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.fragment.base.MainBaseFragment;
 import jp.syoboi.android.garaponmate.task.SearchTask;
 import jp.syoboi.android.garaponmate.view.LoadingRowWrapper;
+import jp.syoboi.android.garaponmate.view.PlayerView;
 
 public class SearchResultFragment extends MainBaseFragment {
 
@@ -47,7 +54,7 @@ public class SearchResultFragment extends MainBaseFragment {
 
 	public static SearchResultFragment newInstance(SearchParam searchParam) {
 		Bundle args = new Bundle();
-		args.putSerializable("searchParam", searchParam);
+		args.putSerializable(App.EXTRA_SEARCH_PARAM, searchParam);
 
 		SearchResultFragment f = new SearchResultFragment();
 		f.setArguments(args);
@@ -59,7 +66,7 @@ public class SearchResultFragment extends MainBaseFragment {
 		super.onCreate(savedInstanceState);
 
 		Bundle args = getArguments();
-		mSearchParam = (SearchParam) args.getSerializable("searchParam");
+		mSearchParam = (SearchParam) args.getSerializable(App.EXTRA_SEARCH_PARAM);
 	}
 
 	@Override
@@ -70,8 +77,13 @@ public class SearchResultFragment extends MainBaseFragment {
 
 	@Override
 	public void onDestroyView() {
-		setListAdapter(null);
 		super.onDestroyView();
+		setListAdapter(null);
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
 	}
 
 	@Override
@@ -129,6 +141,25 @@ public class SearchResultFragment extends MainBaseFragment {
 		mSearchParam.page = mPage;
 		mSearchParam.count = PAGE_COUNT;
 	}
+
+	@Override
+	public void onReceiveLocalBroadcast(Context context, Intent intent) {
+		super.onReceiveLocalBroadcast(context, intent);
+		updatePlaying();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		updatePlaying();
+	}
+
+	void updatePlaying() {
+		if (mAdapter != null) {
+			mAdapter.setSelection(PlayerView.getLatestPlayingId());
+		}
+	}
+
 
 	@Override
 	public void onDestroy() {
@@ -261,5 +292,34 @@ public class SearchResultFragment extends MainBaseFragment {
 			}
 		};
 		mSearchTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	@Override
+	public Animator onCreateAnimator(int transit, boolean enter,
+			int nextAnim) {
+
+//		Log.v(""+this, "onCreateAnimator transit:" + transit + " enter:" + enter);
+		AnimatorSet set = new AnimatorSet();
+		float from = 1.5f;
+
+		if ((transit == FragmentTransaction.TRANSIT_FRAGMENT_OPEN && !enter)
+			|| (transit == FragmentTransaction.TRANSIT_FRAGMENT_CLOSE && enter)) {
+			from = 0.5f;
+		}
+
+		if (enter) {
+			set.playTogether(
+					ObjectAnimator.ofFloat(getView(), "scaleX", from, 1),
+					ObjectAnimator.ofFloat(getView(), "scaleY", from, 1),
+					ObjectAnimator.ofFloat(getView(), "alpha", 0, 1)
+					);
+		} else {
+			set.playTogether(
+					ObjectAnimator.ofFloat(getView(), "scaleX", 1, from),
+					ObjectAnimator.ofFloat(getView(), "scaleY", 1, from),
+					ObjectAnimator.ofFloat(getView(), "alpha", 1, 0)
+					);
+		}
+		return set;
 	}
 }

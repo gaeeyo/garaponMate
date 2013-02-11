@@ -2,7 +2,8 @@ package jp.syoboi.android.garaponmate.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -11,11 +12,16 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -32,12 +38,12 @@ import java.util.HashMap;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.adapter.MainPagerAdapter;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.fragment.ErrorDialogFragment;
 import jp.syoboi.android.garaponmate.fragment.SearchResultFragment;
-import jp.syoboi.android.garaponmate.fragment.SummaryFragment;
 import jp.syoboi.android.garaponmate.service.PlayerService;
 import jp.syoboi.android.garaponmate.task.ProgressDialogTask;
 import jp.syoboi.android.garaponmate.view.PlayerView;
@@ -51,7 +57,7 @@ public class MainActivity extends Activity  {
 
 	static final String SPECIAL_PAGE_PATH = "/garaponMate";
 
-	private static final int PAGE_SUMMARY = 0;
+	private static final int PAGE_PAGER = 0;
 	private static final int PAGE_WEB = 1;
 	private static final int PAGE_SEARCH = 2;
 
@@ -67,10 +73,12 @@ public class MainActivity extends Activity  {
 	View			mPlayerClose;
 	View			mSummaryPage;
 	View			mSearchPage;
+	ViewPager		mViewPager;
 	boolean			mPlayerExpanded;
 	boolean			mTitleExtracting;
 	boolean			mReloadAfterLogin;
 	int				mPage;
+	MainPagerAdapter	mPagerAdapter;
 
 	private boolean 	mSettingChanged;
 	ProgressDialogTask	mLoginTask;
@@ -92,7 +100,7 @@ public class MainActivity extends Activity  {
 		public void onClick(View v) {
 			switch (v.getId()) {
 			case R.id.special:
-				switchPage(PAGE_SUMMARY);
+				switchPage(PAGE_PAGER);
 				break;
 			case R.id.settings:
 				startSettingsActivity();
@@ -120,8 +128,9 @@ public class MainActivity extends Activity  {
 
 		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
 
-		mSummaryPage = findViewById(R.id.summaryFragment);
+//		mSummaryPage = findViewById(R.id.summaryFragment);
 		mSearchPage = findViewById(R.id.searchResultFragment);
+		mViewPager = (ViewPager) findViewById(R.id.viewPager);
 
 		findViewById(R.id.special).setOnClickListener(mOnClickListener);
 		findViewById(R.id.web).setOnClickListener(mOnClickListener);
@@ -136,6 +145,9 @@ public class MainActivity extends Activity  {
 		mProgress = (ProgressBar) findViewById(R.id.progress);
 		mProgress.setMax(100);
 
+		mPagerAdapter = new MainPagerAdapter(
+				getFragmentManager(), getApplicationContext());
+		mViewPager.setAdapter(mPagerAdapter);
 
 		updateMainContainer();
 
@@ -256,7 +268,7 @@ public class MainActivity extends Activity  {
 //		navigateFav("fav0");
 //		loginBackground();
 		int page = (savedInstanceState == null
-				? PAGE_SUMMARY : savedInstanceState.getInt("page"));
+				? PAGE_PAGER : savedInstanceState.getInt("page"));
 		switchPage(page);
 
 //		ProgManager.getInstance().refresh();
@@ -369,7 +381,9 @@ public class MainActivity extends Activity  {
 	@Override
 	public void onBackPressed() {
 		// フルスクリーンだったら解除
-		mPlayer.setFullScreen(false);
+		if (mPlayer.isFullScreen()) {
+			mPlayer.setFullScreen(false);
+		}
 
 		// プレイヤーが拡大されていたら縮小
 		if (mPlayerExpanded) {
@@ -378,17 +392,41 @@ public class MainActivity extends Activity  {
 		}
 
 		if (mPage == PAGE_SEARCH) {
-			if (getFragmentManager().getBackStackEntryCount() > 0) {
-				if (getFragmentManager().getBackStackEntryCount() == 1) {
-					switchPage(PAGE_SUMMARY);
+			FragmentManager fm = getFragmentManager();
+			if (fm.getBackStackEntryCount() > 0) {
+				if (fm.getBackStackEntryCount() == 1) {
+					switchPage(PAGE_PAGER);
+//					Animation anim = mSearchPage.getAnimation();
+//					if (anim != null) {
+//						anim.setAnimationListener(new AnimationListener() {
+//
+//							@Override
+//							public void onAnimationStart(Animation animation) {
+//								// TODO Auto-generated method stub
+//
+//							}
+//
+//							@Override
+//							public void onAnimationRepeat(Animation animation) {
+//								// TODO Auto-generated method stub
+//
+//							}
+//
+//							@Override
+//							public void onAnimationEnd(Animation animation) {
+//								getFragmentManager().popBackStack();
+//							}
+//						});
+//					}
+				} else {
 				}
 				getFragmentManager().popBackStack();
 				return;
 			}
 		}
 
-		if (mPage != PAGE_SUMMARY) {
-			switchPage(PAGE_SUMMARY);
+		if (mPage != PAGE_PAGER) {
+			switchPage(PAGE_PAGER);
 			return;
 		}
 //		//ページが戻れる状態だったら戻る
@@ -442,7 +480,6 @@ public class MainActivity extends Activity  {
 		mPlayer.setVideo(p, playerId);
 
 		expandPlayer(false);
-		onVideoChanged(p.gtvid);
 	}
 
 	public void playVideo(Program p) {
@@ -453,19 +490,6 @@ public class MainActivity extends Activity  {
 		mPlayer.destroy();
 		expandPlayer(false);
 		mPlayer.setVisibility(View.GONE);
-		onVideoChanged(null);
-	}
-
-	void onVideoChanged(String id) {
-
-		Fragment f = getFragmentManager().findFragmentById(R.id.summaryFragment);
-		if (f instanceof SummaryFragment) {
-			((SummaryFragment) f).setVideo(id);
-		}
-		f = getFragmentManager().findFragmentById(R.id.searchResultFragment);
-		if (f instanceof SearchResultFragment) {
-			((SearchResultFragment) f).setVideo(id);
-		}
 	}
 
 
@@ -635,9 +659,42 @@ public class MainActivity extends Activity  {
 	void switchPage(int page) {
 		mPage = page;
 
-		mSummaryPage.setVisibility(page == PAGE_SUMMARY ? View.VISIBLE : View.GONE);
-		mWebView.setVisibility(page == PAGE_WEB ? View.VISIBLE : View.GONE);
-		mSearchPage.setVisibility(page == PAGE_SEARCH ? View.VISIBLE : View.GONE);
+		setPageVisibility(mViewPager, page == PAGE_PAGER, 0.5f);
+		setPageVisibility(mWebView, page == PAGE_WEB, 1.5f);
+		if (mPage != PAGE_SEARCH) {
+			FragmentManager fm = getFragmentManager();
+			while (fm.getBackStackEntryCount() > 0) {
+				fm.popBackStackImmediate();
+			}
+		}
+	}
+
+	static AlphaAnimation sFadeInAnim = new AlphaAnimation(0, 1);
+	static AlphaAnimation sFadeOutAnim = new AlphaAnimation(1, 0);
+
+	void setPageVisibility(final View target, boolean show, float zoomFrom) {
+		boolean showOld = target.getVisibility() == View.VISIBLE;
+		if (showOld != show) {
+			AnimationSet set = new AnimationSet(true);
+			set.setDuration(300);
+			if (show) {
+				set.addAnimation(new AlphaAnimation(0, 1));
+				set.addAnimation(new ScaleAnimation(
+						zoomFrom, 1, zoomFrom, 1,
+						Animation.RELATIVE_TO_SELF, 0.5f,
+						Animation.RELATIVE_TO_SELF, 0.5f));
+				target.setVisibility(View.VISIBLE);
+				target.startAnimation(set);
+			} else {
+				set.addAnimation(new AlphaAnimation(1, 0));
+				set.addAnimation(new ScaleAnimation(
+						1, zoomFrom, 1, zoomFrom,
+						Animation.RELATIVE_TO_SELF, 0.5f,
+						Animation.RELATIVE_TO_SELF, 0.5f));
+				target.startAnimation(set);
+				target.setVisibility(View.GONE);
+			}
+		}
 	}
 
 	public void search(SearchParam searchParam) {
@@ -647,8 +704,9 @@ public class MainActivity extends Activity  {
 				searchParam);
 
 		getFragmentManager().beginTransaction()
-		.addToBackStack("search")
 		.replace(R.id.searchResultFragment, f)
+		.addToBackStack("search")
+		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 		.commit();
 	}
 }

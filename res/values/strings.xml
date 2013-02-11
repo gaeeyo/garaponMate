@@ -81,6 +81,7 @@
     <string name="searchConditionEmpty">「キーワード」「チャンネル」「ジャンル」「お気に入りのみ」のどれかを必ず設定する必要があります</string>
     
     <string name="search">検索</string>
+    <string name="newSearch">検索</string>
     <string name="searchListEmpty">保存された検索がありません</string>
     
     <string name="searchListSettings">検索リスト設定</string>

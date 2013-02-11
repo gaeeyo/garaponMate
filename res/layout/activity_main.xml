@@ -9,7 +9,6 @@
         android:id="@+id/mainContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="mainContainer"
         android:orientation="vertical" >
 
         <jp.syoboi.android.garaponmate.view.PlayerView
@@ -41,17 +40,22 @@
             android:layout_height="match_parent"
             android:contentDescription="webViewContainer" >
 
-            <fragment
-                android:id="@+id/summaryFragment"
+            <android.support.v4.view.ViewPager
+                android:id="@+id/viewPager"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                class="jp.syoboi.android.garaponmate.fragment.SummaryFragment" />
+                android:layout_height="match_parent" >
+
+                <android.support.v4.view.PagerTabStrip
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    android:textColor="@color/tabPagerTextColor" />
+            </android.support.v4.view.ViewPager>
 
             <FrameLayout
                 android:id="@+id/searchResultFragment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone" />
+                android:layout_height="match_parent" />
 
             <LinearLayout
                 android:id="@+id/toolbar"
@@ -68,8 +72,8 @@
                     android:layout_width="0dip"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:contentDescription="@string/home"
                     android:background="@drawable/transparent_button_bg_dark"
+                    android:contentDescription="@string/home"
                     android:src="@drawable/ic_grid" />
 
                 <ImageButton
@@ -77,8 +81,8 @@
                     android:layout_width="0dip"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:contentDescription="@string/webBrowser"
                     android:background="@drawable/transparent_button_bg_dark"
+                    android:contentDescription="@string/webBrowser"
                     android:src="@drawable/ic_web" />
 
                 <ImageButton
@@ -86,8 +90,8 @@
                     android:layout_width="0dip"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:contentDescription="@string/settings"
                     android:background="@drawable/transparent_button_bg_dark"
+                    android:contentDescription="@string/settings"
                     android:src="@drawable/ic_settings" />
             </LinearLayout>
 
