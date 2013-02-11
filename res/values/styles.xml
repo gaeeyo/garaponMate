@@ -64,6 +64,42 @@
         <item name="android:inputType">text</item>
     </style>
 
+    <!-- サムネイル関連 -->
+    <style name="thumbTimeStyle" parent="@style/timeStyle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+    <style name="thumbChNameStyle" parent="@style/chNameStyle" >
+        <item name="android:textColor">#9f9</item>
+        <item name="android:textSize">12sp</item>
+<!--         <item name="android:background">#88000000</item> -->
+        <item name="android:shadowColor">#ff000000</item>
+<!--         <item name="android:shadowRadius">2</item> -->
+    </style>
+    
+    <style name="thumbDurationStyle" parent="@style/timeStyle">
+        <item name="android:textColor">#fff</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:background">#88000000</item>
+<!--         <item name="android:shadowColor">#000</item> -->
+    </style>
+    
+    <style name="thumbTitleStyle" parent="@style/titleStyle">
+<!--         <item name="android:textColor">#fff</item> -->
+        <item name="android:textSize">14sp</item>
+<!--         <item name="android:textStyle">normal</item> -->
+<!--         <item name="android:background">#88000000</item> -->
+    </style>
+    
+    <style name="thumbDescriptionStyle" parent="@style/descriptionStyle">
+        <item name="android:textSize">14sp</item>
+    </style>
+    
+    <style name="thumbCaptionStyle" parent="@style/captionStyle">
+        <item name="android:textSize">14sp</item>
+    </style>
+    
     <!--
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.

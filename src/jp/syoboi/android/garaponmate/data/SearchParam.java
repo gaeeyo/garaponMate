@@ -24,6 +24,8 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 	public int durationMin;
 	public int durationMax;
 
+	private transient Pattern mPattern;
+
 	public SearchParam() {
 		page = 1;
 		count = 50;
@@ -82,6 +84,10 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 	}
 
 	public Pattern createPattern() {
+		if (mPattern != null) {
+			return mPattern;
+		}
+
 		if (TextUtils.isEmpty(keyword)) {
 			return null;
 		}
@@ -101,8 +107,9 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 			return null;
 		}
 
-		return Pattern.compile(Utils.convertCoolTitle(sb.toString()).toString(),
+		mPattern = Pattern.compile(Utils.convertCoolTitle(sb.toString()).toString(),
 				Pattern.UNICODE_CASE | Pattern.DOTALL);
+		return mPattern;
 	}
 
 	public PostMatcher createPostMatcher() {

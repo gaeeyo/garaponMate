@@ -6,6 +6,7 @@
     <string name="settings">設定</string>
     <string name="add">追加</string>
     <string name="delete">削除</string>
+    <string name="deleteSearchParam">検索条件を削除</string>
     
     <string name="url">URL</string>
     <string name="urlSummary">http://x.x.x.x/</string>

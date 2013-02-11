@@ -18,10 +18,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 
+import jp.syoboi.android.garaponmate.App;
+import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.data.Caption;
+import jp.syoboi.android.garaponmate.data.ImageLoader;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.utils.Utils;
+import jp.syoboi.android.garaponmate.view.MyImageView;
 
 public class ProgramAdapter extends BaseAdapter {
 
@@ -88,7 +92,7 @@ public class ProgramAdapter extends BaseAdapter {
 		}
 
 		Program p = mItems.get(position);
-		vh.setItem(p, mHighlightMatcher, mHighlightBgColor);
+		vh.bind(p, mHighlightMatcher, mHighlightBgColor);
 
 		boolean selected = TextUtils.equals(p.gtvid, mSelection);
 		Drawable d = v.getBackground();
@@ -108,13 +112,17 @@ public class ProgramAdapter extends BaseAdapter {
 
 	static final SpannableStringBuilder sTmpSb = new SpannableStringBuilder();
 
-	private static class ViewHolder {
+	public static class ViewHolder {
+		public Program		mProgram;
+
 		TextView	mTime;
 		TextView	mChName;
 		TextView	mTitle;
 		TextView	mDescription;
 		TextView	mCaption;
+		MyImageView	mThumbnail;
 		int			mIndent;
+		ImageLoader	mImageLoader;
 
 		public ViewHolder(View v) {
 			mTime = (TextView) v.findViewById(R.id.time);
@@ -122,9 +130,13 @@ public class ProgramAdapter extends BaseAdapter {
 			mTitle = (TextView) v.findViewById(R.id.title);
 			mDescription = (TextView) v.findViewById(R.id.description);
 			mCaption = (TextView) v.findViewById(R.id.caption);
+			mThumbnail = (MyImageView) v.findViewById(R.id.thumbnail);
+			mImageLoader = App.from(v.getContext()).getImageLoader();
 		}
 
-		public void setItem(Program p, Matcher m, int highlightColor) {
+		public void bind(Program p, Matcher m, int highlightColor) {
+			mProgram = p;
+
 			Context context = mTime.getContext();
 			int min = (int)(p.duration / 1000 / 60);
 
@@ -170,6 +182,11 @@ public class ProgramAdapter extends BaseAdapter {
 				mCaption.setVisibility(View.VISIBLE);
 			} else {
 				mCaption.setVisibility(View.GONE);
+			}
+
+			if (mThumbnail != null) {
+				String url = "http://" + Prefs.getGaraponHost() + "/thumbs/" + p.gtvid;
+				mImageLoader.loadImage(mThumbnail, url, 0, 0, 0, false, 0, null);
 			}
 		}
 

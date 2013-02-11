@@ -90,7 +90,6 @@ public class SearchResultFragment extends MainBaseFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		View v = getView();
 		View loadingRow = View.inflate(getActivity(), R.layout.loading_row, null);
 		mLoadingRow = new LoadingRowWrapper((ViewSwitcher)loadingRow);
 		mLoadingRow.getMesageView().setOnClickListener(new View.OnClickListener() {
@@ -256,7 +255,8 @@ public class SearchResultFragment extends MainBaseFragment {
 
 		mSearchParam.page = mPage;
 		mLoadingRow.setLoading();
-		mSearchTask = new SearchTask(mSearchParam) {
+
+		mSearchTask = new SearchTask(getActivity(), mSearchParam, true) {
 			@Override
 			protected void onPostExecute(Object result) {
 				super.onPostExecute(result);
@@ -298,28 +298,27 @@ public class SearchResultFragment extends MainBaseFragment {
 	public Animator onCreateAnimator(int transit, boolean enter,
 			int nextAnim) {
 
-//		Log.v(""+this, "onCreateAnimator transit:" + transit + " enter:" + enter);
 		AnimatorSet set = new AnimatorSet();
-		float from = 1.5f;
+		float fromScale = 1.5f;
 
 		if ((transit == FragmentTransaction.TRANSIT_FRAGMENT_OPEN && !enter)
 			|| (transit == FragmentTransaction.TRANSIT_FRAGMENT_CLOSE && enter)) {
-			from = 0.5f;
+			fromScale = 0.5f;
 		}
 
 		if (enter) {
-			set.playTogether(
-					ObjectAnimator.ofFloat(getView(), "scaleX", from, 1),
-					ObjectAnimator.ofFloat(getView(), "scaleY", from, 1),
-					ObjectAnimator.ofFloat(getView(), "alpha", 0, 1)
-					);
+			set.playTogether(makeAnimation(fromScale, 1, 0, 1));
 		} else {
-			set.playTogether(
-					ObjectAnimator.ofFloat(getView(), "scaleX", 1, from),
-					ObjectAnimator.ofFloat(getView(), "scaleY", 1, from),
-					ObjectAnimator.ofFloat(getView(), "alpha", 1, 0)
-					);
+			set.playTogether(makeAnimation(1, fromScale, 1, 0));
 		}
 		return set;
+	}
+
+	public Animator[] makeAnimation(float fromScale, float toScale,
+			float fromAlpha, float toAlpha) {
+		return new Animator[] {
+				ObjectAnimator.ofFloat(getView(), "scaleX", fromScale, toScale),
+				ObjectAnimator.ofFloat(getView(), "scaleY", fromScale, toScale),
+				ObjectAnimator.ofFloat(getView(), "alpha", fromAlpha, toAlpha) };
 	}
 }

@@ -15,13 +15,23 @@ import android.view.animation.TranslateAnimation;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class Utils {
 
@@ -186,6 +196,15 @@ public class Utils {
 				hour, minute, sec);
 	}
 
+	public static String formatDurationMinute(long time) {
+		time /= 1000;
+		long minute = (time / 60) % 60;
+		long hour = (time / (60*60));
+		return String.format(Locale.ENGLISH,
+				"%02d:%02d",
+				hour, minute);
+	}
+
 	static Time sTime = new Time();
 	public static String formatDateTime(long time) {
 		synchronized (sTime) {
@@ -217,5 +236,40 @@ public class Utils {
 		animSet.setDuration(250);
 		v.startAnimation(animSet);
 		v.setVisibility(show ? View.VISIBLE : View.GONE);
+	}
+
+	public static void objectToFile(File f, Serializable obj) throws FileNotFoundException, IOException {
+		ObjectOutputStream os = null;
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(f);
+			os = new ObjectOutputStream(new GZIPOutputStream(fos));
+			os.writeObject(obj);
+		} finally {
+			if (os != null) {
+				os.close();
+			}
+			if (fos != null) {
+				fos.close();
+			}
+		}
+
+	}
+
+	public static Object objectFromFile(File f) throws StreamCorruptedException, FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectInputStream is = null;
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(f);
+			is = new ObjectInputStream(new GZIPInputStream(fis));
+			return is.readObject();
+		} finally {
+			if (is != null) {
+				is.close();
+			}
+			if (fis != null) {
+				fis.close();
+			}
+		}
 	}
 }

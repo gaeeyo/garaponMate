@@ -1,6 +1,7 @@
 package jp.syoboi.android.garaponmate;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -11,6 +12,7 @@ import java.io.File;
 import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.data.ChList;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
+import jp.syoboi.android.garaponmate.data.ImageLoader;
 import jp.syoboi.android.garaponmate.data.SearchParamList;
 
 public class App extends Application {
@@ -41,6 +43,13 @@ public class App extends Application {
 	private static ChList			sChList;
 	private static SparseIntArray	sPlayerResIdToPlayerId = getPlayerResIdToPlayerIdMap();
 
+
+	private ImageLoader 		mImageLoader;
+
+	public static App from(Context context) {
+		return (App)context.getApplicationContext();
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -62,6 +71,26 @@ public class App extends Application {
 
 		Prefs.init(this);
 		GaraponClient.init(this);
+	}
+
+	public synchronized ImageLoader getImageLoader() {
+		if (mImageLoader == null) {
+			mImageLoader = new ImageLoader(this, getImageCacheDir(), 300);
+		}
+		return mImageLoader;
+	}
+
+	public File getImageCacheDir() {
+		File f = new File(getCacheDir(), "image");
+		f.mkdirs();
+		return f;
+	}
+
+	public static File getSearchResultCache(Context context, long id) {
+//		File dir = new File(context.getCacheDir(), "search");
+		File dir = new File(context.getExternalCacheDir(), "search");
+		dir.mkdirs();
+		return new File(dir, String.valueOf(id));
 	}
 
 	public static SearchParamList getSearchParamList() {
@@ -93,4 +122,5 @@ public class App extends Application {
 		}
 		return fallback;
 	}
+
 }

@@ -489,7 +489,7 @@ public class GaraponClient {
 		START, END
 	}
 
-	public static class ApiResult {
+	public static class ApiResult implements Serializable {
 		public int status;
 		public String version;
 
@@ -499,10 +499,11 @@ public class GaraponClient {
 		}
 	}
 
-	public static class SearchResult extends ApiResult {
+	public static class SearchResult extends ApiResult implements Serializable {
 		public int hit;
 		public ArrayList<Program> program;
 		public HashMap<Integer,Ch> ch;
+		public long timestamp;
 		public SearchResult(JksnObject j) {
 			super(j);
 		}

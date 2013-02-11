@@ -1,8 +1,10 @@
 package jp.syoboi.android.garaponmate.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -13,12 +15,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 
+import java.util.concurrent.CountDownLatch;
+
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
 import jp.syoboi.android.garaponmate.adapter.SearchParamAdapter;
+import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.fragment.base.MainBaseFragment;
+import jp.syoboi.android.garaponmate.task.SearchTask;
 
 public class SearchListFragment extends MainBaseFragment {
 
@@ -64,6 +70,10 @@ public class SearchListFragment extends MainBaseFragment {
 
 		mAdapter = new SearchParamAdapter(getActivity());
 		setListAdapter(mAdapter);
+
+		if (savedInstanceState == null) {
+			 refreshAll();
+		}
 	}
 
 	@Override
@@ -146,6 +156,74 @@ public class SearchListFragment extends MainBaseFragment {
 	void search(SearchParam sp) {
 		if (getActivity() != null) {
 			((MainActivity)getActivity()).search(sp);
+		}
+	}
+
+	void refreshAll() {
+		RefreshTask task = new RefreshTask(getActivity()) {
+			@Override
+			protected void onProgressUpdate(Object... values) {
+				super.onProgressUpdate(values);
+				if (mAdapter != null && values != null) {
+					if (values.length >= 2 && RefreshTask.P_START == values[0]) {
+						SearchParam p = (SearchParam) values[1];
+						mAdapter.setLoading(p.id, true);
+					}
+					else if (values.length >= 3 && RefreshTask.P_END == values[0]) {
+						SearchParam p = (SearchParam) values[1];
+						SearchResult sr = (SearchResult) values[2];
+						mAdapter.setLoading(p.id, false);
+						mAdapter.setSearchResult(p.id, sr);
+					}
+				}
+			}
+		};
+		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+
+	private static class RefreshTask extends AsyncTask<Object, Object, Object> {
+
+		public static String P_START = "start";
+		public static String P_END= "end";
+
+		private Context mContext;
+
+		public RefreshTask(Context context) {
+			mContext = context.getApplicationContext();
+		}
+
+		@Override
+		protected Object doInBackground(Object... params) {
+
+			for (final SearchParam p: App.getSearchParamList().items()) {
+				publishProgress(P_START, p);
+				try {
+					final CountDownLatch cdl = new CountDownLatch(1);
+					SearchTask st = new SearchTask(mContext, p, true) {
+						@Override
+						protected void onPostExecute(Object result) {
+							cdl.countDown();
+							if (result instanceof SearchResult) {
+								RefreshTask.this.publishProgress(P_END, p, result);
+							}
+						};
+						@Override
+						protected void onCancelled(Object result) {
+							super.onCancelled(result);
+							cdl.countDown();
+							publishProgress(P_END, p, null);
+						}
+					};
+					st.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+					cdl.await();
+
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+			return null;
 		}
 	}
 }
