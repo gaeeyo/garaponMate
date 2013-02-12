@@ -185,7 +185,7 @@ public class ImageLoader {
 						}
 					}
 				};
-				mTasks[slot].execute();
+				mTasks[slot].executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 		}
 		else {

@@ -59,7 +59,7 @@ public abstract class ProgressDialogTask {
 	}
 
 	public void execute(Object... params) {
-		mTask.execute(params);
+		mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, params);
 	}
 
 	public void cancel(boolean mayInterruptIfRunning) {

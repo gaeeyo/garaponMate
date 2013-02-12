@@ -351,7 +351,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 					}
 				}
 			}
-			.execute();
+			.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		}
 	}
 

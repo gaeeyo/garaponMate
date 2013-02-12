@@ -222,7 +222,7 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 			}
 
 		};
-		mRefreshTask.execute();
+		mRefreshTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 	private class RefreshTask extends AsyncTask<Object,Object,Object> {
