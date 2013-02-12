@@ -36,6 +36,7 @@ public class MainBaseFragment extends ListFragment {
 	static {
 		sIntentFilter.addAction(App.ACTION_PLAY);
 		sIntentFilter.addAction(App.ACTION_STOP);
+		sIntentFilter.addAction(App.ACTION_REFRESH);
 	}
 
 	private BroadcastReceiver	mReceiver = new BroadcastReceiver() {

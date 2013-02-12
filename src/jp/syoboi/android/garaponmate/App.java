@@ -29,6 +29,7 @@ public class App extends Application {
 	// LocalBroadcastManager
 	public static final String ACTION_PLAY = PKG + ".play";
 	public static final String ACTION_STOP = PKG + ".stop";
+	public static final String ACTION_REFRESH = PKG + ".refresh";
 
 	// Extras
 	public static final String EXTRA_PROGRAM = "program";

@@ -153,6 +153,18 @@ public class SearchListFragment extends MainBaseFragment {
 		}
 	}
 
+	@Override
+	public void onReceiveLocalBroadcast(Context context, Intent intent) {
+		super.onReceiveLocalBroadcast(context, intent);
+
+		if (isResumed()) {
+			String action = intent.getAction();
+			if (App.ACTION_REFRESH.equals(action)) {
+				refreshAll();
+			}
+		}
+	}
+
 	void search(SearchParam sp) {
 		if (getActivity() != null) {
 			((MainActivity)getActivity()).search(sp);

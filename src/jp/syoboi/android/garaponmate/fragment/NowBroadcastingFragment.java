@@ -162,7 +162,15 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 	@Override
 	public void onReceiveLocalBroadcast(Context context, Intent intent) {
 		super.onReceiveLocalBroadcast(context, intent);
-		updatePlaying();
+
+		if (isResumed()) {
+			String action = intent.getAction();
+			if (App.ACTION_REFRESH.equals(action)) {
+				refresh();
+			} else {
+				updatePlaying();
+			}
+		}
 	}
 
 	void updatePlaying() {

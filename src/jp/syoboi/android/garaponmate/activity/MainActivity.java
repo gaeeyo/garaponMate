@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -77,6 +77,7 @@ public class MainActivity extends Activity  {
 	boolean			mPlayerExpanded;
 	boolean			mTitleExtracting;
 	boolean			mReloadAfterLogin;
+	boolean			mResumed;
 	int				mPage;
 	MainPagerAdapter	mPagerAdapter;
 
@@ -198,31 +199,35 @@ public class MainActivity extends Activity  {
 
 		mWebView.setWebViewClient(new WebViewClient() {
 
-			@Override
-			public void onLoadResource(WebView view, String url) {
-				Log.v(TAG, "onLoadResource url:" + url);
-				super.onLoadResource(view, url);
-			}
+//			@Override
+//			public void onLoadResource(WebView view, String url) {
+//				Log.v(TAG, "onLoadResource url:" + url);
+//				super.onLoadResource(view, url);
+//			}
 
-			@Override
-			public void onPageStarted(WebView view, String url, Bitmap favicon) {
-				Log.v(TAG, "onPageStarted url:" + url);
-				super.onPageStarted(view, url, favicon);
-			}
+//			@Override
+//			public void onPageStarted(WebView view, String url, Bitmap favicon) {
+//				Log.v(TAG, "onPageStarted url:" + url);
+//				super.onPageStarted(view, url, favicon);
+//			}
 
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				Log.v(TAG, "onPageFinished url:" + url);
-				super.onPageFinished(view, url);
-				extractTitle();
-			}
+//			@Override
+//			public void onPageFinished(WebView view, String url) {
+//				Log.v(TAG, "onPageFinished url:" + url);
+//				super.onPageFinished(view, url);
+////				if (mResumed && !mTitleExtracting) {
+////					extractTitle();
+////				}
+//			}
 
 			@Override
 			public WebResourceResponse shouldInterceptRequest(WebView view,
 					String url) {
 				Log.v(TAG, "shouldInterceptRequest url:" + url);
-				if (overrideUrl(url)) {
-					return super.shouldInterceptRequest(view, null);
+				if (mResumed) {
+					if (overrideUrl(url)) {
+						return super.shouldInterceptRequest(view, null);
+					}
 				}
 
 				return super.shouldInterceptRequest(view, url);
@@ -231,8 +236,10 @@ public class MainActivity extends Activity  {
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
 				Log.v(TAG, "shouldOverrideUrlLoading url:" + url);
-				if (overrideUrl(url)) {
-					return true;
+				if (mResumed) {
+					if (overrideUrl(url)) {
+						return true;
+					}
 				}
 				return super.shouldOverrideUrlLoading(view, url);
 			}
@@ -355,17 +362,19 @@ public class MainActivity extends Activity  {
 		mPlayer.onPause();
 
 		Prefs.setStartPage(mViewPager.getCurrentItem());
+		mResumed = false;
 	}
 
 	@Override
 	protected void onResume() {
+		mResumed = true;
 		mWebView.onResume();
 		mPlayer.onResume();
 		super.onResume();
 
 		// 設定が変更されていたら読み直してログインしなおす
 		if (mSettingChanged) {
-			loginBackground();
+			refresh();
 		}
 	}
 
@@ -567,6 +576,7 @@ public class MainActivity extends Activity  {
 		}
 	}
 
+
 	/**
 	 * ガラポンTVのページ内のタイトルっぽい部分を取得
 	 */
@@ -663,6 +673,9 @@ public class MainActivity extends Activity  {
 	}
 
 	void switchPage(int page) {
+		if (mPage == page) {
+			refresh();
+		}
 		mPage = page;
 
 		setPageVisibility(mViewPager, page == PAGE_PAGER, 0.5f);
@@ -672,6 +685,17 @@ public class MainActivity extends Activity  {
 			while (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
 			}
+		}
+	}
+
+	void refresh() {
+		switch (mPage) {
+		case PAGE_PAGER:
+			LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(App.ACTION_REFRESH));
+			break;
+		case PAGE_WEB:
+			mWebView.reload();
+			break;
 		}
 	}
 
