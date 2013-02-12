@@ -500,7 +500,7 @@ public class MainActivity extends Activity  {
 
 
 	public void playVideoExternal(Program p) {
-		Uri uri = Uri.parse("http://" + Prefs.getIpAdr()
+		Uri uri = Uri.parse("http://" + Prefs.getGaraponHost()
 				+ "/cgi-bin/play/m3u8.cgi?"
 				+ p.gtvid
 				+ "-" + Prefs.getCommonSessionId());
