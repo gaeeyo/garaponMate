@@ -168,7 +168,7 @@ public class PlayerWebView implements PlayerViewInterface {
 	private void setVideoInternal(String id) {
 		String flvPath = id.substring(6,8) + "/" + id + ".ts-" + Prefs.getCommonSessionId();
 
-		String rtmp = "rtmp://" + Prefs.getIpAdr() + ":" + Prefs.getTsPort() + "/";
+		String rtmp = "rtmp://" + Prefs.getGaraponTsHost() + "/";
 
 		String html = "<html>"
 				+ "<meta name='viewport' content='target-densitydpi=low-dpi' />"

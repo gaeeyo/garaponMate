@@ -74,20 +74,40 @@ public class Prefs {
 		editor.commit();
 	}
 
-	public static String getIpAdr() {
+	public static boolean isEmptyIpAdr() {
+		return TextUtils.isEmpty(Prefs.getIpAdr()) || TextUtils.isEmpty(Prefs.getPort());
+	}
+
+	private static String getIpAdr() {
 		return sPrefs.getString(IP_ADDR, "");
 	}
 
-	public static String getPort() {
+	private static String getPort() {
 		return sPrefs.getString(PORT, "80");
 	}
 
-	public static String getTsPort() {
+	private static String getTsPort() {
 		return sPrefs.getString(TS_PORT, "");
 	}
 
+	private static boolean isGlobalAccess() {
+		return TextUtils.equals(getIpAdr(), sPrefs.getString(G_IP_ADDR, ""));
+	}
+
 	public static String getGaraponHost() {
-		return getIpAdr() + ":" + getPort();
+		if (isGlobalAccess()) {
+			return getIpAdr() + ":" + getPort();
+		} else {
+			return getIpAdr();
+		}
+	}
+
+	public static String getGaraponTsHost() {
+		if (isGlobalAccess()) {
+			return getIpAdr() + ":" + getTsPort();
+		} else {
+			return getIpAdr();
+		}
 	}
 
 	public static String getBaseUrl() {

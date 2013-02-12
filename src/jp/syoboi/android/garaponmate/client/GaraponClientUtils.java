@@ -78,7 +78,7 @@ public class GaraponClientUtils {
 		String user = prefs.getString(Prefs.USER, null);
 		String pass = prefs.getString(Prefs.PASSWORD, null);
 
-		if (REFRESH_AUTH || TextUtils.isEmpty(Prefs.getIpAdr()) || TextUtils.isEmpty(Prefs.getPort())) {
+		if (REFRESH_AUTH || Prefs.isEmptyIpAdr()) {
 			return auth(user, pass);
 		}
 		else {
