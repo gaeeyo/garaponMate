@@ -36,11 +36,13 @@ public class ProgramGridView extends LinearLayout {
 	int 			mGridMinWidth;
 	SearchParam		mSearchParam;
 	Matcher			mHighlightMatcher;
+	int				mHighlightColor;
 
 	public ProgramGridView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		setOrientation(VERTICAL);
 		mGridMinWidth = Math.round(130 * getResources().getDisplayMetrics().density);
+		mHighlightColor = context.getResources().getColor(R.color.searchHighlightBgColor);
 	}
 
 	@Override
@@ -140,7 +142,7 @@ public class ProgramGridView extends LinearLayout {
 			v.setTag(vh2);
 			v.setOnClickListener(mOnProgramClickListener);
 		}
-		vh2.bind(p, mHighlightMatcher, 0);
+		vh2.bind(p, mHighlightMatcher, mHighlightColor);
 	}
 
 	View.OnClickListener mOnProgramClickListener = new View.OnClickListener() {
@@ -212,7 +214,7 @@ public class ProgramGridView extends LinearLayout {
 
 			mTime.setText(timeStr);
 			mChName.setText(Utils.convertCoolTitle(p.ch.bc));
-			mTitle.setText(deco(p.title, m, highlightColor));
+			mTitle.setText(Utils.convertCoolTitle(p.title));
 
 			if (TextUtils.isEmpty(p.description)) {
 				mDescription.setVisibility(View.GONE);
@@ -244,6 +246,7 @@ public class ProgramGridView extends LinearLayout {
 						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 				mCaption.setText(sb);
 				mCaption.setVisibility(View.VISIBLE);
+				mDescription.setVisibility(View.GONE);
 			} else {
 				mCaption.setVisibility(View.GONE);
 			}
