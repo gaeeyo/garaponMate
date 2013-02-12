@@ -15,11 +15,7 @@
         style="@style/thumbTimeStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="2dip"
-        android:paddingRight="2dip"
-        android:singleLine="true"
-        android:text="@string/date"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:text="@string/date" />
 
     <jp.syoboi.android.garaponmate.view.MyImageView
         android:id="@+id/thumbnail"
@@ -37,11 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/thumbnail"
         android:layout_alignTop="@+id/thumbnail"
-        android:paddingLeft="2dip"
-        android:paddingRight="2dip"
-        android:singleLine="true"
-        android:text="@string/date"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:text="@string/date" />
 
     <jp.syoboi.android.garaponmate.view.BorderingTextView
         android:id="@+id/chName"
@@ -50,24 +42,15 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/thumbnail"
         android:layout_alignTop="@+id/thumbnail"
-        android:paddingLeft="2dip"
-        android:paddingRight="2dip"
-        android:singleLine="true"
-        android:text="@string/chName"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:text="@string/chName" />
 
-    <TextView
+    <jp.syoboi.android.garaponmate.view.BorderingTextView
         android:id="@+id/title"
         style="@style/thumbTitleStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/thumbnail"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:paddingLeft="2dip"
-        android:paddingRight="2dip"
-        android:text="@string/title"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:layout_alignBottom="@+id/thumbnail"
+        android:text="@string/title" />
 
     <TextView
         android:id="@+id/description"
@@ -75,12 +58,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/title"
-        android:ellipsize="end"
-        android:maxLines="3"
-        android:paddingLeft="2dip"
-        android:paddingRight="2dip"
         android:text="@string/description"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         android:visibility="gone" />
 
     <TextView

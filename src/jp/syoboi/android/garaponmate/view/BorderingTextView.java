@@ -2,50 +2,96 @@ package jp.syoboi.android.garaponmate.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
-import android.graphics.Paint.Style;
-import android.text.TextPaint;
+import android.graphics.Color;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+import jp.syoboi.android.garaponmate.R;
+
 public class BorderingTextView extends TextView {
 
-	private int mTextColor;
-	private int mShadowColor;
-	private float mStrokeWidth;
+	private static Paint sPaint = new Paint();
+	private static float [] sSinTable;
+	private static float [] sCosTable;
+
+	static {
+		sPaint.setAntiAlias(true);
+
+		float tableStep = (float) ((Math.PI * 2) / 11);
+		int tableSize = (int)((Math.PI * 2) / tableStep);
+		sSinTable = new float [tableSize];
+		sCosTable = new float [tableSize];
+		float x = 0;
+		for (int j=0; j<tableSize; j++, x+=tableStep) {
+			sCosTable[j] = (float) Math.cos(x);
+			sSinTable[j] = (float) Math.sin(x);
+		}
+
+	}
+
+	private Bitmap 	mBitmap;
+	private Canvas	mCanvas;
+	private int	 	mBorderColor;
+	private int 	mBorderWidth;
+
+	ColorMatrixColorFilter	mColorFilter;
 
 	public BorderingTextView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
-		TypedArray ta = context.obtainStyledAttributes(attrs, new int [] {
-				android.R.attr.textColor,
-				android.R.attr.shadowColor });
-		mTextColor = ta.getColor(0, 0);
-		mShadowColor = ta.getColor(1, 0);
+		float density = context.getResources().getDisplayMetrics().density;
+
+		TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.BorderingTextView);
+
+		mBorderColor = ta.getColor(R.styleable.BorderingTextView_borderColor, 0);
+		mBorderWidth = ta.getDimensionPixelSize(R.styleable.BorderingTextView_borderWidth,
+				Math.round(1.5f * density));
+
 		ta.recycle();
 
-		mStrokeWidth = 1.5f * (context.getResources().getDisplayMetrics().density);
+		mColorFilter = new ColorMatrixColorFilter(new float [] {
+				0, 0, 0, 0, Color.red(mBorderColor),
+				0, 0, 0, 0, Color.green(mBorderColor),
+				0, 0, 0, 0, Color.blue(mBorderColor),
+				0, 0, 0, 1, 0,
+		});
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
+			if (mBorderColor == 0) {
+				super.draw(canvas);
+				return;
+			}
 
-		if (mShadowColor == 0) {
-			super.draw(canvas);
-			return;
-		}
-		TextPaint paint = getPaint();
+			int width = getWidth();
+			int height = getHeight();
+			if (mBitmap == null || mBitmap.getWidth() != width || mBitmap.getHeight() != height) {
+				if (mBitmap != null) {
+					mBitmap.recycle();
+				}
+				mBitmap = Bitmap.createBitmap(width, height, Config.ARGB_4444);
+				mCanvas = new Canvas(mBitmap);
+			}
 
-		paint.setStyle(Style.STROKE);
-		paint.setStrokeWidth(mStrokeWidth);
-		//paint.setColor(mShadowColor);
-		setTextColor(mShadowColor);
-		super.draw(canvas);
+			Canvas tmpCanvas = mCanvas;
+			Paint paint = sPaint;
 
-		paint.setStyle(Style.FILL);
-		//paint.setColor(mTextColor);
-		setTextColor(mTextColor);
+			mBitmap.eraseColor(0);
+			super.draw(tmpCanvas);
 
-		super.draw(canvas);
+			paint.setColorFilter(mColorFilter);
+			for (int j=0; j<sCosTable.length; j++) {
+				float x = sCosTable[j] * mBorderWidth;
+				float y = sSinTable[j] * mBorderWidth;
+				canvas.drawBitmap(mBitmap, x, y, sPaint);
+			}
+			paint.setColorFilter(null);
+			canvas.drawBitmap(mBitmap, 0, 0, sPaint);
 	}
 }

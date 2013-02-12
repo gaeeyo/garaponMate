@@ -2,57 +2,55 @@
 
     <color name="tabPagerBackgroundColor">#00000000</color>
     <color name="tabPagerTextColor">#ff33B5E5</color>
-    
     <color name="pressedColor">#cc33B5E5</color>
     <color name="focusedColor">#6633B5E5</color>
     <color name="selectedColor">#40FF8800</color>
     <color name="popupMessageBgColor">#88000000</color>
     <color name="popupMessageTextColor">#fff3f3f3</color>
-    
     <color name="timetableBorderColor">#ffbbbbbb</color>
     <color name="timeBarColor">#ff6DCAEC</color>
     <color name="broadcastTimeBarColor">#ffCF9FE7</color>
     <color name="searchHighlightBgColor">#FFFF99</color>
-    
+
     <dimen name="timeBorderWidth">1dip</dimen>
     <dimen name="timeBarHeight">7dip</dimen>
     <dimen name="timeBarTextSize">15sp</dimen>
     <dimen name="bottomToolbarHeight">52dip</dimen>
-    
+
     <color name="chNameColor">#ff008800</color>
     <color name="timeColor">#ff555555</color>
     <color name="titleColor">#ff000000</color>
     <color name="descriptionColor">#ff506883</color>
     <color name="captionColor">#ff844647</color>
     <color name="nowStartedBackgroundColor">#ffFFFFBB</color>
-    
+
     <style name="chNameStyle">
         <item name="android:textColor">@color/chNameColor</item>
         <item name="android:textSize">15sp</item>
     </style>
-    
+
     <style name="timeStyle">
         <item name="android:textColor">@color/timeColor</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">15sp</item>
     </style>
-    
+
     <style name="titleStyle">
         <item name="android:textColor">@color/titleColor</item>
         <item name="android:textSize">18sp</item>
         <item name="android:textStyle">bold</item>
     </style>
-    
+
     <style name="descriptionStyle">
         <item name="android:textColor">@color/descriptionColor</item>
         <item name="android:textSize">15sp</item>
     </style>
-    
+
     <style name="captionStyle">
         <item name="android:textColor">@color/captionColor</item>
         <item name="android:textSize">15sp</item>
     </style>
-    
+
     <style name="popupMessage">
         <item name="android:background">@drawable/popup_message_bg</item>
         <item name="android:text">@color/popupMessageTextColor</item>
@@ -65,50 +63,68 @@
     </style>
 
     <!-- サムネイル関連 -->
+    <!-- 開始時間 -->
     <style name="thumbTimeStyle" parent="@style/timeStyle">
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">normal</item>
     </style>
-    
-    <style name="thumbChNameStyle" parent="@style/chNameStyle" >
+
+    <!-- チャンネル -->
+    <style name="thumbChNameStyle" parent="@style/chNameStyle">
         <item name="android:textColor">#9f9</item>
         <item name="android:textSize">12sp</item>
-<!--         <item name="android:background">#88000000</item> -->
-        <item name="android:shadowColor">#ff000000</item>
-<!--         <item name="android:shadowRadius">2</item> -->
+        <item name="borderColor">#ff000000</item>
+        <item name="borderWidth">2dip</item>
+        <item name="android:paddingLeft">3dip</item>
+        <item name="android:paddingRight">3dip</item>
     </style>
-    
+
+    <!-- 長さ -->
     <style name="thumbDurationStyle" parent="@style/timeStyle">
         <item name="android:textColor">#fff</item>
         <item name="android:textSize">12sp</item>
         <item name="android:background">#88000000</item>
-<!--         <item name="android:shadowColor">#000</item> -->
+        <item name="android:paddingLeft">3dip</item>
+        <item name="android:paddingRight">3dip</item>
     </style>
-    
+
+    <!-- タイトル -->
     <style name="thumbTitleStyle" parent="@style/titleStyle">
-<!--         <item name="android:textColor">#fff</item> -->
         <item name="android:textSize">14sp</item>
-<!--         <item name="android:textStyle">normal</item> -->
-<!--         <item name="android:background">#88000000</item> -->
+        <item name="android:textColor">#fff</item>
+        <item name="borderColor">#ff555555</item>
+        <item name="borderWidth">2dip</item>
+        <item name="android:paddingLeft">3dip</item>
+        <item name="android:paddingRight">3dip</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
     </style>
-    
+
+    <!-- 詳細 -->
     <style name="thumbDescriptionStyle" parent="@style/descriptionStyle">
         <item name="android:textSize">14sp</item>
+        <item name="android:maxLines">3</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingLeft">2dip</item>
+        <item name="android:paddingRight">2dip</item>
     </style>
-    
+
+    <!-- 字幕 -->
     <style name="thumbCaptionStyle" parent="@style/captionStyle">
         <item name="android:textSize">14sp</item>
+        <item name="android:paddingLeft">2dip</item>
+        <item name="android:paddingRight">2dip</item>
     </style>
-    
+
     <!--
         Base application theme, dependent on API level. This theme is replaced
-        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
+            backward-compatibility can go here.
         -->
     </style>
 
