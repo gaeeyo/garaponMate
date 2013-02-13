@@ -8,7 +8,7 @@ import android.text.format.DateUtils;
 import android.text.style.LeadingMarginSpan;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.utils.Utils;
 
-public class ProgramGridView extends LinearLayout {
+public class ProgramGridView extends FrameLayout {
 
 	private static final String TAG = "ProgramGridView";
 
@@ -37,10 +37,10 @@ public class ProgramGridView extends LinearLayout {
 	SearchParam		mSearchParam;
 	Matcher			mHighlightMatcher;
 	int				mHighlightColor;
+	int				mCols;
 
 	public ProgramGridView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		setOrientation(VERTICAL);
 		mGridMinWidth = Math.round(130 * getResources().getDisplayMetrics().density);
 		mHighlightColor = context.getResources().getColor(R.color.searchHighlightBgColor);
 	}
@@ -48,22 +48,94 @@ public class ProgramGridView extends LinearLayout {
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-		int width = MeasureSpec.getSize(widthMeasureSpec);
+		int widthSize = MeasureSpec.getSize(widthMeasureSpec) - getPaddingLeft() - getPaddingRight();
+		int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+		int heightSize = MeasureSpec.getSize(heightMeasureSpec) - getPaddingTop() - getPaddingBottom();
+
 
 		if (widthMode == MeasureSpec.EXACTLY) {
-			updateGridWidth(width);
+			updateGridWidth(widthSize);
 		}
-//		Log.v(TAG, "widthMode:" + widthMode + " width:" + width);
 
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		int maxChildHeight = 0;
+		boolean fillChildHeight = false;
+		int childCount = getChildCount();
+		int gridWidth = mGridWidth;
+		for (int j=0; j<childCount; j++) {
+			View child = getChildAt(j);
+			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
+			int marginWidth = lp.leftMargin + lp.rightMargin;
+			int marginHeight = lp.topMargin + lp.bottomMargin;
+			int childWidth = gridWidth - marginWidth;
+			int childHeight = heightSize - marginHeight;
+			child.measure(
+					MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY),
+					MeasureSpec.makeMeasureSpec(childHeight, heightMode));
 
+			childHeight = child.getMeasuredHeight() + marginHeight;
+
+			if (j > 0 && childHeight != maxChildHeight) {
+				fillChildHeight = true;
+			}
+			if (childHeight > maxChildHeight) {
+				maxChildHeight = childHeight;
+			}
+		}
+		if (fillChildHeight) {
+			for (int j=0; j<childCount; j++) {
+				View child = getChildAt(j);
+				FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
+				int marginWidth = lp.leftMargin + lp.rightMargin;
+				int marginHeight = lp.topMargin + lp.bottomMargin;
+				int childWidth = gridWidth - marginWidth;
+				int childHeight = maxChildHeight - marginHeight;
+				child.measure(
+						MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.EXACTLY),
+						MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.EXACTLY));
+			}
+		}
+
+		setMeasuredDimension(widthSize, maxChildHeight);
+
+//		if (App.DEBUG) {
+//			Log.v(TAG, String.format("widthSpec:%s heightSpec:%s measured:%d, %d  grid:%d  cols:%d",
+//					MeasureSpec.toString(widthMeasureSpec),
+//					MeasureSpec.toString(heightMeasureSpec),
+//					getMeasuredWidth(), getMeasuredHeight(),
+//					mGridWidth, mCols));
+//		}
+	}
+
+	@Override
+	protected void onLayout(boolean changed, int left, int top, int right,
+			int bottom) {
+		super.onLayout(changed, left, top, right, bottom);
+		int childCount = getChildCount();
+
+		int x = getPaddingLeft();
+		int y = getPaddingTop();
+
+		for (int j=0; j<childCount; j++) {
+			View child = getChildAt(j);
+			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) child.getLayoutParams();
+			int cx = x + j * mGridWidth + lp.leftMargin;
+			int cy = y + lp.topMargin;
+			child.layout(cx, cy, cx + mGridWidth, cy + child.getMeasuredHeight());
+		}
 	}
 
 	void updateGridWidth(int width) {
-		int gridWidth = Math.max(mGridMinWidth, width / 5);
+		int gridWidth = width / 6;
+		if (gridWidth < mGridMinWidth) {
+			gridWidth = width / (width / mGridMinWidth);
+		}
 		if (mGridWidth != gridWidth) {
 			mGridWidth = gridWidth;
-			setupChilds(width);
+			int cols = width / gridWidth;
+			if (cols != mCols) {
+				mCols = cols;
+				setupChilds(width);
+			}
 		}
 	}
 
@@ -85,49 +157,28 @@ public class ProgramGridView extends LinearLayout {
 
 	void setupChilds(int width) {
 
-//		Log.v(TAG, "setupChilds " + this);
-
-		if (width <= mGridWidth) {
-			for (int j=getChildCount()-1; j>=0; j--) {
-				getChildAt(j).setVisibility(View.GONE);
-			}
+		if (mGridWidth <= 0) {
 			return;
 		}
 
-		int rows = 1;
-		for (int j=getChildCount(); j<rows; j++) {
-			LinearLayout ll = new LinearLayout(getContext());
-			addView(ll, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-		}
-		for (int j=getChildCount()-1; j>=rows; j--) {
-			getChildAt(j).setVisibility(View.GONE);
+		int cols = width / mGridWidth;
+
+		int childCount = getChildCount();
+		for (int j=childCount; j<cols; j++) {
+			View.inflate(getContext(), R.layout.search_param_row_program, this);
 		}
 
+		for (int j=childCount-1; j>=cols; j--) {
+			removeViewAt(j);
+		}
 
-		int idx = 0;
-		for (int j=0; j<rows; j++) {
-			LinearLayout ll = (LinearLayout) getChildAt(j);
-
-			int cols = width / mGridWidth;
-//			Log.v(TAG, "setupChilds cols:"+ cols + " width:" + width + " gridWidth:" + mGridWidth);
-
-			for (int x=ll.getChildCount(); x<cols; x++) {
-				View.inflate(getContext(), R.layout.search_param_row_program, ll);
-			}
-
-			for (int x=ll.getChildCount()-1; x>=cols; x--) {
-				ll.getChildAt(x).setVisibility(View.GONE);
-			}
-
-			for (int x=0; x<cols; x++, idx++) {
-				View v = ll.getChildAt(x);
-				if (idx < mPrograms.size()) {
-					v.setVisibility(View.VISIBLE);
-					bindProgram(v, mPrograms.get(idx));
-				} else {
-					v.setVisibility(View.INVISIBLE);
-//					bindProgram(v, null);
-				}
+		for (int j=0; j<cols; j++) {
+			View child = getChildAt(j);
+			if (j < mPrograms.size()) {
+				child.setVisibility(View.VISIBLE);
+				bindProgram(child, mPrograms.get(j));
+			} else {
+				child.setVisibility(View.INVISIBLE);
 			}
 		}
 	}
@@ -140,7 +191,7 @@ public class ProgramGridView extends LinearLayout {
 		} else {
 			vh2 = new ViewHolder(v);
 			v.setTag(vh2);
-			v.setOnClickListener(mOnProgramClickListener);
+			vh2.mThumbContainer.setOnClickListener(mOnProgramClickListener);
 		}
 		vh2.bind(p, mHighlightMatcher, mHighlightColor);
 	}
@@ -149,6 +200,8 @@ public class ProgramGridView extends LinearLayout {
 
 		@Override
 		public void onClick(View v) {
+			v = (View)v.getParent();
+
 			if (v.getVisibility() != View.VISIBLE) {
 				return;
 			}
@@ -164,8 +217,6 @@ public class ProgramGridView extends LinearLayout {
 		}
 	};
 
-
-
 	static SpannableStringBuilder sTmpSb = new SpannableStringBuilder();
 	static final int STARTTIME_FMT = DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME
 			| DateUtils.FORMAT_SHOW_WEEKDAY;
@@ -173,6 +224,7 @@ public class ProgramGridView extends LinearLayout {
 	public static class ViewHolder {
 		public Program		mProgram;
 
+		View		mThumbContainer;
 		TextView	mTime;
 		TextView	mDuration;
 		TextView	mChName;
@@ -184,6 +236,7 @@ public class ProgramGridView extends LinearLayout {
 		ImageLoader	mImageLoader;
 
 		public ViewHolder(View v) {
+			mThumbContainer = v.findViewById(R.id.thumbContainer);
 			mTime = (TextView) v.findViewById(R.id.time);
 			mDuration = (TextView) v.findViewById(R.id.duration);
 			mChName = (TextView) v.findViewById(R.id.chName);

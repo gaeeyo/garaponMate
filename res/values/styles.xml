@@ -65,6 +65,7 @@
     <!-- サムネイル関連 -->
     <!-- 開始時間 -->
     <style name="thumbTimeStyle" parent="@style/timeStyle">
+        <item name="android:singleLine">true</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">normal</item>
     </style>

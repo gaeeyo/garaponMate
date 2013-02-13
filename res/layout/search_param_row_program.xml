@@ -1,76 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="0dip"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="1dip"
-    android:layout_marginRight="1dip"
-    android:layout_weight="1"
-    android:background="@drawable/video_grid_bg"
-    android:orientation="vertical"
-    android:paddingBottom="2dip"
-    android:paddingTop="2dip" >
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent" >
 
     <TextView
         android:id="@+id/time"
         style="@style/thumbTimeStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/date" />
-
-    <jp.syoboi.android.garaponmate.view.MyImageView
-        android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/time"
-        android:layout_centerVertical="true"
-        android:background="@drawable/video_thumb_bg"
-        android:scaleType="fitXY" />
-
-    <TextView
-        android:id="@+id/duration"
-        style="@style/thumbDurationStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/thumbnail"
-        android:layout_alignTop="@+id/thumbnail"
+        android:paddingLeft="1dip"
+        android:paddingRight="1dip"
         android:text="@string/date" />
 
-    <jp.syoboi.android.garaponmate.view.BorderingTextView
-        android:id="@+id/chName"
-        style="@style/thumbChNameStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/thumbnail"
-        android:layout_alignTop="@+id/thumbnail"
-        android:text="@string/chName" />
+    <RelativeLayout
+        android:id="@+id/thumbContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/time"
+        android:layout_marginTop="-1dip"
+        android:background="@drawable/video_grid_bg"
+        android:paddingBottom="1dip"
+        android:paddingLeft="1dip"
+        android:paddingRight="1dip"
+        android:paddingTop="1dip" >
 
-    <jp.syoboi.android.garaponmate.view.BorderingTextView
-        android:id="@+id/title"
-        style="@style/thumbTitleStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/thumbnail"
-        android:text="@string/title" />
+        <jp.syoboi.android.garaponmate.view.MyImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/time"
+            android:background="@drawable/video_thumb_bg"
+            android:scaleType="fitXY" />
 
-    <TextView
-        android:id="@+id/description"
-        style="@style/thumbDescriptionStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
-        android:text="@string/description"
-        android:visibility="gone" />
+        <TextView
+            android:id="@+id/duration"
+            style="@style/thumbDurationStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@+id/thumbnail"
+            android:layout_alignTop="@+id/thumbnail"
+            android:text="@string/date" />
 
-    <TextView
-        android:id="@+id/caption"
-        style="@style/thumbCaptionStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_below="@+id/description"
-        android:ellipsize="end"
-        android:maxLines="3"
-        android:text="@string/caption"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        <jp.syoboi.android.garaponmate.view.BorderingTextView
+            android:id="@+id/chName"
+            style="@style/thumbChNameStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/thumbnail"
+            android:layout_alignTop="@+id/thumbnail"
+            android:text="@string/chName" />
+
+        <jp.syoboi.android.garaponmate.view.BorderingTextView
+            android:id="@+id/title"
+            style="@style/thumbTitleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/thumbnail"
+            android:text="@string/title" />
+
+        <TextView
+            android:id="@+id/description"
+            style="@style/thumbDescriptionStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/title"
+            android:text="@string/description"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/caption"
+            style="@style/thumbCaptionStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignWithParentIfMissing="true"
+            android:layout_below="@+id/description"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:text="@string/caption"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+    </RelativeLayout>
 
 </RelativeLayout>
