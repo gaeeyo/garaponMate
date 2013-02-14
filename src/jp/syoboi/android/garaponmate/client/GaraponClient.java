@@ -83,7 +83,7 @@ public class GaraponClient {
 			throw new GaraponClientException(sResources.getString(R.string.settingsWarning));
 		}
 
-		HttpURLConnection con = (HttpURLConnection)new URL(AUTH_URL).openConnection();
+		HttpURLConnection con = openConnection(AUTH_URL);
 		try {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
@@ -185,8 +185,7 @@ public class GaraponClient {
 			Log.i(TAG, "ガラポンTVログイン(Web)");
 		}
 
-		HttpURLConnection con = (HttpURLConnection)new URL("http://" + host + WEB_LOGIN_PATH)
-			.openConnection();
+		HttpURLConnection con = openConnection("http://" + host + WEB_LOGIN_PATH);
 		try {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
@@ -332,9 +331,9 @@ public class GaraponClient {
 			Log.i(TAG, "検索 " + query);
 		}
 
-		HttpURLConnection con = (HttpURLConnection)new URL("http://" + ipaddr + SEARCH_PATH
-				+ "?gtvsession=" + sessionId)
-			.openConnection();
+		HttpURLConnection con = openConnection(
+				"http://" + ipaddr + SEARCH_PATH
+				+ "?gtvsession=" + sessionId);
 
 		try {
 			con.setDoOutput(true);
@@ -405,9 +404,9 @@ public class GaraponClient {
 			Log.i(TAG, "favorite favorite:" + favorite);
 		}
 
-		HttpURLConnection con = (HttpURLConnection)new URL("http://" + ipaddr + FAVORITE_PATH
-				+ "?gtvsession=" + sessionId)
-			.openConnection();
+		HttpURLConnection con = openConnection(
+				"http://" + ipaddr + FAVORITE_PATH
+				+ "?gtvsession=" + sessionId);
 
 		try {
 			con.setDoOutput(true);
@@ -561,6 +560,12 @@ public class GaraponClient {
 		}
 	}
 
+	static HttpURLConnection openConnection(String url) throws MalformedURLException, IOException {
+		HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
+		con.setConnectTimeout(10*1000);
+		con.setReadTimeout(10*1000);
+		return con;
+	}
 
 	public static class GaraponClientException extends Exception {
 		private static final long serialVersionUID = 1L;
