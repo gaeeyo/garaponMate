@@ -3,10 +3,12 @@
 
     <string name="app_name">GaraponMate</string>
 
+    <string name="topPage">トップページ</string>
     <string name="settings">設定</string>
     <string name="add">追加</string>
     <string name="delete">削除</string>
     <string name="deleteSearchParam">検索条件を削除</string>
+    <string name="reload">再読み込み</string>
     
     <string name="url">URL</string>
     <string name="urlSummary">http://x.x.x.x/</string>
@@ -81,8 +83,10 @@
     <string name="searchCondition">検索条件</string>
     <string name="searchConditionEmpty">「キーワード」「チャンネル」「ジャンル」「お気に入りのみ」のどれかを必ず設定する必要があります</string>
     
+    <string name="browser">ブラウザ</string>
     <string name="search">検索</string>
-    <string name="newSearch">検索</string>
+    <string name="searchList">検索リスト</string>
+    <string name="newSearch">検索条件を作成</string>
     <string name="searchListEmpty">保存された検索がありません</string>
     
     <string name="searchListSettings">検索リスト設定</string>

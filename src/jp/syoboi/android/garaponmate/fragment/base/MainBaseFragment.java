@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -39,6 +41,23 @@ public class MainBaseFragment extends ListFragment {
 		sIntentFilter.addAction(App.ACTION_REFRESH);
 	}
 
+	private boolean 	mNeedReload;
+
+	OnSharedPreferenceChangeListener	mPrefsChangeListener = new OnSharedPreferenceChangeListener() {
+
+		@Override
+		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+				String key) {
+			if (Prefs.USER.equals(key) || Prefs.PASSWORD.equals(key)) {
+				if (isResumed()) {
+					reload();
+				} else {
+					mNeedReload = true;
+				}
+			}
+		}
+	};
+
 	private BroadcastReceiver	mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -53,15 +72,16 @@ public class MainBaseFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver, sIntentFilter);
 	}
 
 	@Override
 	public void onDestroy() {
+		Prefs.getInstance().unregisterOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mReceiver);
 		super.onDestroy();
 	}
-
 
 	protected void playVideo(Program p) {
 		if (getActivity() instanceof MainActivity) {
@@ -71,6 +91,19 @@ public class MainBaseFragment extends ListFragment {
 
 	public CharSequence getTitle() {
 		return "";
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		if (mNeedReload) {
+			mNeedReload = false;
+			reload();
+		}
+	}
+
+	public void reload() {
+
 	}
 
 	public void inflateProgramMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo, Program p) {

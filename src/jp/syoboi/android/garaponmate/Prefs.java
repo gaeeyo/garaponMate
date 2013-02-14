@@ -6,10 +6,13 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import jp.syoboi.android.garaponmate.data.ProgSearchList;
 
 public class Prefs {
+	private static final String TAG = "Prefs";
+
 	public static final String USER = "user";
 	public static final String PASSWORD = "password";
 
@@ -65,6 +68,7 @@ public class Prefs {
 	}
 
 	public static void clearSession() {
+		Log.v(TAG, "clearSession");
 		Editor editor = sPrefs.edit();
 		for (String key2: new String [] {
 				IP_ADDR, P_IP_ADDR, G_IP_ADDR, PORT, TS_PORT,

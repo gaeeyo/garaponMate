@@ -38,7 +38,6 @@
     <style name="titleStyle">
         <item name="android:textColor">@color/titleColor</item>
         <item name="android:textSize">18sp</item>
-        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="descriptionStyle">
@@ -136,7 +135,7 @@
 
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:windowBackground">@color/windowBackgroundColor</item>
-        <item name="android:windowContentOverlay">@null</item>
+<!--         <item name="android:windowContentOverlay">@null</item> -->
     </style>
 
 </resources>

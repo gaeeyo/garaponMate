@@ -1,39 +1,29 @@
 package jp.syoboi.android.garaponmate.activity;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.ActionBar.TabListener;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
-import android.webkit.ConsoleMessage;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-
-import java.util.HashMap;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
@@ -42,84 +32,42 @@ import jp.syoboi.android.garaponmate.adapter.MainPagerAdapter;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
-import jp.syoboi.android.garaponmate.fragment.ErrorDialogFragment;
 import jp.syoboi.android.garaponmate.fragment.SearchResultFragment;
 import jp.syoboi.android.garaponmate.service.PlayerService;
-import jp.syoboi.android.garaponmate.task.ProgressDialogTask;
 import jp.syoboi.android.garaponmate.view.PlayerView;
 
 public class MainActivity extends Activity  {
 
 	static final String TAG = "MainActivity";
 
-	static final int FLAG_AUTO_LOGIN_PROGRESS = 1;
 	static final long CHANGE_FULLSCREEN_DELAY = 3000;
 
 	static final String SPECIAL_PAGE_PATH = "/garaponMate";
 
 	private static final int PAGE_PAGER = 0;
-	private static final int PAGE_WEB = 1;
-	private static final int PAGE_SEARCH = 2;
+	private static final int PAGE_SEARCH = 1;
 
-	int				mFlags;
 
 	Handler			mHandler = new Handler();
 	LinearLayout	mMainContainer;
 	PlayerView		mPlayer;
 	View			mPlayerOverlay;
-	View			mWebViewContainer;
-	WebView			mWebView;
-	ProgressBar		mProgress;
+	View			mContentsContainer;
 	View			mPlayerClose;
 	View			mSummaryPage;
 	View			mSearchPage;
 	ViewPager		mViewPager;
 	boolean			mPlayerExpanded;
-	boolean			mTitleExtracting;
-	boolean			mReloadAfterLogin;
 	boolean			mResumed;
 	int				mPage;
 	MainPagerAdapter	mPagerAdapter;
-
-	private boolean 	mSettingChanged;
-	ProgressDialogTask	mLoginTask;
-
-	OnSharedPreferenceChangeListener	mPrefsChangeListener = new OnSharedPreferenceChangeListener() {
-
-		@Override
-		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-				String key) {
-			if (Prefs.USER.equals(key) || Prefs.PASSWORD.equals(key)) {
-				mSettingChanged = true;
-			}
-		}
-	};
-
-	View.OnClickListener mOnClickListener = new View.OnClickListener() {
-
-		@Override
-		public void onClick(View v) {
-			switch (v.getId()) {
-			case R.id.special:
-				switchPage(PAGE_PAGER);
-				break;
-			case R.id.settings:
-				startSettingsActivity();
-				break;
-			case R.id.web:
-				switchPage(PAGE_WEB);
-				mWebView.loadUrl(Prefs.getBaseUrl());
-				break;
-			}
-		}
-	};
 
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+//		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 
 		if (savedInstanceState == null) {
@@ -127,41 +75,82 @@ public class MainActivity extends Activity  {
 			GaraponClientUtils.setRefreshAuth();
 		}
 
-		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
-
 //		mSummaryPage = findViewById(R.id.summaryFragment);
 		mSearchPage = findViewById(R.id.searchResultFragment);
 		mViewPager = (ViewPager) findViewById(R.id.viewPager);
-
-		findViewById(R.id.special).setOnClickListener(mOnClickListener);
-		findViewById(R.id.web).setOnClickListener(mOnClickListener);
-		findViewById(R.id.settings).setOnClickListener(mOnClickListener);
+		mViewPager.setOffscreenPageLimit(3);
 
 		mMainContainer = (LinearLayout) findViewById(R.id.mainContainer);
 		mPlayer = (PlayerView) findViewById(R.id.player);
-		mWebViewContainer = findViewById(R.id.webViewContainer);
-		mWebView = (WebView) findViewById(R.id.webView);
 		mPlayerClose = findViewById(R.id.playerClose);
-
-		mProgress = (ProgressBar) findViewById(R.id.progress);
-		mProgress.setMax(100);
+		mContentsContainer = findViewById(R.id.contentsContainer);
 
 		mPagerAdapter = new MainPagerAdapter(
 				getFragmentManager(), getApplicationContext());
 		mViewPager.setAdapter(mPagerAdapter);
 
-		int viewPagerPage = Prefs.getStartPage(0);
-		if (0 <= viewPagerPage && viewPagerPage < mPagerAdapter.getCount()) {
-			mViewPager.setCurrentItem(viewPagerPage);
+
+		TabListener tabListener = new TabListener() {
+
+			@Override
+			public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+
+			}
+
+			@Override
+			public void onTabSelected(Tab tab, FragmentTransaction ft) {
+				if (tab.getTag() instanceof Integer) {
+					int position = (Integer)tab.getTag();
+					if (position != mViewPager.getCurrentItem()) {
+						mViewPager.setCurrentItem(position);
+					}
+				}
+			}
+
+			@Override
+			public void onTabReselected(Tab tab, FragmentTransaction ft) {
+
+			}
+		};
+
+		mViewPager.setOnPageChangeListener(new OnPageChangeListener() {
+
+			@Override
+			public void onPageSelected(int arg0) {
+				Object tag = getActionBar().getSelectedTab().getTag();
+				int currentTab = -1;
+				if (tag instanceof Integer) {
+					currentTab = (Integer)tag;
+
+				}
+				if (currentTab != arg0) {
+					getActionBar().selectTab(getActionBar().getTabAt(arg0));
+				}
+			}
+
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int arg0) {
+			}
+		});
+
+		ActionBar ab = getActionBar();
+//		ab.setDisplayShowTitleEnabled(false);
+		ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
+
+		for (int j=0; j<mPagerAdapter.getCount(); j++) {
+			ActionBar.Tab tab = ab.newTab();
+			tab.setTag(j);
+			tab.setText(mPagerAdapter.getPageTitle(j));
+			tab.setTabListener(tabListener);
+			ab.addTab(tab);
 		}
+		ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
 		updateMainContainer();
-
-		WebSettings webSettings = mWebView.getSettings();
-		webSettings.setJavaScriptEnabled(true);
-		webSettings.setSaveFormData(false);
-		webSettings.setSavePassword(false);
-		webSettings.setDomStorageEnabled(true);
 
 		mPlayerClose.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -197,157 +186,33 @@ public class MainActivity extends Activity  {
 			}
 		});
 
-		mWebView.setWebViewClient(new WebViewClient() {
 
-//			@Override
-//			public void onLoadResource(WebView view, String url) {
-//				Log.v(TAG, "onLoadResource url:" + url);
-//				super.onLoadResource(view, url);
-//			}
-
-//			@Override
-//			public void onPageStarted(WebView view, String url, Bitmap favicon) {
-//				Log.v(TAG, "onPageStarted url:" + url);
-//				super.onPageStarted(view, url, favicon);
-//			}
-
-//			@Override
-//			public void onPageFinished(WebView view, String url) {
-//				Log.v(TAG, "onPageFinished url:" + url);
-//				super.onPageFinished(view, url);
-////				if (mResumed && !mTitleExtracting) {
-////					extractTitle();
-////				}
-//			}
-
-			@Override
-			public WebResourceResponse shouldInterceptRequest(WebView view,
-					String url) {
-				Log.v(TAG, "shouldInterceptRequest url:" + url);
-				if (mResumed) {
-					if (overrideUrl(url)) {
-						return super.shouldInterceptRequest(view, null);
-					}
-				}
-
-				return super.shouldInterceptRequest(view, url);
-			}
-
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, String url) {
-				Log.v(TAG, "shouldOverrideUrlLoading url:" + url);
-				if (mResumed) {
-					if (overrideUrl(url)) {
-						return true;
-					}
-				}
-				return super.shouldOverrideUrlLoading(view, url);
-			}
-		});
-
-		mWebView.setWebChromeClient(new WebChromeClient() {
-			@Override
-			public void onReceivedTitle(WebView view, String title) {
-				Log.v(TAG, "onReceivedTitle title:" + title);
-				super.onReceivedTitle(view, title);
-				setTitle(title);
-
-				if (mTitleExtracting) {
-					mTitleExtracting = false;
-					if (title.equals("ログアウト")) {
-						mReloadAfterLogin = true;
-						loginBackground();
-					}
-				}
-			}
-			@Override
-			public void onProgressChanged(WebView view, int newProgress) {
-				super.onProgressChanged(view, newProgress);
-
-				if (newProgress == 100) {
-					mProgress.setVisibility(View.GONE);
-				} else {
-					mProgress.setVisibility(View.VISIBLE);
-					mProgress.setProgress(newProgress);
-				}
-			}
-			@Override
-			public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-				return super.onConsoleMessage(consoleMessage);
-			}
-		});
 
 //		navigateFav("fav0");
 //		loginBackground();
-		int page = (savedInstanceState == null
-				? PAGE_PAGER : savedInstanceState.getInt("page"));
+		int page = PAGE_PAGER;
+
+		if (savedInstanceState != null) {
+			page = savedInstanceState.getInt("page");
+		}
 		switchPage(page);
-//		ProgManager.getInstance().refresh();
-	}
 
-	boolean overrideUrl(String url) {
-		if (url.contains("/viewer/player.garapon?gtvid=")) {
-			final String id = getGtvIdFromUrl(url, "gtvid");
-			if (id != null) {
-				mHandler.post(new Runnable() {
-					@Override
-					public void run() {
-//						mWebView.stopLoading();
-						playVideo(new Program(id));
-					}
-				});
-				return true;
+		if (savedInstanceState != null) {
+			mViewPager.setCurrentItem(savedInstanceState.getInt("tab"));
+		} else {
+			int viewPagerPage = Prefs.getStartPage(0);
+			if (0 <= viewPagerPage && viewPagerPage < mPagerAdapter.getCount()) {
+				mViewPager.setCurrentItem(viewPagerPage);
 			}
-		}
-		if (url.contains("/main.garapon")) {
-			if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) != 0) {
-				// ログインが完了したら fav0 を開く
-				mFlags &= ~FLAG_AUTO_LOGIN_PROGRESS;
-			}
-		}
-		if (url.endsWith("/auth/login.garapon")) {
-			// ログイン画面に遷移するとき、自動ログインする
-			if ((mFlags & FLAG_AUTO_LOGIN_PROGRESS) == 0) {
-				loginBackground();
-				return true;
-			}
-		}
-		// site.garapon.tv の画像をローカルで開く
-		if (url.contains("http://site.garapon.tv/g?g=")) {
-			final String id = getGtvIdFromUrl(url, "g");
-			if (id != null) {
-				mHandler.post(new Runnable() {
-					@Override
-					public void run() {
-						mWebView.stopLoading();
-						playVideo(new Program(id));
-					}
-				});
-				return true;
-			}
-		}
-		// site.garapon.tv の画像をローカルで開く
-		if (url.contains("/play?")) {
-			final String id = getGtvIdFromUrl(url, "gtvid");
-			playVideo(new Program(id));
-			return true;
 		}
 
-		return false;
 	}
+
+
 
 	@Override
 	protected void onDestroy() {
-		Prefs.getInstance().unregisterOnSharedPreferenceChangeListener(mPrefsChangeListener);
 
-		if (mLoginTask != null) {
-			mLoginTask.cancel(true);
-			mLoginTask = null;
-		}
-		if (mWebView != null) {
-			mWebView.destroy();
-			mWebView = null;
-		}
 		if (mPlayer != null) {
 			mPlayer.destroy();
 			mPlayer = null;
@@ -358,7 +223,6 @@ public class MainActivity extends Activity  {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		mWebView.onPause();
 		mPlayer.onPause();
 
 		Prefs.setStartPage(mViewPager.getCurrentItem());
@@ -368,20 +232,15 @@ public class MainActivity extends Activity  {
 	@Override
 	protected void onResume() {
 		mResumed = true;
-		mWebView.onResume();
 		mPlayer.onResume();
 		super.onResume();
-
-		// 設定が変更されていたら読み直してログインしなおす
-		if (mSettingChanged) {
-			refresh();
-		}
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt("page", mPage);
+		outState.putInt("tab", mViewPager.getCurrentItem());
 	}
 
 	/**
@@ -391,6 +250,25 @@ public class MainActivity extends Activity  {
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		updateMainContainer();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.settings:
+			startSettingsActivity();
+			return true;
+		case android.R.id.home:
+			onBackPressed();
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -460,19 +338,6 @@ public class MainActivity extends Activity  {
 		startActivity(i);
 	}
 
-	String getGtvIdFromUrl(String url, String key) {
-		int start = url.indexOf(key + "=");
-		if (start != -1) {
-			int end = url.indexOf("&", start);
-			if (end == -1) {
-				end = url.length();
-			}
-			String id = url.substring(start + key.length() + 1, end);
-			return id;
-		}
-		return null;
-	}
-
 	/**
 	 * Playerで再生
 	 * @param id
@@ -527,13 +392,19 @@ public class MainActivity extends Activity  {
 
 		mPlayerExpanded = expand;
 
+		if (expand) {
+			getActionBar().hide();
+		} else {
+			getActionBar().show();
+		}
+
 		mPlayer.setAutoFullScreen(expand);
 
 		mPlayerClose.setVisibility(expand ? View.GONE : View.VISIBLE);
 
 		mPlayer.setVisibility(View.VISIBLE);
 		mPlayer.showToolbar(expand);
-		mWebViewContainer.setVisibility(expand ? View.GONE : View.VISIBLE);
+		mContentsContainer.setVisibility(expand ? View.GONE : View.VISIBLE);
 
 		updatePlayerContainerSize();
 	}
@@ -577,125 +448,22 @@ public class MainActivity extends Activity  {
 	}
 
 
-	/**
-	 * ガラポンTVのページ内のタイトルっぽい部分を取得
-	 */
-	void extractTitle() {
-		mTitleExtracting = true;
-		String script = "javascript:"
-				+ "var page=document.getElementsByClassName('ui-page-active');"
-				+ "var titles=page[0].getElementsByClassName('ui-title');"
-				+ "var title=titles[0].textContent;"
-				//+ "alert(title);"
-				+ "document.title=title;";
-		loadUrl(script);
-	}
 
-	void loadUrl(String url) {
-		switchPage(PAGE_WEB);
-		mWebView.loadUrl(url);
-	}
-
-
-	/**
-	 * ログイン
-	 */
-	void loginBackground() {
-		if (mLoginTask != null) {
-			return;
-		}
-
-		mLoginTask = new ProgressDialogTask(this) {
-			@Override
-			protected Object doInBackground(Object... params) {
-				try {
-					HashMap<String,String> cookies = GaraponClientUtils.loginWeb();
-
-					return cookies;
-				} catch (Throwable e) {
-					e.printStackTrace();
-					return e;
-				}
-			}
-
-			@Override
-			protected void onPostExecute(Object result) {
-				mLoginTask = null;
-
-				if (result instanceof Throwable) {
-					// ログインエラー時はダイアログ表示
-					ErrorDialogFragment.show(getFragmentManager(), (Throwable)result);
-				}
-				else if (result instanceof HashMap<?,?>) {
-
-					@SuppressWarnings("unchecked")
-					HashMap<String,String> setCookies = (HashMap<String,String>)result;
-
-					CookieManager cm = CookieManager.getInstance();
-
-					Uri.Builder builder = new Uri.Builder();
-
-					cm.removeAllCookie();
-					for (String key: setCookies.keySet()) {
-						builder.appendQueryParameter(key, setCookies.get(key));
-						cm.setCookie(Prefs.getBaseUrl(), key + "=;");
-						cm.setCookie(Prefs.getBaseUrl(), key + "=" + setCookies.get(key) +";");
-					}
-
-					CookieSyncManager.getInstance().sync();
-
-//					Log.v(TAG, "cookie\n old:" + cookies + "\n new:" + newCookies);
-//					mWebView.loadDataWithBaseURL(mBaseUrl,
-//							"<html><body><script>alert(document.cookie);</script></body></html>",
-//							"text/html", "utf-8", null);
-
-					if (mReloadAfterLogin && mWebView.getUrl().contains("/auth")) {
-						mReloadAfterLogin = false;
-					}
-
-					if (mReloadAfterLogin) {
-						mReloadAfterLogin = false;
-						mWebView.reload();
-					} else {
-						loadUrl(Prefs.getBaseUrl());
-					}
-				}
-			}
-
-			@Override
-			protected void onCancelled() {
-				mLoginTask = null;
-			}
-
-		};
-		mLoginTask.setMessage(R.string.loginProgress);
-		mLoginTask.execute();
-	}
 
 	void switchPage(int page) {
-		if (mPage == page) {
-			refresh();
-		}
 		mPage = page;
 
 		setPageVisibility(mViewPager, page == PAGE_PAGER, 0.5f);
-		setPageVisibility(mWebView, page == PAGE_WEB, 1.5f);
 		if (mPage != PAGE_SEARCH) {
 			FragmentManager fm = getFragmentManager();
 			while (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
 			}
-		}
-	}
-
-	void refresh() {
-		switch (mPage) {
-		case PAGE_PAGER:
-			LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(App.ACTION_REFRESH));
-			break;
-		case PAGE_WEB:
-			mWebView.reload();
-			break;
+			getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+			getActionBar().setDisplayOptions(0, ActionBar.DISPLAY_HOME_AS_UP);
+		} else {
+			getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+			getActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
 		}
 	}
 

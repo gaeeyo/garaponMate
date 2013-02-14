@@ -77,7 +77,7 @@ public class SummaryFragment extends MainBaseFragment {
 			public void onExpire() {
 				long now = System.currentTimeMillis();
 				if (now >= mPrevAutoRefreshTime + 59 * DateUtils.SECOND_IN_MILLIS) {
-					refresh();
+					reload();
 				}
 				mPrevAutoRefreshTime = now;
 			}
@@ -122,7 +122,7 @@ public class SummaryFragment extends MainBaseFragment {
 		setListAdapter(mAdapter);
 
 		updateSearchListEmpty();
-		refresh();
+		reload();
 	}
 
 	@Override
@@ -230,7 +230,8 @@ public class SummaryFragment extends MainBaseFragment {
 		getListView().requestLayout();
 	}
 
-	void refresh() {
+	@Override
+	public void reload() {
 		if (mRefreshTask != null) {
 			return;
 		}

@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +34,7 @@ public class SearchListFragment extends MainBaseFragment {
 
 	SearchParamAdapter	mAdapter;
 	View				mSearchListHeader;
-
+	RefreshTask			mRefreshTask;
 
 	DataSetObserver		mDataSetObserver = new DataSetObserver() {
 		@Override
@@ -47,6 +49,7 @@ public class SearchListFragment extends MainBaseFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		App.getSearchParamList().registerDataSetObserver(mDataSetObserver);
+		setHasOptionsMenu(true);
 	}
 
 	@Override
@@ -57,14 +60,33 @@ public class SearchListFragment extends MainBaseFragment {
 	}
 
 	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.fragment_search_list, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.newSearch:
+			newSearch();
+			return true;
+		case R.id.reload:
+			reload();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
 		// 検索リストのヘッダー
 		mSearchListHeader = View.inflate(getActivity(), R.layout.search_new_row, null);
-		getListView().addHeaderView(mSearchListHeader);
-		getListView().addFooterView(View.inflate(getActivity(), R.layout.dummy_row, null),
-				null, false);
+//		getListView().addHeaderView(mSearchListHeader);
+//		getListView().addFooterView(View.inflate(getActivity(), R.layout.dummy_row, null),
+//				null, false);
 
 		registerForContextMenu(getListView());
 
@@ -84,6 +106,10 @@ public class SearchListFragment extends MainBaseFragment {
 
 	@Override
 	public void onDestroy() {
+		if (mRefreshTask != null) {
+			mRefreshTask.cancel(true);
+			mRefreshTask = null;
+		}
 		App.getSearchParamList().unregisterDataSetObserver(mDataSetObserver);
 		super.onDestroy();
 	}
@@ -129,6 +155,8 @@ public class SearchListFragment extends MainBaseFragment {
 				SearchParam sp = (SearchParam)data.getSerializableExtra(SearchParamEditFragment.EXTRA_SEARCH_PARAM);
 				if (sp.id == 0) {
 					search(sp);
+				} else {
+					refreshAll();
 				}
 			}
 			break;
@@ -141,9 +169,7 @@ public class SearchListFragment extends MainBaseFragment {
 		super.onListItemClick(l, v, position, id);
 
 		if (v == mSearchListHeader) {
-			SearchParamEditFragment f = SearchParamEditFragment.newInstance(new SearchParam());
-			f.setTargetFragment(this, REQUEST_NEW);
-			f.show(getFragmentManager(), "editDialog");
+			newSearch();
 		}
 		else {
 			Object obj = l.getItemAtPosition(position);
@@ -165,14 +191,30 @@ public class SearchListFragment extends MainBaseFragment {
 		}
 	}
 
+	void newSearch() {
+		SearchParamEditFragment f = SearchParamEditFragment.newInstance(new SearchParam());
+		f.setTargetFragment(this, REQUEST_NEW);
+		f.show(getFragmentManager(), "editDialog");
+	}
+
 	void search(SearchParam sp) {
 		if (getActivity() != null) {
 			((MainActivity)getActivity()).search(sp);
 		}
 	}
 
+	@Override
+	public void reload() {
+		super.reload();
+		refreshAll();
+	}
+
 	void refreshAll() {
-		RefreshTask task = new RefreshTask(getActivity()) {
+		if (mRefreshTask != null) {
+			mRefreshTask.cancel(true);
+		}
+
+		mRefreshTask = new RefreshTask(getActivity()) {
 			@Override
 			protected void onProgressUpdate(Object... values) {
 				super.onProgressUpdate(values);
@@ -189,8 +231,18 @@ public class SearchListFragment extends MainBaseFragment {
 					}
 				}
 			}
+			@Override
+			protected void onCancelled(Object result) {
+				super.onCancelled(result);
+				mRefreshTask = null;
+			}
+			@Override
+			protected void onPostExecute(Object result) {
+				super.onPostExecute(result);
+				mRefreshTask = null;
+			}
 		};
-		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		mRefreshTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 
@@ -209,6 +261,9 @@ public class SearchListFragment extends MainBaseFragment {
 		protected Object doInBackground(Object... params) {
 
 			for (final SearchParam p: App.getSearchParamList().items()) {
+				if (isCancelled()) {
+					return null;
+				}
 				publishProgress(P_START, p);
 				try {
 					final CountDownLatch cdl = new CountDownLatch(1);
@@ -218,6 +273,8 @@ public class SearchListFragment extends MainBaseFragment {
 							cdl.countDown();
 							if (result instanceof SearchResult) {
 								RefreshTask.this.publishProgress(P_END, p, result);
+							} else {
+								RefreshTask.this.publishProgress(P_END, p, null);
 							}
 						};
 						@Override

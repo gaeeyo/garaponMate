@@ -8,6 +8,8 @@ import android.text.format.DateUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +41,12 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 	long				mPrevAutoRefreshTime;
 
 	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setHasOptionsMenu(true);
+	}
+
+	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		return View.inflate(getActivity(), R.layout.fragment_now_broadcasting, null);
@@ -58,7 +66,7 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 			public void onExpire() {
 				long now = System.currentTimeMillis();
 				if (now >= mPrevAutoRefreshTime + 59 * DateUtils.SECOND_IN_MILLIS) {
-					refresh();
+					reload();
 				}
 				mPrevAutoRefreshTime = now;
 			}
@@ -87,8 +95,8 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 		});
 
 		getListView().addHeaderView(mBcView);
-		getListView().addFooterView(View.inflate(getActivity(), R.layout.dummy_row, null),
-				null, false);
+//		getListView().addFooterView(View.inflate(getActivity(), R.layout.dummy_row, null),
+//				null, false);
 
 		// 検索リストのヘッダー
 
@@ -98,7 +106,7 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 				getActivity(), android.R.layout.simple_list_item_1);
 		setListAdapter(dummyAdapter);
 
-		refresh();
+		reload();
 	}
 
 	@Override
@@ -112,6 +120,22 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 	public void onResume() {
 		super.onResume();
 		updatePlaying();
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.fragment_now_broadcasting, menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.reload:
+			reload();
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -166,7 +190,7 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 		if (isResumed()) {
 			String action = intent.getAction();
 			if (App.ACTION_REFRESH.equals(action)) {
-				refresh();
+				reload();
 			} else {
 				updatePlaying();
 			}
@@ -193,7 +217,8 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 		getListView().requestLayout();
 	}
 
-	void refresh() {
+	@Override
+	public void reload() {
 		if (mRefreshTask != null) {
 			return;
 		}

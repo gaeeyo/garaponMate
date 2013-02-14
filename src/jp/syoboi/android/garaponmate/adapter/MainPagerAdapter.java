@@ -3,21 +3,22 @@ package jp.syoboi.android.garaponmate.adapter;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
-import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v13.app.FragmentStatePagerAdapter;
 
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.fragment.GaraponWebFragment;
 import jp.syoboi.android.garaponmate.fragment.NowBroadcastingFragment;
 import jp.syoboi.android.garaponmate.fragment.SearchListFragment;
 
 
 
-public class MainPagerAdapter extends FragmentPagerAdapter {
+public class MainPagerAdapter extends FragmentStatePagerAdapter {
 
-	private static final int PAGE_NOWBROADCASTING = 0;
-	private static final int PAGE_SEARCH = 1;
-	private static final int PAGE_WEB = 2;
+	public static final int PAGE_NOWBROADCASTING = 0;
+	public static final int PAGE_SEARCH = 1;
+	public static final int PAGE_WEB = 2;
 
-	private static final int PAGE_COUNT = 2;
+	public static final int PAGE_COUNT = 3;
 
 	private Context mContext;
 
@@ -38,6 +39,7 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
 			f = new SearchListFragment();
 			break;
 		case PAGE_WEB:
+			f = new GaraponWebFragment();
 			break;
 		}
 		return f;
@@ -51,6 +53,8 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
 			return mContext.getString(R.string.nowBroadcasting);
 		case PAGE_SEARCH:
 			return mContext.getString(R.string.search);
+		case PAGE_WEB:
+			return mContext.getString(R.string.browser);
 		}
 
 		return super.getPageTitle(position);
