@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -191,23 +190,23 @@ public class SearchResultFragment extends MainBaseFragment {
 		if (acmi.targetView.getParent() == getListView()) {
 			Object obj = getListView().getItemAtPosition(acmi.position);
 			if (obj instanceof Program) {
-				inflateProgramMenu(menu, v, menuInfo, (Program)obj);
+				inflateProgramMenu(getActivity(), menu, v, menuInfo, (Program)obj);
 			}
 		}
 	}
 
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)item.getMenuInfo();
-		if (acmi.targetView.getParent() == getListView()) {
-			Object obj = getListView().getItemAtPosition(acmi.position);
-			if (obj instanceof Program) {
-				execCommand(item.getItemId(), (Program)obj);
-			}
-			return true;
-		}
-		return super.onContextItemSelected(item);
-	}
+//	@Override
+//	public boolean onContextItemSelected(MenuItem item) {
+//		AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)item.getMenuInfo();
+//		if (acmi.targetView.getParent() == getListView()) {
+//			Object obj = getListView().getItemAtPosition(acmi.position);
+//			if (obj instanceof Program) {
+//				execCommand(item.getItemId(), (Program)obj);
+//			}
+//			return true;
+//		}
+//		return super.onContextItemSelected(item);
+//	}
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {

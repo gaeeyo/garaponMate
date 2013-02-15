@@ -1,5 +1,6 @@
 package jp.syoboi.android.garaponmate.fragment.base;
 
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.ListFragment;
 import android.content.ActivityNotFoundException;
@@ -18,6 +19,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
 import java.io.File;
@@ -106,9 +108,13 @@ public class MainBaseFragment extends ListFragment {
 
 	}
 
-	public void inflateProgramMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo, Program p) {
+	public static void inflateProgramMenu(final Activity activity, ContextMenu menu, View v, ContextMenuInfo menuInfo, final Program p) {
+		if (p == null) {
+			return;
+		}
+
 		// Program 関連のメニューを追加
-		MenuInflater inflater = getActivity().getMenuInflater();
+		MenuInflater inflater = activity.getMenuInflater();
 		inflater.inflate(R.menu.prog_item_menu, menu);
 
 		// デフォルトのプレイヤーをメニューから隠す
@@ -118,39 +124,53 @@ public class MainBaseFragment extends ListFragment {
 			MenuItem mi = menu.findItem(resId);
 			if (mi != null) mi.setVisible(false);
 		}
+
+
+		final OnMenuItemClickListener onMenuClick = new OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				execCommand(activity, item.getItemId(), p);
+				return true;
+			}
+		};
+
+		for (int id: new int [] { R.id.playWebView, R.id.playVideoView, R.id.playPopup, R.id.playExternal, R.id.share, R.id.download, R.id.search }) {
+			MenuItem mi = menu.findItem(id);
+			mi.setOnMenuItemClickListener(onMenuClick);
+		}
 	}
 
-	protected void execCommand(int id, Program p) {
+	protected static void execCommand(Activity activity, int id, Program p) {
 		switch (id) {
 		case R.id.share:
-			shareProgram(p);
+			shareProgram(activity, p);
 			break;
 		case R.id.download:
-			downloadProgram(p);
+			downloadProgram(activity, p);
 			break;
 		case R.id.playWebView:
 		case R.id.playVideoView:
 		case R.id.playPopup:
 		case R.id.playExternal:
-			if (getActivity() instanceof MainActivity) {
-				MainActivity activity = (MainActivity) getActivity();
+			if (activity instanceof MainActivity) {
+				MainActivity mainActivity = (MainActivity) activity;
 				int playerId = App.playerResIdToPlayerId(id, App.PLAYER_WEBVIEW);
-				activity.playVideo(p, playerId);
+				mainActivity.playVideo(p, playerId);
 			}
 			break;
 		case R.id.search:
-			if (getActivity() instanceof MainActivity) {
-				MainActivity activity = (MainActivity)getActivity();
+			if (activity instanceof MainActivity) {
+				MainActivity mainActivity = (MainActivity)activity;
 				SearchParam sp = new SearchParam();
 				sp.keyword = Utils.createSearchTitle(p.title);
-				activity.search(sp);
+				mainActivity.search(sp);
 			}
 			break;
 		}
 
 	}
 
-	protected void shareProgram(Program p) {
+	protected static void shareProgram(Activity activity, Program p) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(p.title)
 		.append(' ')
@@ -160,22 +180,22 @@ public class MainBaseFragment extends ListFragment {
 		.append(' ')
 		.append("#ガラポンTV");
 
-		shareText(sb.toString());
+		shareText(activity, sb.toString());
 	}
 
-	protected void shareText(String text) {
+	protected static void shareText(Activity activity, String text) {
 		Intent i = new Intent(Intent.ACTION_SEND);
 		i.setType("text/plain");
 		i.putExtra(Intent.EXTRA_TEXT, text);
 		try {
-			startActivityForResult(i, 0);
+			activity.startActivityForResult(i, 0);
 		} catch (ActivityNotFoundException e) {
 			e.printStackTrace();
-			ErrorDialogFragment.show(getFragmentManager(), e);
+			ErrorDialogFragment.show(activity.getFragmentManager(), e);
 		}
 	}
 
-	protected void downloadProgram(Program p) {
+	protected static void downloadProgram(Activity activity, Program p) {
 		String url = "http://" + Prefs.getGaraponHost() + "/cgi-bin/play/ts.cgi?file="
 				+ p.ch.ch + "/" + p.gtvid + ".ts";
 
@@ -192,11 +212,11 @@ public class MainBaseFragment extends ListFragment {
 
 		File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
 		File file = new File(dir, filename + ".ts");
-		downloadUrl(url, file, p.title);
+		downloadUrl(activity, url, file, p.title);
 	}
 
-	protected void downloadUrl(String url, File path, String title) {
-		DownloadManager dm = (DownloadManager) getActivity().getSystemService(Context.DOWNLOAD_SERVICE);
+	protected static void downloadUrl(Activity activity, String url, File path, String title) {
+		DownloadManager dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
 		DownloadManager.Request req = new DownloadManager.Request(Uri.parse(url));
 		req.allowScanningByMediaScanner();
 		req.setTitle(title);

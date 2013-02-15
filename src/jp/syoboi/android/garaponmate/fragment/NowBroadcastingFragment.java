@@ -146,7 +146,7 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)menuInfo;
 			if (acmi.targetView == mBcView) {
 				Program p = (Program)mBcView.getTag();
-				inflateProgramMenu(menu, v, menuInfo, p);
+				inflateProgramMenu(getActivity(), menu, v, menuInfo, p);
 
 				MenuItem mi = menu.findItem(R.id.download);
 				if (mi != null) {
@@ -168,11 +168,12 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 		ContextMenuInfo cmi = item.getMenuInfo();
 		if (cmi instanceof AdapterContextMenuInfo) {
 			AdapterContextMenuInfo acmi = (AdapterContextMenuInfo)cmi;
-			if (acmi.targetView == mBcView) {
-				Program p = (Program)mBcView.getTag();
-				execCommand(item.getItemId(), p);
-			}
-			else if (acmi.targetView.getParent() == getListView()) {
+//			if (acmi.targetView == mBcView) {
+//				Program p = (Program)mBcView.getTag();
+//				execCommand(item.getItemId(), p);
+//			}
+//			else
+			if (acmi.targetView.getParent() == getListView()) {
 				Object obj = getListView().getItemAtPosition(acmi.position);
 				if (obj instanceof SearchParam) {
 					SearchParam sp = (SearchParam)obj;

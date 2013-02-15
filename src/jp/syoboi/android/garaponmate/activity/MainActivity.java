@@ -1,6 +1,7 @@
 package jp.syoboi.android.garaponmate.activity;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
@@ -10,6 +11,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
@@ -23,7 +25,11 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
+import android.widget.SearchView.OnQueryTextListener;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
@@ -252,9 +258,27 @@ public class MainActivity extends Activity  {
 		updateMainContainer();
 	}
 
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
+		SearchView sv = (SearchView) menu.findItem(R.id.search).getActionView();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			sv.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_FULLSCREEN);
+		}
+		sv.setOnQueryTextListener(new OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				SearchParam sp = new SearchParam();
+				sp.keyword = query;
+				search(sp);
+				return false;
+			}
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				return false;
+			}
+		});
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -266,6 +290,8 @@ public class MainActivity extends Activity  {
 			return true;
 		case android.R.id.home:
 			onBackPressed();
+			break;
+		case R.id.search:
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -496,6 +522,9 @@ public class MainActivity extends Activity  {
 	}
 
 	public void search(SearchParam searchParam) {
+		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
+
 		switchPage(PAGE_SEARCH);
 
 		SearchResultFragment f = SearchResultFragment.newInstance(

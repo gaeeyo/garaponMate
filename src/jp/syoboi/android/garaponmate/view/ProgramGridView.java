@@ -1,5 +1,6 @@
 package jp.syoboi.android.garaponmate.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -7,6 +8,8 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.style.LeadingMarginSpan;
 import android.util.AttributeSet;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -23,6 +26,7 @@ import jp.syoboi.android.garaponmate.data.Caption;
 import jp.syoboi.android.garaponmate.data.ImageLoader;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
+import jp.syoboi.android.garaponmate.fragment.base.MainBaseFragment;
 import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class ProgramGridView extends FrameLayout {
@@ -192,6 +196,7 @@ public class ProgramGridView extends FrameLayout {
 			vh2 = new ViewHolder(v);
 			v.setTag(vh2);
 			vh2.mThumbContainer.setOnClickListener(mOnProgramClickListener);
+			vh2.mThumbContainer.setOnLongClickListener(mOnProgramLongClickListener);
 		}
 		vh2.bind(p, mHighlightMatcher, mHighlightColor);
 	}
@@ -200,22 +205,47 @@ public class ProgramGridView extends FrameLayout {
 
 		@Override
 		public void onClick(View v) {
-			v = (View)v.getParent();
-
-			if (v.getVisibility() != View.VISIBLE) {
-				return;
-			}
-			Object tag = v.getTag();
-			if (tag instanceof ViewHolder) {
-				ViewHolder vh = (ViewHolder) tag;
-
+			Program program = getProgram(v);
+			if (program != null) {
 				if (getContext() instanceof MainActivity) {
 					MainActivity activity = (MainActivity)getContext();
-					activity.playVideo(vh.mProgram);
+					activity.playVideo(program);
 				}
 			}
 		}
 	};
+
+	View.OnLongClickListener mOnProgramLongClickListener = new View.OnLongClickListener() {
+		@Override
+		public boolean onLongClick(View v) {
+			final Program program = getProgram(v);
+			v.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+				@Override
+				public void onCreateContextMenu(ContextMenu menu, View v,
+						ContextMenuInfo menuInfo) {
+					Activity activity = (Activity) v.getContext();
+					MainBaseFragment.inflateProgramMenu(activity, menu, v, menuInfo, program);
+				}
+			});
+			v.showContextMenu();
+			return true;
+		}
+	};
+
+	static Program getProgram(View v) {
+		v = (View)v.getParent();
+
+		if (v.getVisibility() != View.VISIBLE) {
+			return null;
+		}
+		Object tag = v.getTag();
+		if (tag instanceof ViewHolder) {
+			ViewHolder vh = (ViewHolder) tag;
+
+			return vh.mProgram;
+		}
+		return null;
+	}
 
 	static SpannableStringBuilder sTmpSb = new SpannableStringBuilder();
 	static final int STARTTIME_FMT = DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME
