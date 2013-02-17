@@ -1,26 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <EditTextPreference
-        android:key="user"
-        android:singleLine="true"
-        android:title="@string/user" />
-    <EditTextPreference
-        android:key="password"
-        android:singleLine="true"
-        android:title="@string/password" />
-
-    <ListPreference
-        android:defaultValue="0"
-        android:entries="@array/playerEntries"
-        android:entryValues="@array/playerEntryValues"
-        android:key="player"
-        android:title="@string/player" />
-
+    <!-- ガラポンTVのアカウント -->
+    <PreferenceCategory android:title="@string/account" >
+        <EditTextPreference
+            android:key="user"
+            android:singleLine="true"
+            android:title="@string/user" />
+        <EditTextPreference
+            android:key="password"
+            android:singleLine="true"
+            android:title="@string/password" />
+    </PreferenceCategory>
+    <!-- 再生 -->
+    <PreferenceCategory
+        android:title="@string/player">
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/playerEntries"
+            android:entryValues="@array/playerEntryValues"
+            android:key="player"
+            android:title="@string/player" />
+    </PreferenceCategory>
+    <!-- syoboi.jp -->
+    <PreferenceCategory
+        android:title="@string/syoboi">
+        <CheckBoxPreference
+            android:key="useSyoboiServer"
+            android:summary="@string/useSyoboiServerSummary"
+            android:title="@string/useSyoboiServer" />
+    </PreferenceCategory>
     <!-- <Preference -->
     <!-- android:key="searchListSettings" -->
     <!-- android:title="@string/searchListSettings" /> -->
 
-    <jp.syoboi.android.garaponmate.preference.HelpPreference />
+    <PreferenceCategory android:title="@string/help" >
+        <jp.syoboi.android.garaponmate.preference.HelpPreference />
+    </PreferenceCategory>
 
 </PreferenceScreen>

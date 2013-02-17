@@ -144,6 +144,13 @@ public class SearchResultFragment extends MainBaseFragment {
 	public void onReceiveLocalBroadcast(Context context, Intent intent) {
 		super.onReceiveLocalBroadcast(context, intent);
 		updatePlaying();
+
+		String action = intent.getAction();
+		if (App.ACTION_HISTORY_UPDATED.equals(action)) {
+			if (mAdapter != null) {
+				mAdapter.notifyDataSetChanged();
+			}
+		}
 	}
 
 	@Override

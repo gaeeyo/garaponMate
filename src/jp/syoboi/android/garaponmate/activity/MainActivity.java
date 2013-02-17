@@ -36,6 +36,7 @@ import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.adapter.MainPagerAdapter;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.fragment.SearchResultFragment;
@@ -240,6 +241,8 @@ public class MainActivity extends Activity  {
 		mResumed = true;
 		mPlayer.onResume();
 		super.onResume();
+
+		SyoboiClientUtils.syncHistories(this);
 	}
 
 	@Override

@@ -29,6 +29,9 @@ public class Prefs {
 
 	private static final String START_PAGE = "startPage";
 
+	public static final String USE_SYOBOI_SERVER = "useSyoboiServer";
+	private static final String SYOBOI_TOKEN = "syoboiToken";
+
 	//private static final String USE_VIDEO_VIEW = "useVideoView";	// 廃止
 	private static final String PLAYER = "player";
 
@@ -80,6 +83,10 @@ public class Prefs {
 
 	public static boolean isEmptyIpAdr() {
 		return TextUtils.isEmpty(Prefs.getIpAdr()) || TextUtils.isEmpty(Prefs.getPort());
+	}
+
+	public static String getUserId() {
+		return sPrefs.getString(USER, "");
 	}
 
 	private static String getIpAdr() {
@@ -172,5 +179,19 @@ public class Prefs {
 		if (getStartPage(-1) != page) {
 			sPrefs.edit().putInt(START_PAGE, page).commit();
 		}
+	}
+
+	public static void setSyoboiToken(String token) {
+		sPrefs.edit()
+		.putBoolean(USE_SYOBOI_SERVER, true)
+		.putString(SYOBOI_TOKEN, token)
+		.commit();
+	}
+
+	public static String getSyoboiToken() {
+		if (sPrefs.getBoolean(USE_SYOBOI_SERVER, false)) {
+			return sPrefs.getString(SYOBOI_TOKEN, "");
+		}
+		return "";
 	}
 }

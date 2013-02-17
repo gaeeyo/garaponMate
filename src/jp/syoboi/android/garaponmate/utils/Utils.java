@@ -26,6 +26,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -270,6 +272,33 @@ public class Utils {
 			if (fis != null) {
 				fis.close();
 			}
+		}
+	}
+
+
+	static MessageDigest 		SHA1_ENCODER;
+	static final StringBuilder	SHA1_BUF = new StringBuilder();
+	static final String 		HEXSTR = "0123456789ABCDEF";
+
+	static {
+		try {
+			SHA1_ENCODER = MessageDigest.getInstance("SHA1");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static String sha1(String text) {
+		synchronized (SHA1_BUF) {
+			byte [] digest = SHA1_ENCODER.digest(text.getBytes());
+
+			SHA1_BUF.delete(0, SHA1_BUF.length());
+			for (byte b: digest) {
+				SHA1_BUF
+				.append(HEXSTR.charAt((b >> 4) & 0xf))
+				.append(HEXSTR.charAt(b & 0xf));
+			}
+			return SHA1_BUF.toString();
 		}
 	}
 }

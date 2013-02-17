@@ -6,9 +6,16 @@
     <string name="topPage">トップページ</string>
     <string name="settings">設定</string>
     <string name="add">追加</string>
+    <string name="help">ヘルプ</string>
+    <string name="account">アカウント</string>
+    <string name="syoboi">syoboi.jp</string>
+    <string name="play">再生</string>
     <string name="delete">削除</string>
     <string name="deleteSearchParam">検索条件を削除</string>
     <string name="reload">再読み込み</string>
+    <string name="loginCompleted">ログインしました</string>
+    <string name="useSyoboiServer">再生履歴を送信</string>
+    <string name="useSyoboiServerSummary">GaraponMate開発者のサーバに再生履歴を送信し、各端末で再生履歴を共有します。タップすると説明画面が開きます。その先で認証を行うと利用可能になります。</string>
     
     <string name="url">URL</string>
     <string name="urlSummary">http://x.x.x.x/</string>

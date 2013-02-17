@@ -144,7 +144,7 @@ public class GaraponClient {
 			Log.i(TAG, "ガラポンTVログイン");
 		}
 
-		HttpURLConnection con = (HttpURLConnection)new URL("http://" + host + LOGIN_PATH).openConnection();
+		HttpURLConnection con = openConnection("http://" + host + LOGIN_PATH);
 		try {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");

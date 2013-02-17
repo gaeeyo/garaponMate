@@ -25,6 +25,7 @@ public class App extends Application {
 	// Broadcast
 	public static final String ACTION_PLAYER_ACTIVITY_FINISH = PKG + ".playerActivity.finish";
 	public static final String ACTION_PLAYER_ACTIVITY_FULLSCREEN = PKG + ".playerActivity.fullScreen";
+	public static final String ACTION_HISTORY_UPDATED = PKG + ".historyUpdated";
 
 	// LocalBroadcastManager
 	public static final String ACTION_PLAY = PKG + ".play";

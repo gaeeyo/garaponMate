@@ -29,12 +29,28 @@
         android:text="@string/chName"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
+    <jp.syoboi.android.garaponmate.view.MyImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="90sp"
+        android:minHeight="50.5sp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/time"
+        android:background="@drawable/video_thumb_bg"
+        android:scaleType="fitXY" />
+
     <TextView
         android:id="@+id/title"
         style="@style/titleStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/thumbnail"
+        android:layout_alignTop="@+id/thumbnail"
         android:layout_below="@+id/time"
+        android:layout_marginLeft="4dip"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="2"
         android:text="@string/title"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -43,7 +59,7 @@
         style="@style/descriptionStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
+        android:layout_below="@+id/thumbnail"
         android:text="@string/description"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -52,6 +68,7 @@
         style="@style/captionStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/description"
         android:layout_alignWithParentIfMissing="true"
         android:layout_below="@+id/description"
         android:text="@string/caption"

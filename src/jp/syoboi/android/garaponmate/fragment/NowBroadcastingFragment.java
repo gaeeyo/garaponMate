@@ -241,7 +241,9 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 				else if (result instanceof SearchResult) {
 					SearchResult sr = (SearchResult)result;
 
-					mBcView.setItems(sr.program);
+					if (mBcView != null) {
+						mBcView.setItems(sr.program);
+					}
 				}
 			}
 

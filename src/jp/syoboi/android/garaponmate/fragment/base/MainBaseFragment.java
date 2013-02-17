@@ -41,6 +41,7 @@ public class MainBaseFragment extends ListFragment {
 		sIntentFilter.addAction(App.ACTION_PLAY);
 		sIntentFilter.addAction(App.ACTION_STOP);
 		sIntentFilter.addAction(App.ACTION_REFRESH);
+		sIntentFilter.addAction(App.ACTION_HISTORY_UPDATED);
 	}
 
 	private boolean 	mNeedReload;

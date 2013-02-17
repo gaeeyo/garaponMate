@@ -22,6 +22,9 @@ import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
+import jp.syoboi.android.garaponmate.client.SyoboiClient.Histories;
+import jp.syoboi.android.garaponmate.client.SyoboiClient.History;
+import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
 import jp.syoboi.android.garaponmate.data.Caption;
 import jp.syoboi.android.garaponmate.data.ImageLoader;
 import jp.syoboi.android.garaponmate.data.Program;
@@ -42,11 +45,13 @@ public class ProgramGridView extends FrameLayout {
 	Matcher			mHighlightMatcher;
 	int				mHighlightColor;
 	int				mCols;
+	Histories		mHistories;
 
 	public ProgramGridView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		mGridMinWidth = Math.round(130 * getResources().getDisplayMetrics().density);
 		mHighlightColor = context.getResources().getColor(R.color.searchHighlightBgColor);
+		mHistories = SyoboiClientUtils.getHistories(context);
 	}
 
 	@Override
@@ -198,7 +203,7 @@ public class ProgramGridView extends FrameLayout {
 			vh2.mThumbContainer.setOnClickListener(mOnProgramClickListener);
 			vh2.mThumbContainer.setOnLongClickListener(mOnProgramLongClickListener);
 		}
-		vh2.bind(p, mHighlightMatcher, mHighlightColor);
+		vh2.bind(p, mHighlightMatcher, mHighlightColor, mHistories);
 	}
 
 	View.OnClickListener mOnProgramClickListener = new View.OnClickListener() {
@@ -277,7 +282,7 @@ public class ProgramGridView extends FrameLayout {
 			mImageLoader = App.from(v.getContext()).getImageLoader();
 		}
 
-		public void bind(Program p, Matcher m, int highlightColor) {
+		public void bind(Program p, Matcher m, int highlightColor, Histories histories) {
 			mProgram = p;
 
 			Context context = mTime.getContext();
@@ -338,6 +343,9 @@ public class ProgramGridView extends FrameLayout {
 				String url = "http://" + Prefs.getGaraponHost() + "/thumbs/" + p.gtvid;
 				mImageLoader.loadImage(mThumbnail, url, 0, 0, 0, false,
 						R.drawable.video_empty, null);
+
+				History history = histories.get(p.gtvid);
+				mThumbnail.setAlpha(history != null ? 0.4f : 1);
 			}
 		}
 

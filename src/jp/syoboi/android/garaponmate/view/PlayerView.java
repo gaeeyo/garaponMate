@@ -32,6 +32,7 @@ import jp.syoboi.android.garaponmate.adapter.CaptionAdapter;
 import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.client.GaraponClient.ApiResult;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
 import jp.syoboi.android.garaponmate.data.Caption;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.utils.Utils;
@@ -42,6 +43,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	private static final int INTERVAL = 500;
 	private static final int CHANGE_FULLSCREEN_DELAY = 3000;
+	private static final int SEND_PLAY_DELAY = 10*1000;
 
 	private static final int [] PLAYER_BUTTONS = { R.id.pause, R.id.previous, R.id.rew, R.id.ff, R.id.next };
 
@@ -359,6 +361,10 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	public void onPause() {
 		mHandler.removeCallbacks(mIntervalRunnable);
 		if (mPlayer != null) {
+			int pos = mPlayer.getCurrentPos();
+			if (pos >= 0) {
+				SyoboiClientUtils.sendPlayAsync(getContext(), mProgram, pos);
+			}
 			mPlayer.onPause();
 		}
 	}
@@ -404,6 +410,9 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		Intent intent = new Intent(App.ACTION_PLAY);
 		intent.putExtra(App.EXTRA_PROGRAM, p);
 		lbm.sendBroadcast(intent);
+
+
+		SyoboiClientUtils.sendPlayAsync(getContext(), p, 0);
 	}
 
 	void setProgram(Program p) {

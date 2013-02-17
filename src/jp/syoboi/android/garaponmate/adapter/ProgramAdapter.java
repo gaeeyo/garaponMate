@@ -21,6 +21,9 @@ import java.util.regex.Matcher;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.client.SyoboiClient.Histories;
+import jp.syoboi.android.garaponmate.client.SyoboiClient.History;
+import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
 import jp.syoboi.android.garaponmate.data.Caption;
 import jp.syoboi.android.garaponmate.data.ImageLoader;
 import jp.syoboi.android.garaponmate.data.Program;
@@ -34,11 +37,13 @@ public class ProgramAdapter extends BaseAdapter {
 	String				mSelection;
 	Matcher				mHighlightMatcher;
 	int					mHighlightBgColor;
+	Histories			mHistories;
 
 	public ProgramAdapter(Context context) {
 		mContext = context;
 		Resources res = context.getResources();
 		mHighlightBgColor = res.getColor(R.color.searchHighlightBgColor);
+		mHistories = SyoboiClientUtils.getHistories(context);
 	}
 
 	public void setItems(List<Program> programs) {
@@ -92,7 +97,7 @@ public class ProgramAdapter extends BaseAdapter {
 		}
 
 		Program p = mItems.get(position);
-		vh.bind(p, mHighlightMatcher, mHighlightBgColor);
+		vh.bind(p, mHighlightMatcher, mHighlightBgColor, mHistories);
 
 		boolean selected = TextUtils.equals(p.gtvid, mSelection);
 		Drawable d = v.getBackground();
@@ -134,7 +139,7 @@ public class ProgramAdapter extends BaseAdapter {
 			mImageLoader = App.from(v.getContext()).getImageLoader();
 		}
 
-		public void bind(Program p, Matcher m, int highlightColor) {
+		public void bind(Program p, Matcher m, int highlightColor, Histories histories) {
 			mProgram = p;
 
 			Context context = mTime.getContext();
@@ -187,6 +192,9 @@ public class ProgramAdapter extends BaseAdapter {
 			if (mThumbnail != null) {
 				String url = "http://" + Prefs.getGaraponHost() + "/thumbs/" + p.gtvid;
 				mImageLoader.loadImage(mThumbnail, url, 0, 0, 0, false, 0, null);
+
+				History history = histories.get(p.gtvid);
+				mThumbnail.setAlpha(history != null ? 0.4f : 1);
 			}
 		}
 
