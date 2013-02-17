@@ -180,7 +180,7 @@ public class Utils {
 	 */
 	public static String createSearchTitle(String title) {
 		if (!TextUtils.isEmpty(title)) {
-			String newTitle = title.replaceAll("▽.*|「.*」|#.*|～.*～|第.*?話|\\(\\d+\\)|\\[.\\]|[ 　].*|＃.*", "").trim();
+			String newTitle = title.replaceAll("▽.*|「.*」|【.*】|#.*|～.*～|第.*?話|\\(\\d+\\)|\\[.\\]|[ 　].*|＃.*", "").trim();
 			if (!TextUtils.isEmpty(newTitle)) {
 				title = newTitle;
 			}
