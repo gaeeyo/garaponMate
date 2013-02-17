@@ -45,7 +45,8 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 			boolean setRange = false;
 			SearchResult cache = getCache(mCacheFile);
 			if (cache != null) {
-				if (cache.program != null && cache.program.size() > 0) {
+				if (cache.program != null && cache.program.size() > 0
+						&& param.rank == 0) {
 					publishProgress(cache);
 					// キャッシュがあるときはそのデータを使用する
 					Program p = cache.program.get(0);
