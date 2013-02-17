@@ -14,7 +14,7 @@ import jp.syoboi.android.util.JksnUtils.JksnObject;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 
-public class SearchParam extends GaraponClient.Search implements Serializable {
+public class SearchParam extends GaraponClient.Search implements Serializable, Cloneable {
 	private static final long serialVersionUID = -1535056156459423850L;
 
 
@@ -73,6 +73,16 @@ public class SearchParam extends GaraponClient.Search implements Serializable {
 		j.writeNumberField("durationMin", durationMin);
 		j.writeNumberField("durationMax", durationMax);
 		j.writeEndObject();
+	}
+
+	@Override
+	public SearchParam clone() {
+		try {
+			return (SearchParam) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public Matcher createMatcher() {

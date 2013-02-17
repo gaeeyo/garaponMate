@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import jp.syoboi.android.garaponmate.App;
@@ -25,6 +24,7 @@ import jp.syoboi.android.garaponmate.data.Genre;
 import jp.syoboi.android.garaponmate.data.GenreGroup;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
 import jp.syoboi.android.garaponmate.data.Program;
+import jp.syoboi.android.garaponmate.data.ProgramList;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.data.SearchParam.PostMatcher;
 
@@ -35,6 +35,7 @@ public class GaraponClientUtils {
 	private static final String TAG = "GaraponClientUtils";
 
 	private static boolean REFRESH_AUTH;
+	private static String sGtvSession;
 
 	public static void setRefreshAuth() {
 		REFRESH_AUTH = true;
@@ -68,9 +69,14 @@ public class GaraponClientUtils {
 
 		String host = ensureAuth();
 
-		String gtvsessionid = GaraponClient.login(host, user, pass);
-
-		Prefs.setGtvSessionId(gtvsessionid);
+		// login が同時に実行された場合に1度しか認証が実行されないようにする
+		synchronized (TAG) {
+			if (sGtvSession == null) {
+				String gtvsessionid = GaraponClient.login(host, user, pass);
+				sGtvSession = gtvsessionid;
+				Prefs.setGtvSessionId(gtvsessionid);
+			}
+		}
 	}
 
 	static synchronized String ensureAuth() throws MalformedURLException, NoSuchAlgorithmException, NotFoundException, IOException, GaraponClientException {
@@ -106,6 +112,7 @@ public class GaraponClientUtils {
 		.commit();
 
 		REFRESH_AUTH = false;
+		sGtvSession = null;
 
 		return ipaddr + ":" + port;
 	}
@@ -168,7 +175,7 @@ public class GaraponClientUtils {
 		}
 
 		if (sr.program != null) {
-			ArrayList<Program> items = new ArrayList<Program>();
+			ProgramList items = new ProgramList();
 			PostMatcher m = param.createPostMatcher();
 			for (Program p: sr.program) {
 				if (m.match(p)) {

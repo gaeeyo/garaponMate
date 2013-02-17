@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import java.util.regex.Pattern;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.data.Program;
+import jp.syoboi.android.garaponmate.data.ProgramList;
 import jp.syoboi.android.garaponmate.utils.Utils;
 import jp.syoboi.android.util.JksnUtils;
 import jp.syoboi.android.util.JksnUtils.JksnArrayCallback;
@@ -328,7 +328,7 @@ public class GaraponClient {
 
 		String query = builder.build().getEncodedQuery();
 		if (App.DEBUG) {
-			Log.i(TAG, "検索 " + query);
+			Log.d(TAG, "検索 " + builder.build().getQuery());
 		}
 
 		HttpURLConnection con = openConnection(
@@ -343,6 +343,9 @@ public class GaraponClient {
 			con.connect();
 
 			SearchResult result = parseSearchResult(con.getInputStream());
+			if (App.DEBUG) {
+				Log.d(TAG, "検索結果 status:" + result.status + " hit:" + result.program.size());
+			}
 
 			return result;
 		} finally {
@@ -362,7 +365,7 @@ public class GaraponClient {
 	public static SearchResult parseSearchResult(InputStream is) throws JsonParseException, IOException {
 		try {
 			final HashMap<Integer,Ch>	chMap = new HashMap<Integer,Ch>();
-			final ArrayList<Program> programs = new ArrayList<Program>();
+			final ProgramList programs = new ProgramList();
 
 			JksnObject jo = (JksnObject) JksnUtils.parseJson(is, new JksnArrayCallback() {
 
@@ -500,7 +503,7 @@ public class GaraponClient {
 
 	public static class SearchResult extends ApiResult implements Serializable {
 		public int hit;
-		public ArrayList<Program> program;
+		public ProgramList program;
 		public HashMap<Integer,Ch> ch;
 		public long timestamp;
 		public SearchResult(JksnObject j) {

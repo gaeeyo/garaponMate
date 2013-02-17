@@ -95,6 +95,11 @@ public class App extends Application {
 		return new File(dir, String.valueOf(id));
 	}
 
+	public static void deleteSearchResultCache(Context context, long id) {
+		File f = getSearchResultCache(context, id);
+		f.delete();
+	}
+
 	public static SearchParamList getSearchParamList() {
 		return sSearchParamList;
 	}

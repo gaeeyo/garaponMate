@@ -81,6 +81,19 @@ public class Program implements Serializable {
 		}
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Program) {
+			return gtvid.equals(((Program)o).gtvid);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return gtvid.hashCode();
+	}
+
 	public Program(String gtvid) {
 		this.gtvid = gtvid;
 		startdate = 0;

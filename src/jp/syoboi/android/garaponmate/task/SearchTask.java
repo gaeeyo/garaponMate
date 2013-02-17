@@ -9,9 +9,15 @@ import java.io.File;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.utils.Utils;
 
+/**
+ * 検索タスク
+ * @author naofumi
+ *
+ */
 public class SearchTask extends AsyncTask<Object, Object, Object> {
 
 	private static final long CACHE_LIFE_TIME = 1 * DateUtils.MINUTE_IN_MILLIS;
@@ -23,7 +29,7 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 
 	public SearchTask(Context context, SearchParam param, boolean loadFromCache) {
 		mContext = context;
-		mSearchParam = param;
+		mSearchParam = param.clone();
 //		mLoadFromCache = loadFromCache;
 
 		if (loadFromCache && param.id != 0 && param.page == 1) {
@@ -36,24 +42,24 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 		try {
 			SearchParam param = mSearchParam;
 
-			if (mCacheFile != null) {
-				if (mCacheFile.exists()) {
-					try {
-						Object obj = Utils.objectFromFile(mCacheFile);
-						if (obj instanceof SearchResult) {
-							SearchResult sr = (SearchResult)obj;
-							long now = System.currentTimeMillis();
-							if (now - CACHE_LIFE_TIME <= sr.timestamp && sr.timestamp < now + CACHE_LIFE_TIME) {
-								return obj;
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+			boolean setRange = false;
+			SearchResult cache = getCache(mCacheFile);
+			if (cache != null) {
+				if (cache.program != null && cache.program.size() > 0) {
+					publishProgress(cache);
+					// キャッシュがあるときはそのデータを使用する
+					Program p = cache.program.get(0);
+					param.searchTime = SearchParam.STIME_END;
+					param.sdate = (p.startdate + p.duration) - 5 * DateUtils.MINUTE_IN_MILLIS;
+//					param.edate = System.currentTimeMillis() + 5 * DateUtils.MINUTE_IN_MILLIS;
+					setRange = true;
 				}
 			}
-
 			SearchResult sr = GaraponClientUtils.search(param);
+
+			if (setRange) {
+				sr.program.merge(cache.program);
+			}
 
 			if (mCacheFile != null) {
 				sr.timestamp = System.currentTimeMillis();
@@ -67,6 +73,17 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 		}
 	}
 
-
-
+	SearchResult getCache(File file) {
+		if (file != null && file.exists()) {
+			try {
+				Object obj = Utils.objectFromFile(mCacheFile);
+				if (obj instanceof SearchResult) {
+					return (SearchResult)obj;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
 }
