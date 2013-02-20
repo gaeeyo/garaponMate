@@ -33,4 +33,10 @@ public class ProgramList extends ArrayList<Program> {
 			}
 		});
 	}
+
+	public void trim(int size) {
+		while (size() > size) {
+			remove(size() - 1);
+		}
+	}
 }

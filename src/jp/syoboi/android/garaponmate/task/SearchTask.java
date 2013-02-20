@@ -9,7 +9,6 @@ import java.io.File;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
-import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.utils.Utils;
 
@@ -42,6 +41,8 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 		try {
 			SearchParam param = mSearchParam;
 
+			long now = System.currentTimeMillis();
+
 			boolean setRange = false;
 			SearchResult cache = getCache(mCacheFile);
 			if (cache != null) {
@@ -49,9 +50,8 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 						&& param.rank == 0) {
 					publishProgress(cache);
 					// キャッシュがあるときはそのデータを使用する
-					Program p = cache.program.get(0);
 					param.searchTime = SearchParam.STIME_END;
-					param.sdate = (p.startdate + p.duration) - 5 * DateUtils.MINUTE_IN_MILLIS;
+					param.sdate = cache.timestamp - 1 * DateUtils.HOUR_IN_MILLIS;
 //					param.edate = System.currentTimeMillis() + 5 * DateUtils.MINUTE_IN_MILLIS;
 					setRange = true;
 				}
@@ -60,10 +60,11 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 
 			if (setRange) {
 				sr.program.merge(cache.program);
+				sr.program.trim(50);
 			}
 
 			if (mCacheFile != null) {
-				sr.timestamp = System.currentTimeMillis();
+				sr.timestamp = now;
 				Utils.objectToFile(mCacheFile, sr);
 			}
 
