@@ -53,8 +53,14 @@ public class GaraponClient {
 	public static final String SEARCH_PATH = "/gapi/v2/search";
 	public static final String FAVORITE_PATH = "/gapi/v2/favorite";
 
-	public static final int STATUS_SUCCESS = 1;
 	public static final int LOGIN_SUCCESS = 1;
+
+
+	public static final int STATUS_INVALID_SESSION = 0;	//
+	public static final int STATUS_SUCCESS = 1;
+	public static final int STATUS_INVALID_PARAMETER = 100;
+	public static final int STATUS_MP4_NOT_FOUND = 150;
+	public static final int STATUS_DB_CONNECTION_FAILED = 200;
 
 	private static Resources sResources;
 
@@ -250,6 +256,7 @@ public class GaraponClient {
 	 * @return
 	 * @throws IOException
 	 * @throws MalformedURLException
+	 * @throws GaraponApiException
 	 */
 	public static SearchResult search(String ipaddr, String sessionId,
 			int count, int page, int searchType, String keyword, String gtvid,
@@ -386,6 +393,7 @@ public class GaraponClient {
 			});
 
 			SearchResult sr = new SearchResult(jo);
+
 			sr.hit = Integer.valueOf(jo.getString("hit", "-1"), 10);
 			sr.program = programs;
 			sr.ch = chMap;
@@ -492,6 +500,10 @@ public class GaraponClient {
 	}
 
 	public static class ApiResult implements Serializable {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -9216262125964499824L;
 		public int status;
 		public String version;
 
@@ -502,6 +514,10 @@ public class GaraponClient {
 	}
 
 	public static class SearchResult extends ApiResult implements Serializable {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -2537372780467862014L;
 		public int hit;
 		public ProgramList program;
 		public HashMap<Integer,Ch> ch;
@@ -634,6 +650,11 @@ public class GaraponClient {
 	}
 
 	public static class Search implements Serializable {
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = -4075022043665770912L;
+
 		public static final int GENRE_EMPTY = -1;
 
 		public static final int RANK_FAVORITE = 1;

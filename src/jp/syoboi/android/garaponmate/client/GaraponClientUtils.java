@@ -119,14 +119,9 @@ public class GaraponClientUtils {
 
 	/**
 	 * 放送中
-	 * @throws IOException
-	 * @throws MalformedURLException
-	 * @throws GaraponClientException
-	 * @throws JSONException
-	 * @throws NotFoundException
-	 * @throws NoSuchAlgorithmException
+	 * @throws Exception
 	 */
-	public static SearchResult searchNowBroadcasting() throws MalformedURLException, IOException, NoSuchAlgorithmException, NotFoundException, JSONException, GaraponClientException {
+	public static SearchResult searchNowBroadcasting() throws Exception {
 
 		SearchParam param = new SearchParam();
 		long now = System.currentTimeMillis();
@@ -161,43 +156,77 @@ public class GaraponClientUtils {
 //	}
 
 
-	public static SearchResult search(SearchParam param) throws MalformedURLException, IOException, NoSuchAlgorithmException, NotFoundException, JSONException, GaraponClientException {
+	/**
+	 * 検索API呼び出し
+	 * @param param
+	 * @return
+	 * @throws Exception
+	 */
+	public static SearchResult search(final SearchParam param) throws Exception {
 
 		ensureAuth();
 
-		SearchResult sr = GaraponClient.search(Prefs.getGaraponHost(),
-				Prefs.getGtvSessionId(), param);
-		if (sr.status == 0) {
-			login();
-			sr = GaraponClient.search(Prefs.getGaraponHost(),
-					Prefs.getGtvSessionId(), param);
+		SearchResult result = new ApiCallWrapper<SearchResult>() {
+			@Override
+			public SearchResult doApiCall() throws Exception {
+				return GaraponClient.search(Prefs.getGaraponHost(),
+						Prefs.getGtvSessionId(), param);
+			}
+		}.execute();
 
-		}
-
-		if (sr.program != null) {
+		if (result.program != null) {
 			ProgramList items = new ProgramList();
 			PostMatcher m = param.createPostMatcher();
-			for (Program p: sr.program) {
+			for (Program p: result.program) {
 				if (m.match(p)) {
 					items.add(p);
 				}
 			}
-			sr.program = items;
+			result.program = items;
 		}
 
-		return sr;
+		return result;
 	}
 
-	public static ApiResult favorite(String gtvid, boolean favorite) throws MalformedURLException, IOException, NoSuchAlgorithmException, NotFoundException, GaraponClientException, JSONException {
+	/**
+	 * お気に入りにAPI呼び出し
+	 * @param gtvid
+	 * @param favorite
+	 * @return
+	 * @throws Exception
+	 */
+	public static ApiResult favorite(final String gtvid, final boolean favorite) throws Exception {
 		ensureAuth();
-		ApiResult r = GaraponClient.favorite(Prefs.getGaraponHost(),
-				Prefs.getGtvSessionId(), gtvid, favorite);
-		if (r.status == 0) {
-			login();
-			r = GaraponClient.favorite(Prefs.getGaraponHost(),
-					Prefs.getGtvSessionId(), gtvid, favorite);
+		ApiResult result = new ApiCallWrapper<ApiResult>() {
+			@Override
+			public ApiResult doApiCall() throws MalformedURLException, IOException  {
+				return GaraponClient.favorite(Prefs.getGaraponHost(),
+						Prefs.getGtvSessionId(), gtvid, favorite);
+			}
+		}.execute();
+		return result;
+	}
+
+	/**
+	 * API呼び出しのラッパー
+	 * status をチェックして invalid な場合は再ログインしてAPIを再度呼び出す
+	 * @param <T>
+	 */
+	public static abstract class ApiCallWrapper<T extends ApiResult> {
+		public ApiCallWrapper() {
 		}
-		return r;
+
+		public T execute() throws Exception {
+			T result = doApiCall();
+			if (result.status == GaraponClient.STATUS_INVALID_SESSION) {
+				sGtvSession = null;
+				login();
+				result = doApiCall();
+			}
+			return result;
+		}
+
+		public abstract T doApiCall() throws Exception;
 	}
 
 	public static String formatSearchParam(Context context, SearchParam p) {
