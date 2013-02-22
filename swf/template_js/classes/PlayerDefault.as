@@ -13,30 +13,28 @@ under the License.
 
 The Original Code is flvplayer (http://code.google.com/p/flvplayer/).
 
-The
+The Initial Developer of the Original Code is neolao (neolao@gmail.com).
 */
 /**
- * Lecteur FLV normal
+ * Normal player flv
  * 
  * @author		neolao <neo@neolao.com> 
- * @version 	0.8.1 (04/11/2006)
+ * @version 	0.9.1 (08/09/2007)
  * @license		http://creativecommons.org/licenses/by-sa/3.0/deed.fr
  */
 class PlayerDefault extends PlayerBasic
 {
 	// ------------------------------ VARIABLES --------------------------------
 	/**
-	 * Utilisation des sous titres	 */
+	 * Use subtitles	 */
 	private var _useSrt:Boolean = false;
 	/**
-	 * Les sous-titres	 */
+	 * Subtitles path
+	 */
+	private var _srtUrl:String;
+	/**
+	 * Subtitles data	 */
 	private var _subtitles:Array;
-	/**
-	 * Les millisecondes de la vidéo	 */
-	private var _millisecond:Number;
-	/**
-	 * L'interval pour la gestion des millisecondes	 */
-	private var _millisecondInterval:Number;
 	
 	/*============================= CONSTRUCTEUR =============================*/
 	/*========================================================================*/
@@ -57,14 +55,17 @@ class PlayerDefault extends PlayerBasic
 	/*=========================== METHODES PRIVEES ===========================*/
 	/*========================================================================*/
 	/**
-	 * Initialisation des variables 
+	 * Initialize variables
 	 */
 	private function _initVars()
 	{
 		super._initVars();
 		
-		if (_root.srt) {
+		if (_root.srt == "1") {
 			this._useSrt = true;
+		}
+		if (_root.srturl != undefined) {
+			this._srtUrl = _root.srturl
 		}
 	}
 	/**
@@ -104,17 +105,11 @@ class PlayerDefault extends PlayerBasic
 					}
 				}
 			};
-			vSrt.load(this._videoUrl.substr(0, this._videoUrl.length-3)+"srt", vSrt, "GET");
-		}
-	}
-	/**
-	 * Incrémente les millisecondes de la vidéo	 */
-	private function _incrementMillisecond()
-	{
-		this._millisecond++;
-		this._millisecond %= 1000;
-		if (this._ns.bufferLength == this._ns.bufferTime) {
-			this._millisecond = 0;
+			if(this._srtUrl != undefined) {
+				vSrt.load(this._srtUrl, vSrt, "GET");
+			} else {
+				vSrt.load(this._videoUrl.substr(0, this._videoUrl.length-3)+"srt", vSrt, "GET");
+			}
 		}
 	}
 	/*===================== FIN = METHODES PRIVEES = FIN =====================*/
@@ -122,35 +117,6 @@ class PlayerDefault extends PlayerBasic
 	
 	/*========================== METHODES PUBLIQUES ==========================*/
 	/*========================================================================*/
-	/**
-	 * Jouer	 */
-	public function play()
-	{
-		super.play();
-		
-		clearInterval(this._millisecondInterval);
-		this._millisecond = 0;
-		this._millisecondInterval = setInterval(this, "_incrementMillisecond", 1);
-	}
-	/**
-	 * Pause
-	 */
-	public function pause()
-	{
-		super.pause();
-		
-		clearInterval(this._millisecondInterval);
-	}
-	/**
-	 * Stopper
-	 */
-	public function stop()
-	{
-		super.stop();
-		
-		this._millisecond = 0;
-		clearInterval(this._millisecondInterval);
-	}
 	/**
 	 * Change le volume
 	 * 
@@ -182,7 +148,7 @@ class PlayerDefault extends PlayerBasic
 	public function getSubtitle():String
 	{
 		for (var i:Number=0; i<this._subtitles.length; i++) {
-			if (this._ns.time*1000+this._millisecond >= this._subtitles[i].timeStart && this._ns.time*1000+this._millisecond <= this._subtitles[i].timeEnd) {
+			if (this._ns.time*1000 >= this._subtitles[i].timeStart && this._ns.time*1000 <= this._subtitles[i].timeEnd) {
 				return this._subtitles[i].message;
 			}
 		}

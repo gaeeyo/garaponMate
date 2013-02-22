@@ -13,20 +13,20 @@ under the License.
 
 The Original Code is flvplayer (http://code.google.com/p/flvplayer/).
 
-The
+The Initial Developer of the Original Code is neolao (neolao@gmail.com).
 */
 /**
- * Lecteur de plusieurs FLV
+ * Player for several FLV
  * 
  * @author		neolao <neo@neolao.com> 
- * @version 	0.2.10 (17/04/2007)
+ * @version 	0.2.12 (23/10/2007)
  * @license		http://creativecommons.org/licenses/by-sa/3.0/deed.fr 
  */
 class PlayerMulti extends PlayerDefault
 {
 	// ------------------------------ CONSTANTES -------------------------------
 	/**
-	 * Le séparateur les urls
+	 * Url separator
 	 */
 	static var URL_SEPARATOR:String = "|";
 	
@@ -84,7 +84,7 @@ class PlayerMulti extends PlayerDefault
 		}
 		
 		// Lecture automatique
-		if (_root.autoplay != undefined) {
+		if (_root.autoplay == "1") {
 			this._template.playRelease();
 		} else {
 			if (_root.autoload != undefined) {
@@ -143,6 +143,9 @@ class PlayerMulti extends PlayerDefault
 		
 		// La zone video du thème affiche le NetStream
 		this._template.video.video.attachVideo(this._ns);
+		
+		// Smooth effect
+		this._template.video.video.smoothing = true;
 		
 		// Gestion du son
 		this._sound = new Sound();
@@ -233,6 +236,8 @@ class PlayerMulti extends PlayerDefault
 		}
 		if (!this._firstPlay) {
 			this._ns.play(this.playlist[this.index]);
+			_root.currentUrl = this.playlist[this.index];
+			_root.currentIndex = this.index;
 			
 			this._firstPlay = true;
 		} else {
@@ -247,10 +252,6 @@ class PlayerMulti extends PlayerDefault
 		}
 		
 		this.isPlaying = true;
-		
-		clearInterval(this._millisecondInterval);
-		this._millisecond = 0;
-		this._millisecondInterval = setInterval(this, "_incrementMillisecond", 1);
 	}
 	/**
 	 * mp3 suivant
@@ -318,7 +319,7 @@ class PlayerMulti extends PlayerDefault
 	public function getSubtitle():String
 	{
 		for (var i:Number=0; i<this._subtitles[this.index].length; i++) {
-			if (this._ns.time*1000+this._millisecond >= this._subtitles[this.index][i].timeStart && this._ns.time*1000+this._millisecond <= this._subtitles[this.index][i].timeEnd) {
+			if (this._ns.time*1000 >= this._subtitles[this.index][i].timeStart && this._ns.time*1000 <= this._subtitles[this.index][i].timeEnd) {
 				return this._subtitles[this.index][i].message;
 			}
 		}

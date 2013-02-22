@@ -13,13 +13,13 @@ under the License.
 
 The Original Code is flvplayer (http://code.google.com/p/flvplayer/).
 
-The
+The Initial Developer of the Original Code is neolao (neolao@gmail.com).
 */
 /**
  * Basic FLV player
  * 
  * @author		neolao <neo@neolao.com> 
- * @version 	0.9.0 (13/04/2007)
+ * @version 	1.0.0 (17/11/2007)
  * @license		http://creativecommons.org/licenses/by-sa/3.0/deed.fr
  */
 class PlayerBasic
@@ -62,8 +62,14 @@ class PlayerBasic
 	 * The video is played for the first time	 */
 	private var _firstPlay:Boolean = false;
 	/**
+	 * The video stream is started	 */
+	public var streamStarted:Boolean = false;
+	/**
 	 * The video is playing	 */
 	public var isPlaying:Boolean = false;
+	/**
+	 * A time memory	 */
+	private var _timeTemp:Number;
 	
 	/*============================= CONSTRUCTOR ==============================*/
 	/*========================================================================*/
@@ -95,6 +101,10 @@ class PlayerBasic
 			}
 			this._template.stopRelease();
 		}
+		
+		// Create movieclip for enterframe event
+		var mc:MovieClip = _root.createEmptyMovieClip("time_mc", _root.getNextHighestDepth());
+		mc.onEnterFrame = this._template.delegate(this, this._enterFrame);
 	}
 	/*======================= END = CONSTRUCTOR = END ========================*/
 	/*========================================================================*/
@@ -141,6 +151,14 @@ class PlayerBasic
 				case "NetStream.Buffer.Full":
 					this.parent._template.resizeVideo();
 					break;
+				case 'NetConnection.Connect.Success' :
+                    var myStream:Object = {};
+                    myStream.parent = this;
+                    myStream.onResult = function(streamLength) {
+                        this.parent.parent._videoDuration = (info.duration < 0)?0:info.duration;
+                    };
+                    this.call("getLength", myStream, "theVideo");
+                    break;
 			}
 		};
 		this._ns.onMetaData = function(info:Object){
@@ -160,6 +178,19 @@ class PlayerBasic
 		// Sound manager
 		this._sound = new Sound();
 		this._sound.attachSound(this._template.video.video);
+	}
+	/**
+	 * Enterframe	 */
+	private function _enterFrame()
+	{
+		var newPosition:Number = this.getPosition();
+		if (newPosition !== this._timeTemp) {
+			this.streamStarted = true;
+		} else {
+			this.streamStarted = false;
+		}
+		
+		this._timeTemp = newPosition;
 	}
 	/*========================= END = PRIVATE = END ==========================*/
 	/*========================================================================*/
@@ -281,15 +312,17 @@ class PlayerBasic
 	 * @return The position	 */
 	public function getPosition():Number
 	{
+		var pos:Number;
+		
 		if (this._ns.time > this._videoDuration) {
-			return this._videoDuration;
+			pos = this._videoDuration;
 		} else if (this._ns.time < 0) {
-			return 0;
-		} else if (this._ns.time > this._videoDuration) {
-			return this._videoDuration;
+			pos = 0;
 		} else {
-			return this._ns.time;
+			pos = this._ns.time;
 		}
+		
+		return pos;
 	}
 	/**
 	 * Get the video duration
@@ -328,7 +361,14 @@ class PlayerBasic
 	{
 		var loaded:Number = this._ns.bytesLoaded;
 		var total:Number = this._ns.bytesTotal;
-		var percent:Number = Math.round(loaded / total * 100); 
+		var percent:Number = Math.round(loaded / total * 100);
+		
+		if (_root.netconnection != undefined) {
+			loaded = 100;
+			total = 100;
+			percent = 100;
+		}
+		 
 		return {loaded:loaded, total:total, percent:percent};
 	}
 	/*========================== END = PUBLIC = END ==========================*/

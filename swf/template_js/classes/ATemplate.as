@@ -13,20 +13,20 @@ under the License.
 
 The Original Code is flvplayer (http://code.google.com/p/flvplayer/).
 
-The
+The Initial Developer of the Original Code is neolao (neolao@gmail.com).
 */
 /**
  * Classe abstraite pour un thème
  * 
  * @author		neolao <neo@neolao.com> 
- * @version 	0.7.3 (25/09/2006)
+ * @version 	0.8.0 (17/11/2007)
  * @license		http://creativecommons.org/licenses/by-sa/3.0/deed.fr
  */
 class ATemplate
 {
 	// ----------------------------- CONSTANTES --------------------------------
-	static var SWF_MINWIDTH:Number = 160;
-	static var SWF_MINHEIGHT:Number = 120;
+	static var SWF_MINWIDTH:Number = 20;
+	static var SWF_MINHEIGHT:Number = 20;
 	
 	// ------------------------------ VARIABLES --------------------------------
 	/**
@@ -53,6 +53,9 @@ class ATemplate
 	 * L'instance du controleur de la vidéo
 	 */
 	public var controller:PlayerBasic;
+	/**
+	 * 	 */
+	private var _lastFocus:String;
 	
 	
 	/*============================= CONSTRUCTEUR =============================*/
@@ -114,9 +117,32 @@ class ATemplate
 		this._shortcuts = new Array();
 		
 		var o:Object = new Object();
+		o.onKeyDown = this.delegate(this, function() 
+		{
+		    var currentSelection:String = Selection.getFocus();
+		    switch (Key.getCode()) {
+		     	case Key.LEFT:
+		     	case Key.RIGHT:
+		     	case Key.UP:
+		     	case Key.DOWN:
+		     		if (currentSelection) {
+		     			this._lastFocus = currentSelection;
+		 			 	Selection.setFocus(null);
+		     			return;
+		     		}
+		    }
+ 			this._lastFocus = null;
+		});
 		o.onKeyUp = this.delegate(this, function() 
 		{
-		     if (this._shortcuts[Key.getCode()]) {
+ 			 if (this._lastFocus) {
+ 			 	Selection.setFocus(this._lastFocus);
+ 			 }
+		     
+		     if (Key.getCode() == Key.ESCAPE) {
+		     	// Remove the focus on buttons when the user press the Esc key
+		     	Selection.setFocus(null);
+		     } else if (this._shortcuts[Key.getCode()]) {
 		     	this._shortcuts[Key.getCode()]();
 		     }
 		});
@@ -170,15 +196,17 @@ class ATemplate
 	 */
 	public function delegate(pTarget:Object, pFunc:Function):Function
 	{
-		var f:Function = function()
-		{
-			var target = arguments.callee.target;
-			var func = arguments.callee.func;
-			return func.apply(target);
+		var f:Function = function(){
+			var target:Object = arguments.callee.target;
+			var func:Function = arguments.callee.func;
+			var args:Array = arguments.callee.args.concat(arguments);
+
+			return func.apply(target, args);
 		};
- 
-		f.target = pTarget;
-		f.func = pFunc;
+
+		f.target = arguments.shift(); // pTarget
+		f.func = arguments.shift(); // pFunc
+		f.args = arguments; // pArg1, pArg2, ...
  
 		return f;
 	}
