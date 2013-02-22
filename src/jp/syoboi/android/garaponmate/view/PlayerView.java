@@ -62,6 +62,8 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	TextView		mTime;
 	TextView		mTitle;
 	TextView		mMessage;
+	TextView		mBufferingView;
+	View			mTitleBar;
 
 	CaptionAdapter	mCaptionAdapter;
 
@@ -93,6 +95,8 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		mCaptionSwitch = (CheckBox) findViewById(R.id.captionSwitch);
 		mCaptionContainer = findViewById(R.id.captionContainer);
 		mCaptionList = (ListView) findViewById(R.id.captionList);
+		mBufferingView = (TextView) findViewById(R.id.buffering);
+		mTitleBar = findViewById(R.id.playerTitlebar);
 		mFavorite.setEnabled(false);
 		setMessage(null);
 
@@ -166,9 +170,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	public boolean dispatchTouchEvent(MotionEvent ev) {
 		switch (ev.getAction() & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN:
-			if (mFullScreen) {
-				cancelFullScreen();
-			}
+			cancelFullScreen();
 			break;
 		case MotionEvent.ACTION_UP:
 			if (!mFullScreen) {
@@ -252,10 +254,12 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	public void showToolbar(boolean show) {
 		if (show) {
 			mToolbar.setVisibility(View.VISIBLE);
+			mTitleBar.setVisibility(View.VISIBLE);
 			if (mDuration > 0) {
 				mSeekBar.setVisibility(View.VISIBLE);
 			}
 		} else {
+			mTitleBar.setVisibility(View.GONE);
 			mToolbar.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.GONE);
 		}
@@ -467,12 +471,13 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		}
 		mSeekBar.setVisibility(View.GONE);
 		mPlayer.setVideo(id);
+		mPause = false;
 
 		mHandler.postDelayed(mIntervalRunnable, INTERVAL);
 	}
 
 	PlayerViewInterface createPlayerWebView() {
-		return new PlayerWebView(getContext());
+		return new PlayerWebView2(getContext(), this);
 	}
 
 	PlayerViewInterface createPlayerVideoView() {
@@ -608,4 +613,30 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	public static String getLatestPlayingId() {
 		return sLatestProgram != null ? sLatestProgram.gtvid : null;
 	}
+
+
+	int mBufferingPos;
+	int mBufferingMax;
+
+
+	@Override
+	public void onBuffering(int pos, int max) {
+		mBufferingPos = pos;
+		mBufferingMax = max;
+		mHandler.removeCallbacks(mUpdateBufferingRunnable);
+		mHandler.post(mUpdateBufferingRunnable);
+	}
+
+	Runnable mUpdateBufferingRunnable = new Runnable() {
+
+		@Override
+		public void run() {
+			if (mBufferingPos >= mBufferingMax || mBufferingMax == 0) {
+				mBufferingView.setVisibility(View.INVISIBLE);
+			} else {
+				mBufferingView.setText("Buffering " + (mBufferingPos * 100 / mBufferingMax) + "%");
+				mBufferingView.setVisibility(View.VISIBLE);
+			}
+		}
+	};
 }

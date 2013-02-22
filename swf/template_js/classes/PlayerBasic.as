@@ -132,7 +132,11 @@ class PlayerBasic
 	private function _initVideo()
 	{
 		this._nc = new NetConnection();
-		this._nc.connect(null);
+		if (_root.netconnection != undefined) {
+			this._nc.connect(_root.netconnection);
+		} else {
+			this._nc.connect(null);
+		}
 		
 		this._ns = new NetStream(this._nc);
 		this._ns.setBufferTime(this._bufferTime);
@@ -370,6 +374,13 @@ class PlayerBasic
 		}
 		 
 		return {loaded:loaded, total:total, percent:percent};
+	}
+	/**
+	 * Seek
+	 */
+	public function seek(pOffset:Number)
+	{
+		this._ns.seek(Math.max(0, this._ns.time + pOffset));
 	}
 	/*========================== END = PUBLIC = END ==========================*/
 	/*========================================================================*/

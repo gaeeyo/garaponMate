@@ -407,6 +407,13 @@ class TemplateJS extends ATemplate
 	{
 		this.unloadAtDepth(Number(pDepth));
 	}
+	/**
+	 * Seek
+	 */
+	public function set seek(pOffset: String)
+	{
+		this.controller.seek(Number(pOffset));
+	}
 	/*=================== END = JAVASCRIPT CONTROLS = END ====================*/
 	/*========================================================================*/
 }

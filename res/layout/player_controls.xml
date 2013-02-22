@@ -7,63 +7,62 @@
         android:id="@+id/playerViewContainer"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" />
+    <!-- タイトルバー -->
+
+    <LinearLayout
+        android:id="@+id/playerTitlebar"
+        android:layout_width="match_parent"
+        android:layout_height="48dip"
+        android:background="@drawable/video_toolbar_bg" >
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:maxLines="2"
+            android:paddingLeft="16dip"
+            android:paddingRight="16dip"
+            android:text="@string/title"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#fff" />
+
+        <ImageButton
+            android:id="@+id/favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/favorite"
+            android:minWidth="56dip"
+            android:src="@drawable/ic_star_on" />
+
+        <ImageButton
+            android:id="@+id/returnFromFullScreen"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/returnFromFullScreen"
+            android:minWidth="56dip"
+            android:src="@drawable/ic_return_from_fullscreen" />
+
+        <ImageButton
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/returnFromFullScreen"
+            android:minWidth="56dip"
+            android:src="@drawable/ic_close" />
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/playerToolbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="32dip"
+        android:layout_below="@+id/playerTitlebar"
         android:orientation="vertical" >
-
-        <!-- タイトルバー -->
-
-        <LinearLayout
-            android:id="@+id/playerTitlebar"
-            android:layout_width="match_parent"
-            android:layout_height="48dip"
-            android:background="@drawable/video_toolbar_bg" >
-
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:maxLines="2"
-                android:paddingLeft="16dip"
-                android:paddingRight="16dip"
-                android:text="@string/title"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="#fff" />
-
-            <ImageButton
-                android:id="@+id/favorite"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@drawable/transparent_button_bg_dark"
-                android:contentDescription="@string/favorite"
-                android:minWidth="56dip"
-                android:src="@drawable/ic_star_on" />
-
-            <ImageButton
-                android:id="@+id/returnFromFullScreen"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@drawable/transparent_button_bg_dark"
-                android:contentDescription="@string/returnFromFullScreen"
-                android:minWidth="56dip"
-                android:src="@drawable/ic_return_from_fullscreen" />
-
-            <ImageButton
-                android:id="@+id/close"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@drawable/transparent_button_bg_dark"
-                android:contentDescription="@string/returnFromFullScreen"
-                android:minWidth="56dip"
-                android:src="@drawable/ic_close" />
-        </LinearLayout>
 
         <!-- 時間 -->
 
@@ -90,7 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/time"
             android:layout_alignParentRight="true"
-            android:layout_below="@+id/playerTitlebar"
+            android:layout_alignParentTop="true"
             android:orientation="horizontal" >
 
             <FrameLayout
@@ -192,6 +191,22 @@
                 android:visibility="gone" />
         </LinearLayout>
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/buffering"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_below="@+id/playerTitlebar"
+        android:layout_marginLeft="4dip"
+        android:shadowColor="#ff000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#ff00ff00"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/message"
