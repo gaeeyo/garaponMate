@@ -41,11 +41,13 @@ public class SyoboiClient {
 		}
 		Uri.Builder builder = new Uri.Builder();
 		builder.appendQueryParameter("gtvid", p.gtvid);
-		builder.appendQueryParameter("title", p.title);
-		builder.appendQueryParameter("start", String.valueOf(p.startdate / 1000));
-		builder.appendQueryParameter("end", String.valueOf((p.startdate + p.duration)/1000));
-		builder.appendQueryParameter("description", p.description);
-		builder.appendQueryParameter("time", String.valueOf(sec));
+		if (!TextUtils.isEmpty(p.title)) {
+			builder.appendQueryParameter("title", p.title);
+			builder.appendQueryParameter("start", String.valueOf(p.startdate / 1000));
+			builder.appendQueryParameter("end", String.valueOf((p.startdate + p.duration)/1000));
+			builder.appendQueryParameter("description", p.description);
+			builder.appendQueryParameter("time", String.valueOf(sec));
+		}
 		builder.appendQueryParameter("token", Prefs.getSyoboiToken());
 
 		HttpURLConnection con = openConnection(API_PLAY);

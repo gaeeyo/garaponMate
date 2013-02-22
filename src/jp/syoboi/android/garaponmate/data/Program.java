@@ -153,8 +153,9 @@ public class Program implements Serializable {
 				"%s [%02d:%02d] %s %s %s",
 				t.format("%Y-%m-%d %H:%M:%S"),
 				min / 60, min % 60,
-				ch.bc,
-				title, description);
+				(ch != null ? ch.bc : null),
+				title,
+				description);
 	}
 
 	public boolean hasFlag(int flagMask) {
