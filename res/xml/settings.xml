@@ -34,8 +34,8 @@
     <!-- android:key="searchListSettings" -->
     <!-- android:title="@string/searchListSettings" /> -->
 
-    <PreferenceCategory android:title="@string/help" >
-        <jp.syoboi.android.garaponmate.preference.HelpPreference />
-    </PreferenceCategory>
+<!--     <PreferenceCategory android:title="@string/help" > -->
+<!--         <jp.syoboi.android.garaponmate.preference.HelpPreference /> -->
+<!--     </PreferenceCategory> -->
 
 </PreferenceScreen>

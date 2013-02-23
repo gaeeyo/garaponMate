@@ -68,6 +68,11 @@
             </intent-filter>
         </activity>
 
+        <!-- WebActivity -->
+        <activity
+            android:name=".activity.WebActivity"
+            android:parentActivityName=".activity.MainActivity" />
+
         <!-- BroadcastReceiver -->
         <receiver android:name=".receiver.Receiver" >
 
