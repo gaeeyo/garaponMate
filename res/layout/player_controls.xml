@@ -13,7 +13,7 @@
         android:id="@+id/playerTitlebar"
         android:layout_width="match_parent"
         android:layout_height="48dip"
-        android:background="@drawable/video_toolbar_bg" >
+        android:background="@drawable/video_titlebar_bg" >
 
         <TextView
             android:id="@+id/title"
@@ -128,7 +128,8 @@
             android:layout_above="@+id/bottomButtons"
             android:layout_marginBottom="32dip"
             android:layout_marginLeft="16dip"
-            android:layout_marginRight="16dip" />
+            android:layout_marginRight="16dip"
+            android:progressDrawable="@drawable/scrubber_progress_horizontal_holo_dark" />
 
         <!-- ボタン -->
 
