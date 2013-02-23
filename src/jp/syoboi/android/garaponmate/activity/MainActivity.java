@@ -63,6 +63,7 @@ public class MainActivity extends Activity  {
 	View			mPlayerClose;
 	View			mSummaryPage;
 	View			mSearchPage;
+	View			mViewPagerTab;
 	ViewPager		mViewPager;
 	boolean			mPlayerExpanded;
 	boolean			mResumed;
@@ -86,6 +87,7 @@ public class MainActivity extends Activity  {
 		mSearchPage = findViewById(R.id.searchResultFragment);
 		mViewPager = (ViewPager) findViewById(R.id.viewPager);
 		mViewPager.setOffscreenPageLimit(3);
+		mViewPagerTab = mViewPager.findViewById(R.id.viewPagerTab);
 
 		mMainContainer = (LinearLayout) findViewById(R.id.mainContainer);
 		mPlayer = (PlayerView) findViewById(R.id.player);
@@ -124,7 +126,11 @@ public class MainActivity extends Activity  {
 
 			@Override
 			public void onPageSelected(int arg0) {
-				Object tag = getActionBar().getSelectedTab().getTag();
+				Tab tab = getActionBar().getSelectedTab();
+				if (tab == null) {
+					return;
+				}
+				Object tag = tab.getTag();
 				int currentTab = -1;
 				if (tag instanceof Integer) {
 					currentTab = (Integer)tag;
@@ -259,6 +265,7 @@ public class MainActivity extends Activity  {
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		updateMainContainer();
+		updateNavigationMode();
 	}
 
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -495,12 +502,25 @@ public class MainActivity extends Activity  {
 			while (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
 			}
-			getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 			getActionBar().setDisplayOptions(0, ActionBar.DISPLAY_HOME_AS_UP);
+			updateNavigationMode();
 		} else {
-			getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 			getActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
+			updateNavigationMode();
 		}
+	}
+
+	void updateNavigationMode() {
+		boolean showActionBarTab = false;
+		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			if (mPage != PAGE_SEARCH) {
+				showActionBarTab = true;
+			}
+		}
+		getActionBar().setNavigationMode(
+				showActionBarTab
+				? ActionBar.NAVIGATION_MODE_TABS : ActionBar.NAVIGATION_MODE_STANDARD);
+		mViewPagerTab.setVisibility(showActionBarTab ? View.GONE : View.VISIBLE);
 	}
 
 	static AlphaAnimation sFadeInAnim = new AlphaAnimation(0, 1);
