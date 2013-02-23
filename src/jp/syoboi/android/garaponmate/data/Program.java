@@ -134,7 +134,7 @@ public class Program implements Serializable {
 		}
 		int genre0 = Integer.valueOf(text.substring(0,  pos), 10);
 		int genre1 = Integer.valueOf(text.substring(pos+1), 10);
-		return genre0 << 8 | genre1;
+		return Genre.makeGenre(genre0, genre1);
 	}
 
 	public static String formatGenreStr(int genre) {

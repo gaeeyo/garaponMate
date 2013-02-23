@@ -11,65 +11,45 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-
-import java.util.Locale;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
-import jp.syoboi.android.garaponmate.adapter.CaptionAdapter;
 import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.client.GaraponClient.ApiResult;
+import jp.syoboi.android.garaponmate.client.GaraponClient.SearchResult;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
 import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
-import jp.syoboi.android.garaponmate.data.Caption;
 import jp.syoboi.android.garaponmate.data.Program;
-import jp.syoboi.android.garaponmate.utils.Utils;
+import jp.syoboi.android.garaponmate.data.SearchParam;
+import jp.syoboi.android.garaponmate.task.SearchTask;
 
 public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	private static final String TAG = "PlayerView";
 
 	private static final int INTERVAL = 500;
-	private static final int CHANGE_FULLSCREEN_DELAY = 3000;
+	private static final int CHANGE_FULLSCREEN_DELAY = 5 * 1000;
 	private static final int SEND_PLAY_DELAY = 10*1000;
-
-	private static final int [] PLAYER_BUTTONS = { R.id.pause, R.id.previous, R.id.rew, R.id.ff, R.id.next };
 
 	public static Program	sLatestProgram;
 
 	Handler			mHandler = new Handler();
-	View			mOverlay;
-	View			mToolbar;
+	View			mKeyGuard;
 	ImageView		mFavorite;
-	ImageButton		mPauseButton;
-	View			mCaptionContainer;
-	CheckBox		mCaptionSwitch;
-	ListView		mCaptionList;
 	FrameLayout		mPlayerViewContainer;
-	SeekBar			mSeekBar;
-	TextView		mTime;
 	TextView		mTitle;
 	TextView		mMessage;
 	TextView		mBufferingView;
 	View			mTitleBar;
-
-	CaptionAdapter	mCaptionAdapter;
+	SearchTask		mSearchTask;
+	PlayerOverlay	mPlayerOverlay;
 
 	boolean			mPause;
-	int				mDuration;
-	int				mCurPos;
 	boolean			mUseVideoView;
 	boolean			mFullScreen;
 	boolean			mAutoFullScreen;
@@ -84,59 +64,26 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			return;
 		}
 
-		inflate(context, R.layout.player_controls, this);
+		inflate(context, R.layout.player_view, this);
 
-		mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+		mPlayerOverlay = (PlayerOverlay) findViewById(R.id.playerOverlay);
+
 		mPlayerViewContainer = (FrameLayout)findViewById(R.id.playerViewContainer);
-		mTime = (TextView) findViewById(R.id.time);
 		mTitle = (TextView) findViewById(R.id.title);
 		mMessage = (TextView) findViewById(R.id.message);
 		mFavorite = (ImageView) findViewById(R.id.favorite);
-		mCaptionSwitch = (CheckBox) findViewById(R.id.captionSwitch);
-		mCaptionContainer = findViewById(R.id.captionContainer);
-		mCaptionList = (ListView) findViewById(R.id.captionList);
 		mBufferingView = (TextView) findViewById(R.id.buffering);
 		mTitleBar = findViewById(R.id.playerTitlebar);
 		mFavorite.setEnabled(false);
 		setMessage(null);
 
-		mCaptionSwitch.setOnClickListener(mOnClickListener);
-		mCaptionList.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> lv, View view, int position,
-					long id) {
-				Object obj = lv.getItemAtPosition(position);
-				if (obj instanceof Caption) {
-					Caption caption = (Caption) obj;
-					seek((int)caption.time);
-				}
-			}
-		});
+		mPlayerOverlay.setPlayer(this);
 
 		findViewById(R.id.close).setOnClickListener(mOnClickListener);
 		findViewById(R.id.returnFromFullScreen).setOnClickListener(mOnClickListener);
 
 		mFavorite.setOnClickListener(mOnClickListener);
 
-		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-
-			}
-
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				if (fromUser) {
-					mPlayer.seek(progress);
-				}
-			}
-		});
 
 		setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
 			@Override
@@ -152,17 +99,8 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			}
 		});
 
-
-		// ボタン
-		mToolbar = findViewById(R.id.playerToolbar);
-		for (int id: PLAYER_BUTTONS) {
-			findViewById(id).setOnClickListener(mOnClickListener);
-		}
-
-		mPauseButton = (ImageButton)findViewById(R.id.pause);
-
 		// オーバーレイ
-		mOverlay = findViewById(R.id.playerViewOverlay);
+		mKeyGuard = findViewById(R.id.playerKeyGuard);
 	}
 
 
@@ -179,6 +117,15 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			break;
 		}
 		return super.dispatchTouchEvent(ev);
+	}
+
+	void togglePause() {
+		mPause = !mPause;
+		if (mPause) {
+			pause();
+		} else {
+			play();
+		}
 	}
 
 	public void setAutoFullScreen(boolean fullScreen) {
@@ -210,90 +157,26 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		}
 	}
 
-	Runnable	mIntervalRunnable = new Runnable() {
-		@Override
-		public void run() {
-			if (mPlayer != null) {
-				int duration = mPlayer.getDuration();
-				if (mDuration != duration) {
-					mDuration = duration;
-					if (duration == 0) {
-						mSeekBar.setVisibility(View.GONE);
-					} else {
-						mSeekBar.setVisibility(View.VISIBLE);
-						mSeekBar.setMax(duration);
-					}
-				}
-				int curPos = mPlayer.getCurrentPos();
-				if (mCurPos != curPos) {
-					mCurPos = curPos;
-					if (mDuration > 0) {
-						mSeekBar.setProgress(curPos);
-						mTime.setText(getTimeStr(mCurPos) + " / "
-								+ getTimeStr(mDuration));
-					}
-				}
-				if (!mPause) {
 
-					mHandler.postDelayed(mIntervalRunnable, INTERVAL - (curPos % 1000) );
-				}
-			}
-		}
-	};
-
-	String getTimeStr(int millis) {
-		int sec = millis / 1000;
-		if (sec > 60*60) {
-			int min = sec / 60;
-			return String.format(Locale.ENGLISH, "%d:%02d:%02d",
-					min / 60, min % 60, sec % 60);
-		}
-		return String.format(Locale.ENGLISH, "%d:%02d", sec / 60, sec % 60);
-	}
 
 	public void showToolbar(boolean show) {
 		if (show) {
-			mToolbar.setVisibility(View.VISIBLE);
+			mPlayerOverlay.setVisibility(View.VISIBLE);
 			mTitleBar.setVisibility(View.VISIBLE);
-			if (mDuration > 0) {
-				mSeekBar.setVisibility(View.VISIBLE);
-			}
 		} else {
 			mTitleBar.setVisibility(View.GONE);
-			mToolbar.setVisibility(View.GONE);
-			mSeekBar.setVisibility(View.GONE);
+			mPlayerOverlay.setVisibility(View.GONE);
 		}
 	}
 
 	public boolean isToolbarShown() {
-		return mToolbar.getVisibility() == View.VISIBLE;
+		return mTitleBar.getVisibility() == View.VISIBLE;
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			switch (v.getId()) {
-			case R.id.pause:
-				mPause = !mPause;
-				if (mPause) {
-					pause();
-				} else {
-					play();
-				}
-				updatePauseButton();
-				break;
-			case R.id.previous:
-				jump(-15);
-				break;
-			case R.id.rew:
-				jump(-15);
-				break;
-			case R.id.ff:
-				jump(30);
-				break;
-			case R.id.next:
-				jump(30);
-				break;
 			case R.id.returnFromFullScreen:
 				performReturnFromFullScreen();
 				break;
@@ -303,21 +186,10 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			case R.id.favorite:
 				performFavorite();
 				break;
-			case R.id.captionSwitch:
-				Utils.showAnimation(mCaptionList,
-						0.1f, 0,
-						mCaptionSwitch.isChecked());
-				break;
 			};
 		}
 	};
 
-	void updatePauseButton() {
-		mPauseButton.setImageResource(
-				mPause
-				? R.drawable.ic_media_play
-				: R.drawable.ic_media_pause);
-	}
 
 	protected void performFavorite() {
 		if (mProgram != null) {
@@ -363,7 +235,8 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 
 	public void onPause() {
-		mHandler.removeCallbacks(mIntervalRunnable);
+		mPlayerOverlay.onPause();
+
 		if (mPlayer != null) {
 			int pos = mPlayer.getCurrentPos();
 			if (pos >= 0) {
@@ -374,11 +247,10 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	}
 
 	public void onResume() {
+		mPlayerOverlay.onResume();
+
 		if (mPlayer != null) {
 			mPlayer.onResume();
-		}
-		if (!mPause) {
-			mHandler.postDelayed(mIntervalRunnable, INTERVAL);
 		}
 	}
 
@@ -394,7 +266,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			lbm.sendBroadcast(new Intent(App.ACTION_STOP));
 		}
 
-		mHandler.removeCallbacks(mIntervalRunnable);
+		mPlayerOverlay.onPause();
 		if (mPlayer != null) {
 			mPlayer.destroy();
 			mPlayer = null;
@@ -415,43 +287,73 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		intent.putExtra(App.EXTRA_PROGRAM, p);
 		lbm.sendBroadcast(intent);
 
-
 		SyoboiClientUtils.sendPlayAsync(getContext(), p, 0);
+
+		cancelSearchTask();
+		startGetProgramDetailTask(p);
 	}
+
+	/**
+	 * 番組詳細を取得するタスクをキャンセル
+	 */
+	void cancelSearchTask() {
+		if (mSearchTask != null) {
+			mSearchTask.cancel(true);
+			mSearchTask = null;
+		}
+	}
+
+	/**
+	 * 番組詳細を取得するタスクを開始
+	 * @param p
+	 */
+	void startGetProgramDetailTask(Program p) {
+		SearchParam sp = new SearchParam();
+		sp.gtvid = p.gtvid;
+		sp.count = 1;
+		sp.searchType = SearchParam.STYPE_CAPTION;
+		sp.video = SearchParam.VIDEO_ALL;
+
+		mSearchTask = new SearchTask(getContext(), sp, false) {
+			@Override
+			protected void onPostExecute(Object result) {
+				if (result instanceof SearchResult) {
+					SearchResult sr = (SearchResult) result;
+					if (sr.program.size() > 0) {
+						mProgram = sr.program.get(0);
+						mPlayerOverlay.setProgramDetail(mProgram);
+					}
+				}
+				else if (result instanceof Exception) {
+					App.from(getContext()).showToast(String.valueOf(result));
+				}
+				mSearchTask = null;
+			}
+		};
+		mSearchTask.execute();
+	}
+
 
 	void setProgram(Program p) {
 		mProgram = p;
 
 		mTitle.setText(p.title);
-		mDuration = (int) p.duration;
-		if (p.duration != 0) {
-			mTime.setText(getTimeStr(mDuration));
-		} else {
-			mTime.setText(null);
-		}
-
-		if (mCaptionAdapter == null) {
-			mCaptionAdapter = new CaptionAdapter(getContext());
-			mCaptionList.setAdapter(mCaptionAdapter);
-		}
-		mCaptionAdapter.clear();
-		if (p.caption != null) {
-			for (Caption c: p.caption) {
-				mCaptionAdapter.add(c);
-			}
-			if (mCaptionAdapter.getCount() > 0) {
-				if (!mCaptionSwitch.isChecked()) {
-					mCaptionSwitch.toggle();
-				}
-			}
-		}
+		mPlayerOverlay.setProgram(p);
 	}
 
+	/**
+	 * Playerにビデオを設定
+	 * @param id
+	 * @param playerId
+	 */
 	void setVideoInternal(final String id, int playerId) {
-		Log.v(TAG, "setVideoInternal id:" + id);
+		if (App.DEBUG) {
+			Log.d(TAG, "setVideoInternal id:" + id);
+		}
 
 		boolean useVideoView = (playerId == App.PLAYER_VIDEOVIEW);
 		onMessage(null);
+		onBuffering(0, 0);
 //		if (mPlayer != null && useVideoView != mUseVideoView) {
 			mUseVideoView = useVideoView;
 			destroyInternal(false);
@@ -469,11 +371,8 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 							LayoutParams.MATCH_PARENT,
 							Gravity.CENTER));
 		}
-		mSeekBar.setVisibility(View.GONE);
 		mPlayer.setVideo(id);
 		mPause = false;
-
-		mHandler.postDelayed(mIntervalRunnable, INTERVAL);
 	}
 
 	PlayerViewInterface createPlayerWebView() {
@@ -485,9 +384,9 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	}
 
 
-	public void seek(int sec) {
+	public void seek(int msec) {
 		if (mPlayer != null) {
-			mPlayer.seek(sec);
+			mPlayer.seek(msec);
 		}
 	}
 
@@ -502,14 +401,12 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		if (mPlayer != null) {
 			mPlayer.play();
 		}
-		mHandler.postDelayed(mIntervalRunnable, INTERVAL);
 	}
 
 	public void pause() {
 		if (mPlayer != null) {
 			mPlayer.pause();
 		}
-		mHandler.removeCallbacks(mIntervalRunnable, INTERVAL);
 	}
 
 //	public void stop() {
@@ -590,24 +487,20 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			}
 		}
 		view.setSystemUiVisibility(systemUiVisibility);
+		mPlayerOverlay.onPlayerStateChanged();
 	}
 
 	public void updateControls() {
 		if (mProgram == null) {
 			mFavorite.setImageResource(R.drawable.ic_star_off);
 			mFavorite.setEnabled(false);
-
-			mCaptionContainer.setVisibility(View.GONE);
 		} else {
 			mFavorite.setEnabled(true);
 			boolean favorited = mProgram.hasFlag(Program.FLAG_FAVORITE);
 			mFavorite.setImageResource(
 					favorited ? R.drawable.ic_star_on : R.drawable.ic_star_off);
-
-			Caption [] captions = mProgram.caption;
-			mCaptionContainer.setVisibility(captions.length > 0 ? View.VISIBLE : View.GONE);
-//			mCaptionList.setVisibility(mCaptionSwitch.isChecked() ? View.VISIBLE : View.GONE);
 		}
+		mPlayerOverlay.onPlayerStateChanged();
 	}
 
 	public static String getLatestPlayingId() {

@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.SparseIntArray;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -86,6 +87,12 @@ public class App extends Application {
 		File f = new File(getCacheDir(), "image");
 		f.mkdirs();
 		return f;
+	}
+
+	public Toast showToast(CharSequence text) {
+		Toast toast = Toast.makeText(this, text, Toast.LENGTH_SHORT);
+		toast.show();
+		return toast;
 	}
 
 	public static File getSearchResultCache(Context context, long id) {

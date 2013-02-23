@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <FrameLayout
+        android:id="@+id/playerViewContainer"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+    <!-- タイトルバー -->
+
+    <LinearLayout
+        android:id="@+id/playerTitlebar"
+        android:layout_width="match_parent"
+        android:layout_height="48dip"
+        android:background="@drawable/video_titlebar_bg" >
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:maxLines="2"
+            android:paddingLeft="16dip"
+            android:paddingRight="16dip"
+            android:text="@string/title"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#fff" />
+
+        <ImageButton
+            android:id="@+id/favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/favorite"
+            android:minWidth="56dip"
+            android:src="@drawable/ic_star_on" />
+
+        <ImageButton
+            android:id="@+id/returnFromFullScreen"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/returnFromFullScreen"
+            android:minWidth="56dip"
+            android:src="@drawable/ic_return_from_fullscreen" />
+
+        <ImageButton
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/returnFromFullScreen"
+            android:minWidth="56dip"
+            android:src="@drawable/ic_close" />
+    </LinearLayout>
+
+    <jp.syoboi.android.garaponmate.view.PlayerOverlay
+        android:id="@+id/playerOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/playerTitlebar" />
+
+    <!-- bufferingの表示 -->
+
+    <TextView
+        android:id="@+id/buffering"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_below="@+id/playerTitlebar"
+        android:layout_marginLeft="4dip"
+        android:shadowColor="#ff000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#ff00ff00"
+        android:textStyle="bold" />
+
+    <!-- エラー等のメッセージ -->
+
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/video_toolbar_bg"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#fff" />
+
+    <View
+        android:id="@+id/playerKeyGuard"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+</RelativeLayout>

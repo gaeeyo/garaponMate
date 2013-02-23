@@ -15,4 +15,15 @@ public class Genre {
 	public String toString() {
 		return name;
 	}
+
+	public static int makeGenre(int genre0, int genre1) {
+		return genre0 << 8 | genre1;
+	}
+
+	public static int getGenre0(int genre) {
+		return (genre & 0xff00) >> 8;
+	}
+	public static int getGenre1(int genre) {
+		return genre & 0xff;
+	}
 }

@@ -58,7 +58,7 @@ public class MainActivity extends Activity  {
 	Handler			mHandler = new Handler();
 	LinearLayout	mMainContainer;
 	PlayerView		mPlayer;
-	View			mPlayerOverlay;
+	View			mPlayerKeyGuard;
 	View			mContentsContainer;
 	View			mPlayerClose;
 	View			mSummaryPage;
@@ -172,8 +172,8 @@ public class MainActivity extends Activity  {
 			}
 		});
 
-		mPlayerOverlay = findViewById(R.id.playerOverlay);
-		mPlayerOverlay.setOnTouchListener(new View.OnTouchListener() {
+		mPlayerKeyGuard = findViewById(R.id.playerKeyGuard);
+		mPlayerKeyGuard.setOnTouchListener(new View.OnTouchListener() {
 			boolean touching;
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {

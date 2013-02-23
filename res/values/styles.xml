@@ -1,5 +1,13 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <color name="playerUiBackgroundColor">#88000000</color>
+    <color name="playerUiBorderColor">#22ffffff</color>
+    <color name="playerUiTextColor">#ffffffff</color>
+    
+    <style name="playerUiSectionTextAppearance">
+        <item name="android:textColor">#ff33B5E5</item>
+    </style>
+    
     <color name="tabPagerBackgroundColor">#00000000</color>
     <color name="tabPagerTextColor">#ff33B5E5</color>
     <color name="pressedColor">#cc33B5E5</color>

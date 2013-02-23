@@ -98,6 +98,7 @@
     
     <string name="searchListSettings">検索リスト設定</string>
     <string name="title">タイトル</string>
+    <string name="programDetail">番組詳細</string>
     <string name="description">詳細</string>
     <string name="titleOrDescription">タイトルまたは詳細</string>
     <string name="keywordOr">どれかを含む</string>

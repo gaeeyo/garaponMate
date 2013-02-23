@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <!-- 時間 -->
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="36dip"
+        android:gravity="center"
+        android:shadowColor="#ff000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="@string/duration"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ffffffff"
+        android:textStyle="bold" />
+
+    <!-- 字幕 -->
+
+    <RelativeLayout
+        android:id="@+id/captionContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bottomButtons"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal" >
+
+        <FrameLayout
+            android:id="@+id/captionSwitchContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/video_toolbar_bg" >
+
+            <CheckBox
+                android:id="@+id/captionSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="48dip"
+                android:background="@drawable/popleft_button_bg_dark"
+                android:button="@drawable/popleft_button_dark"
+                android:drawablePadding="32dip"
+                android:text="@string/caption"
+                android:textColor="#fff" />
+        </FrameLayout>
+
+        <ListView
+            android:id="@+id/captionList"
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/captionSwitchContainer"
+            android:background="@drawable/video_caption_bg"
+            android:divider="#44ffffff" />
+    </RelativeLayout>
+
+    <!-- シークバー -->
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="8dip"
+        android:layout_marginLeft="8dip"
+        android:layout_marginRight="8dip"
+        android:progressDrawable="@drawable/scrubber_progress_horizontal_holo_dark" />
+
+    <!-- ボタン -->
+
+    <LinearLayout
+        android:id="@+id/bottomButtons"
+        android:layout_width="300dip"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="72dip"
+        android:layout_marginLeft="16dip"
+        android:layout_marginRight="16dip"
+        android:background="@drawable/video_toolbar_bg"
+        android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/pause"
+            android:layout_width="48sp"
+            android:layout_height="64dip"
+            android:layout_weight="1"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/pause"
+            android:src="@drawable/ic_media_pause" />
+
+        <ImageButton
+            android:id="@+id/previous"
+            android:layout_width="48sp"
+            android:layout_height="64dip"
+            android:layout_weight="1"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/previous"
+            android:src="@drawable/ic_media_previous"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/rew"
+            android:layout_width="48sp"
+            android:layout_height="64dip"
+            android:layout_weight="1"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/rew"
+            android:src="@drawable/ic_media_rew" />
+
+        <ImageButton
+            android:id="@+id/ff"
+            android:layout_width="48sp"
+            android:layout_height="64dip"
+            android:layout_weight="1"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/ff"
+            android:src="@drawable/ic_media_ff" />
+
+        <ImageButton
+            android:id="@+id/next"
+            android:layout_width="48sp"
+            android:layout_height="64dip"
+            android:layout_weight="1"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:contentDescription="@string/next"
+            android:src="@drawable/ic_media_next"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</RelativeLayout>
