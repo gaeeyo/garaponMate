@@ -39,6 +39,11 @@ public class PlayerOverlay extends FrameLayout {
 
 		mViewPager = (ViewPager) findViewById(R.id.playerOverlayPager);
 
+		float density = getResources().getDisplayMetrics().density;
+		PagerTabStrip tabStrip = (PagerTabStrip) mViewPager.getChildAt(0);
+		TextView tv = (TextView) tabStrip.getChildAt(1);
+		tv.setShadowLayer(1, 0, (int)(1 * density), 0xff000000);
+
 		PlayerOverlayPagerAdapter adapter = new PlayerOverlayPagerAdapter(
 				context, player);
 		mViewPager.setAdapter(adapter);

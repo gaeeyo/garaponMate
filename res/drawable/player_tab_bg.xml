@@ -6,7 +6,7 @@
         android:right="-2dip"
         android:top="-2dip">
         <shape>
-            <solid android:color="@color/playerUiBackgroundColor" />
+            <solid android:color="@android:color/transparent" />
 
             <stroke
                 android:width="1dip"
