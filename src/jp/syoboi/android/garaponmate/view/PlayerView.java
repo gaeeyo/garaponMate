@@ -384,6 +384,12 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		return new PlayerVideoView(getContext(), this);
 	}
 
+	public int getPos() {
+		if (mPlayer != null) {
+			return mPlayer.getCurrentPos();
+		}
+		return 0;
+	}
 
 	public void seek(int msec) {
 		if (mPlayer != null) {

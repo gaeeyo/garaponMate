@@ -12,10 +12,10 @@ public class Caption implements Serializable {
 	private static final long serialVersionUID = -5129258415525339687L;
 
 	public String text;
-	public long time;
+	public int time;
 
 	public Caption(JksnObject j) {
 		text = j.getString("caption_text");
-		time = GaraponClient.parseTimeStr(j.getString("caption_time"));
+		time = (int)GaraponClient.parseTimeStr(j.getString("caption_time"));
 	}
 }

@@ -67,7 +67,7 @@ public class PlayerControllerView extends FrameLayout {
 				Object obj = lv.getItemAtPosition(position);
 				if (obj instanceof Caption) {
 					Caption caption = (Caption) obj;
-					mPlayer.seek((int)Math.max(0, caption.time));
+					mPlayer.seek(Math.max(0, caption.time));
 				}
 			}
 		});

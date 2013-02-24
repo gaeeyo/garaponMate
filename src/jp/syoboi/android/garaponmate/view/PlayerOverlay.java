@@ -24,6 +24,8 @@ public class PlayerOverlay extends FrameLayout {
 	PagerTabStrip			mPagerTabStrip;
 	PlayerControllerView	mController;
 	PlayerDetailView		mDetail;
+	PlayerCaptionView		mCaptionView;
+	PlayerOverlayPagerAdapter	mPagerAdapter;
 
 	Program					mProgram;
 	Caption[]				mSearchCaptions;
@@ -44,9 +46,9 @@ public class PlayerOverlay extends FrameLayout {
 		TextView tv = (TextView) tabStrip.getChildAt(1);
 		tv.setShadowLayer(1, 0, (int)(1 * density), 0xff000000);
 
-		PlayerOverlayPagerAdapter adapter = new PlayerOverlayPagerAdapter(
+		mPagerAdapter = new PlayerOverlayPagerAdapter(
 				context, player);
-		mViewPager.setAdapter(adapter);
+		mViewPager.setAdapter(mPagerAdapter);
 		mViewPager.setCurrentItem(1);
 	}
 
@@ -78,6 +80,10 @@ public class PlayerOverlay extends FrameLayout {
 		if (mDetail != null) {
 			mDetail.setProgram(p);
 		}
+		if (mCaptionView != null) {
+			mCaptionView.setProgram(p);
+		}
+		mPagerAdapter.notifyDataSetChanged();
 	}
 
 	public void setProgramDetail(Program p) {
@@ -88,6 +94,10 @@ public class PlayerOverlay extends FrameLayout {
 		if (mDetail != null) {
 			mDetail.setProgram(p);
 		}
+		if (mCaptionView != null) {
+			mCaptionView.setProgram(p);
+		}
+		mPagerAdapter.notifyDataSetChanged();
 	}
 
 	private class PlayerOverlayPagerAdapter extends PagerAdapter {
@@ -116,11 +126,10 @@ public class PlayerOverlay extends FrameLayout {
 				mController.setCaptions(mSearchCaptions);
 				return mController;
 			case PAGE_CAPTION:
-				{
-					TextView tv = new TextView(mContext);
-					tv.setText("detail");
-					return tv;
-				}
+				mCaptionView = new PlayerCaptionView(mContext, null, mPlayer);
+				mCaptionView.setProgram(mProgram);
+				container.addView(mCaptionView);
+				return mCaptionView;
 			}
 			return super.instantiateItem(container, position);
 		}
@@ -134,11 +143,20 @@ public class PlayerOverlay extends FrameLayout {
 			if (mDetail == object) {
 				mDetail = null;
 			}
+			if (mCaptionView == object) {
+				mCaptionView = null;
+			}
 		}
 
 		@Override
 		public int getCount() {
-			return 2;
+			int count = 2;
+			if (mProgram != null
+					&& mProgram.caption != null
+					&& mProgram.caption.length > 0) {
+				count++;
+			}
+			return count;
 		}
 
 		@Override

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<jp.syoboi.android.garaponmate.view.CheckableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/caption_row_bg"
     android:orientation="horizontal"
     android:paddingBottom="4dip"
     android:paddingLeft="8dip"
@@ -12,18 +13,18 @@
         android:id="@+id/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#fff"
         android:text="@string/duration"
         android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/playerUiTextColor"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#fff"
         android:layout_marginLeft="8dip"
         android:text="@string/caption"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/playerUiTextColor" />
 
-</LinearLayout>
+</jp.syoboi.android.garaponmate.view.CheckableLinearLayout>
