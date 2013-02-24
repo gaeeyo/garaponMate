@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
@@ -35,15 +36,19 @@ public class PlayerDetailView extends FrameLayout {
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		int start;
 
-		sb.append(p.title).append("\n\n");
+		if (!TextUtils.isEmpty(p.title)) {
+			sb.append(p.title).append("\n\n");
+		}
 
-		start = sb.length();
-		sb.append(res.getString(R.string.programDetail))
-		.append(":\n");
-		sb.setSpan(new TextAppearanceSpan(context, R.style.playerUiSectionTextAppearance),
-				start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		if (!TextUtils.isEmpty(p.description)) {
+			start = sb.length();
+			sb.append(res.getString(R.string.programDetail))
+			.append(":\n");
+			sb.setSpan(new TextAppearanceSpan(context, R.style.playerUiSectionTextAppearance),
+					start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		sb.append(p.description).append("\n\n");
+			sb.append(p.description).append("\n\n");
+		}
 
 		if (p.genre.length > 0) {
 			start = sb.length();
