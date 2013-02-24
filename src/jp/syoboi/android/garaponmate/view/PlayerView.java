@@ -278,7 +278,6 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		setProgram(p);
 		startFullScreenDelay();
 		setVideoInternal(p.gtvid, playerId);
-		updateControls();
 
 		// 通知
 		sLatestProgram = p;
@@ -322,6 +321,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 					if (sr.program.size() > 0) {
 						mProgram = sr.program.get(0);
 						mPlayerOverlay.setProgramDetail(mProgram);
+						updateControls();
 					}
 				}
 				else if (result instanceof Exception) {
@@ -339,6 +339,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 		mTitle.setText(p.title);
 		mPlayerOverlay.setProgram(p);
+		updateControls();
 	}
 
 	/**
