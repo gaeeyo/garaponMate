@@ -11,11 +11,20 @@
     android:paddingRight="8dip"
     android:paddingTop="4dip" >
 
+    <jp.syoboi.android.garaponmate.view.MyImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="128sp"
+        android:layout_height="72sp"
+        android:background="@drawable/video_thumb_bg"
+        android:scaleType="fitXY" />
+
     <TextView
         android:id="@+id/time"
         style="@style/timeStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="4dip"
+        android:layout_toRightOf="@+id/thumbnail"
         android:text="@string/date"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
@@ -29,24 +38,13 @@
         android:text="@string/chName"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-    <jp.syoboi.android.garaponmate.view.MyImageView
-        android:id="@+id/thumbnail"
-        android:layout_width="90sp"
-        android:layout_height="50.625sp"
-        android:layout_below="@+id/time"
-        android:background="@drawable/video_thumb_bg"
-        android:scaleType="fitXY" />
-
     <TextView
         android:id="@+id/title"
         style="@style/titleStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/thumbnail"
-        android:layout_alignTop="@+id/thumbnail"
+        android:layout_alignLeft="@+id/time"
         android:layout_below="@+id/time"
-        android:layout_marginLeft="4dip"
-        android:layout_toRightOf="@+id/thumbnail"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="2"
@@ -58,7 +56,8 @@
         style="@style/descriptionStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/thumbnail"
+        android:layout_alignLeft="@+id/title"
+        android:layout_below="@+id/title"
         android:text="@string/description"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 
