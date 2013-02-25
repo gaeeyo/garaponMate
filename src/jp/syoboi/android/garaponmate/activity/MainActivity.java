@@ -8,6 +8,7 @@ import android.app.ActionBar.TabListener;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -565,5 +567,14 @@ public class MainActivity extends Activity  {
 		.addToBackStack("search")
 		.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 		.commit();
+	}
+
+	@Override
+	public View onCreateView(View parent, String name, Context context,
+			AttributeSet attrs) {
+//		if ("ListView".equals(name)) {
+//			return new MyListView(context, attrs);
+//		}
+		return super.onCreateView(parent, name, context, attrs);
 	}
 }
