@@ -42,7 +42,7 @@ public class ImageLoader {
 	public static final int PRIORITY_PHOTO_PREFETCH = 1;
 	public static final int PRIORITY_USER_ICON = 2;
 
-	static final int DOWNLOAD_THREAD_COUNT = 3;
+	static final int DOWNLOAD_THREAD_COUNT = 2;
 	LoadTask[] mTasks = new LoadTask[DOWNLOAD_THREAD_COUNT];
 	public static boolean WAIT_CALLBACK;
 
