@@ -3,6 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+    <TextView
+        android:id="@+id/osd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/video_toolbar_bg"
+        android:paddingBottom="8dip"
+        android:paddingLeft="16dip"
+        android:paddingRight="16dip"
+        android:paddingTop="8dip"
+        android:text="0"
+        android:textColor="@color/playerUiTextColor"
+        android:textSize="18sp" />
+
     <!-- 時間 -->
 
     <TextView

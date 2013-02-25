@@ -1,10 +1,16 @@
 package jp.syoboi.android.garaponmate.view;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.os.Handler;
+import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
@@ -37,14 +43,18 @@ public class PlayerControllerView extends FrameLayout {
 	ListView		mCaptionList;
 	SeekBar			mSeekBar;
 	TextView		mTime;
+	TextView		mOsd;
 	PlayerView		mPlayer;
 	Handler			mHandler = new Handler();
 	int				mDuration;
 	int				mCurPos;
 	boolean			mVisible = true;
 	Caption[]		mCaptions;
+	GestureDetector	mGestureDetector;
+	Animation		mOsdCloseAnimation;
 
 	CaptionAdapter	mCaptionAdapter;
+	AudioManager	mAudioManager;
 
 	public PlayerControllerView(Context context, AttributeSet attrs, PlayerView pv) {
 		super(context, attrs);
@@ -52,12 +62,18 @@ public class PlayerControllerView extends FrameLayout {
 		mPlayer = pv;
 		inflate(context, R.layout.player_controller, this);
 
+		mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+
 		mSeekBar = (SeekBar) findViewById(R.id.seekBar);
 		mTime = (TextView) findViewById(R.id.time);
 		mCaptionSwitch = (CheckBox) findViewById(R.id.captionSwitch);
 		mCaptionContainer = findViewById(R.id.captionContainer);
 		mCaptionList = (ListView) findViewById(R.id.captionList);
 		mPauseButton = (ImageButton)findViewById(R.id.pause);
+		mOsd = (TextView) findViewById(R.id.osd);
+
+		mOsd.setVisibility(View.GONE);
 
 		mCaptionSwitch.setOnClickListener(mOnClickListener);
 		mCaptionList.setOnItemClickListener(new OnItemClickListener() {
@@ -92,10 +108,102 @@ public class PlayerControllerView extends FrameLayout {
 			}
 		});
 
+		// ジェスチャーで音量調整
+		mGestureDetector = new GestureDetector(getContext(), new GestureDetector.OnGestureListener() {
+			final int CONTROL_LIGHT = 1;
+			final int CONTROL_VOL = 2;
+			int		mControlTarget;
+			float	mTotalDistance;
+			int		mDistanceUnit = (int)Math.max(1, 16 * getContext().getResources().getDisplayMetrics().density);
+
+			@Override
+			public boolean onSingleTapUp(MotionEvent e) {
+				return false;
+			}
+
+			@Override
+			public void onShowPress(MotionEvent e) {
+			}
+
+			@Override
+			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+					float distanceY) {
+				//Log.v(TAG, "onScroll distanceY:" + distanceY);
+
+				mTotalDistance += distanceY;
+
+				if (Math.abs(mTotalDistance) < mDistanceUnit) {
+					return true;
+				}
+				int direction = (int)(mTotalDistance / mDistanceUnit);
+				mTotalDistance -= direction * mDistanceUnit;
+
+				switch (mControlTarget) {
+				case CONTROL_VOL:
+					while (direction != 0) {
+						mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
+								direction > 0 ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER,
+								0);
+						if (direction > 0) direction--;
+						else direction++;
+					}
+
+					int vol = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+					int volMax = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+					int volPercent = vol * 100 / volMax;
+					showOsd(getContext().getString(R.string.volumeOsd, volPercent));
+					break;
+				case CONTROL_LIGHT:
+					float screenBrightness = mPlayer.getScreenBrightness();
+					float newScreenBrightness = screenBrightness + (direction / 20f);
+					newScreenBrightness = Math.max(0.02f, Math.min(1, newScreenBrightness));
+					if (screenBrightness != newScreenBrightness) {
+						int percent = (int)(newScreenBrightness * 100);
+						showOsd(getContext().getString(R.string.screenBrightnessOsd, percent));
+						mPlayer.setScreenBrightness(newScreenBrightness);
+					}
+					break;
+				}
+				return true;
+			}
+
+			@Override
+			public void onLongPress(MotionEvent e) {
+			}
+
+			@Override
+			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+					float velocityY) {
+				return false;
+			}
+
+			@Override
+			public boolean onDown(MotionEvent e) {
+				int x = (int) e.getX();
+				int width = getWidth();
+				mControlTarget = 0;
+				mTotalDistance = 0;
+				if (x < width / 3) {
+					mControlTarget = CONTROL_LIGHT;
+				} else if (x > width * 2 / 3) {
+					mControlTarget = CONTROL_VOL;
+				}
+				return mControlTarget != 0;
+			}
+		});
+
 		for (int id: PLAYER_BUTTONS) {
 			findViewById(id).setOnClickListener(mOnClickListener);
 		}
 		updateIntervalTimer();
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if (true) {
+			return mGestureDetector.onTouchEvent(event);
+		}
+		return super.onTouchEvent(event);
 	}
 
 	public void setCaptions(Caption [] captions) {
@@ -253,5 +361,27 @@ public class PlayerControllerView extends FrameLayout {
 			mCaptionContainer.setVisibility(View.GONE);
 		}
 	}
+
+	private void showOsd(CharSequence text) {
+		mOsd.setText(text);
+		mOsd.clearAnimation();
+		mOsd.setVisibility(View.VISIBLE);
+
+		if (mOsdCloseAnimation == null) {
+			mOsdCloseAnimation = new AlphaAnimation(1, 0);
+			mOsdCloseAnimation.setDuration(400);
+		}
+
+		mHandler.removeCallbacks(mHideOsdRunnable);
+		mHandler.postDelayed(mHideOsdRunnable, 1 * DateUtils.SECOND_IN_MILLIS);
+	}
+
+	Runnable mHideOsdRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mOsd.startAnimation(mOsdCloseAnimation);
+			mOsd.setVisibility(View.GONE);
+		}
+	};
 
 }

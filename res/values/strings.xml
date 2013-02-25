@@ -19,7 +19,9 @@
     
     <string name="url">URL</string>
     <string name="urlSummary">http://x.x.x.x/</string>
-    
+
+    <string name="volumeOsd">音量 %d%%</string>
+    <string name="screenBrightnessOsd">明るさ %d%%</string>
     <string name="user">ガラポンID</string>
     <string name="password">パスワード</string>
     <string name="empty">空</string>

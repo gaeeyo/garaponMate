@@ -1,5 +1,6 @@
 package jp.syoboi.android.garaponmate.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -11,6 +12,8 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -56,12 +59,17 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	Program			mProgram;
 
 	PlayerViewInterface	mPlayer;
+	Window			mWindow;
 
 	public PlayerView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		if (isInEditMode()) {
 			return;
+		}
+
+		if (context instanceof Activity) {
+			mWindow = ((Activity)context).getWindow();
 		}
 
 		inflate(context, R.layout.player_view, this);
@@ -539,4 +547,20 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			}
 		}
 	};
+
+	public float getScreenBrightness() {
+		if (mWindow != null) {
+			return mWindow.getAttributes().screenBrightness;
+		}
+		return 1;
+	}
+
+	public void setScreenBrightness(float brightness) {
+		if (mWindow != null) {
+			WindowManager.LayoutParams lp = mWindow.getAttributes();
+			lp.screenBrightness = brightness;
+			mWindow.setAttributes(lp);
+
+		}
+	}
 }
