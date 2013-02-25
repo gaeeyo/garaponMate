@@ -20,3 +20,5 @@
 #}
 
 -keep class * extends java.lang.Throwable
+-optimizationpasses 5
+-keepattributes SourceFile,LineNumberTable
