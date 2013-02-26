@@ -193,7 +193,7 @@ public class BroadcastingView extends FrameLayout {
 		long hourLineStart = t.toMillis(true);
 
 		final Paint paint = mPaint;
-		long now = System.currentTimeMillis();
+		long now = Utils.currentTimeMillisJp();
 		int tableTop = mTable.getTop();
 
 		paint.setStyle(Style.FILL);
@@ -274,6 +274,7 @@ public class BroadcastingView extends FrameLayout {
 			}
 		}
 
+
 		long sec = 60 * 1000 - (now % (60 * 1000));
 		Log.v(TAG, "post invalidate " + sec + "msec");
 		postInvalidateDelayed(sec);
@@ -286,7 +287,7 @@ public class BroadcastingView extends FrameLayout {
 
 	boolean checkExpire() {
 		if (mItems != null) {
-			long now = System.currentTimeMillis();
+			long now = Utils.currentTimeMillisJp();
 			for (Program p: mItems) {
 				if (p.startdate + p.duration < now) {
 					return true;

@@ -41,7 +41,7 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 		try {
 			SearchParam param = mSearchParam;
 
-			long now = System.currentTimeMillis();
+			long now = Utils.currentTimeMillisJp();
 
 			boolean setRange = false;
 			SearchResult cache = getCache(mCacheFile);

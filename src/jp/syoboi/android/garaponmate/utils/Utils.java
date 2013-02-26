@@ -4,6 +4,7 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
@@ -30,6 +31,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -208,6 +210,7 @@ public class Utils {
 	}
 
 	static Time sTime = new Time();
+
 	public static String formatDateTime(long time) {
 		synchronized (sTime) {
 			sTime.set(time);
@@ -215,6 +218,16 @@ public class Utils {
 					"%04d-%02d-%02d %02d:%02d:%02d",
 					sTime.year, sTime.month + 1, sTime.monthDay,
 					sTime.hour, sTime.minute, sTime.second);
+
+		}
+	}
+
+	public static String formatTime(long time) {
+		synchronized (sTime) {
+			sTime.set(time);
+			return String.format(Locale.ENGLISH,
+					"%d:%02d",
+					sTime.hour, sTime.minute);
 
 		}
 	}
@@ -275,6 +288,14 @@ public class Utils {
 		}
 	}
 
+	public static long TIMEZONE_JP_OFFSET = (int) (9 * DateUtils.HOUR_IN_MILLIS);
+
+	public static long currentTimeMillisJp() {
+		long time = System.currentTimeMillis();
+
+		time += -TimeZone.getDefault().getRawOffset() + TIMEZONE_JP_OFFSET;
+		return time;
+	}
 
 	static MessageDigest 		SHA1_ENCODER;
 	static final StringBuilder	SHA1_BUF = new StringBuilder();

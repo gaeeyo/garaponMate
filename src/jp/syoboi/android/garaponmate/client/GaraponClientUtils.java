@@ -27,6 +27,7 @@ import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.ProgramList;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.data.SearchParam.PostMatcher;
+import jp.syoboi.android.garaponmate.utils.Utils;
 
 import org.json.JSONException;
 
@@ -124,7 +125,7 @@ public class GaraponClientUtils {
 	public static SearchResult searchNowBroadcasting() throws Exception {
 
 		SearchParam param = new SearchParam();
-		long now = System.currentTimeMillis();
+		long now = Utils.currentTimeMillisJp();
 		param.count = 50;
 		param.searchTime = SearchParam.STIME_END;
 		param.sdate = now;
