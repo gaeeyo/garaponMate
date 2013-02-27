@@ -31,9 +31,12 @@ import jp.syoboi.android.garaponmate.activity.MainActivity;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.fragment.ErrorDialogFragment;
+import jp.syoboi.android.garaponmate.service.DownloadService;
 import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class MainBaseFragment extends ListFragment {
+
+	private static final String TAG = "MainBaseFragment";
 
 	private static final IntentFilter sIntentFilter = new IntentFilter();
 
@@ -196,7 +199,15 @@ public class MainBaseFragment extends ListFragment {
 		}
 	}
 
-	protected static void downloadProgram(Activity activity, Program p) {
+	protected static void downloadProgram(Activity activity, final Program p) {
+
+		Intent i = new Intent(activity, DownloadService.class);
+		i.setAction(Intent.ACTION_INSERT);
+		i.putExtra(App.EXTRA_PROGRAM, p);
+		activity.startService(i);
+	}
+
+	protected static void downloadProgram_old(Activity activity, Program p) {
 		String url = "http://" + Prefs.getGaraponHost() + "/cgi-bin/play/ts.cgi?file="
 				+ p.ch.ch + "/" + p.gtvid + ".ts";
 

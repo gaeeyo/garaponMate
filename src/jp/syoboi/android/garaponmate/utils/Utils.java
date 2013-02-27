@@ -27,6 +27,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -322,4 +325,12 @@ public class Utils {
 			return SHA1_BUF.toString();
 		}
 	}
+
+	public static HttpURLConnection openConnection(String url) throws MalformedURLException, IOException {
+		HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
+		con.setConnectTimeout(10*1000);
+		con.setReadTimeout(10*1000);
+		return con;
+	}
+
 }

@@ -297,4 +297,9 @@ public class GaraponClientUtils {
 		}
 		return "Empty";
 	}
+
+	public static String getM3uUrl(String gtvid) {
+		return GaraponClient.getM3uUrl(Prefs.getGaraponHost(),
+				gtvid, Prefs.getCommonSessionId());
+	}
 }

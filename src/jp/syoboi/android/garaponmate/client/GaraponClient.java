@@ -579,6 +579,13 @@ public class GaraponClient {
 		}
 	}
 
+	public static String getM3uUrl(String host, String gtvid, String sessionId) {
+		return "http://" + host
+				+ "/cgi-bin/play/m3u8.cgi?"
+				+ gtvid
+				+ "-" + sessionId;
+	}
+
 	static HttpURLConnection openConnection(String url) throws MalformedURLException, IOException {
 		HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
 		con.setConnectTimeout(10*1000);

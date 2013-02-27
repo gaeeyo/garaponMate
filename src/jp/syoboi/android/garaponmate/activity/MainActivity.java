@@ -419,11 +419,7 @@ public class MainActivity extends Activity  {
 
 
 	public void playVideoExternal(Program p) {
-		Uri uri = Uri.parse("http://" + Prefs.getGaraponHost()
-				+ "/cgi-bin/play/m3u8.cgi?"
-				+ p.gtvid
-				+ "-" + Prefs.getCommonSessionId());
-
+		Uri uri = Uri.parse(GaraponClientUtils.getM3uUrl(p.gtvid));
 		Intent i = new Intent(Intent.ACTION_VIEW);
 		i.setDataAndType(uri, "application/vnd.apple.mpegurl");
 		startActivity(i);
