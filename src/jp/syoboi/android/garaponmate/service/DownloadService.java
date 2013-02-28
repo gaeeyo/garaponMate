@@ -88,7 +88,7 @@ public class DownloadService extends Service {
 						}
 					};
 					mTaskMap.put(id, task);
-					task.execute();
+					task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 				}
 			}
 			else if (Intent.ACTION_DELETE.equals(action)) {
@@ -164,7 +164,7 @@ public class DownloadService extends Service {
 			Intent intent = new Intent(mContext, DialogActivity.class);
 			intent.setAction(App.ACTION_DOWNLOAD_NOTIFICATION_CLICKED);
 			intent.putExtra(App.EXTRA_PROGRAM, mProgram);
-			mPi = PendingIntent.getActivity(mContext, 1, intent,
+			mPi = PendingIntent.getActivity(mContext, id, intent,
 					PendingIntent.FLAG_UPDATE_CURRENT);
 
 		}
