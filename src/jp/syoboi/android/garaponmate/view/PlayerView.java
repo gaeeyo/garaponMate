@@ -1,9 +1,12 @@
 package jp.syoboi.android.garaponmate.view;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -35,6 +38,11 @@ import jp.syoboi.android.garaponmate.task.SearchTask;
 public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	private static final String TAG = "PlayerView";
+
+	@SuppressLint("InlinedApi")
+	private static final int FULLSCREEN_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+			| View.SYSTEM_UI_FLAG_FULLSCREEN
+			| View.SYSTEM_UI_FLAG_LOW_PROFILE;
 
 	private static final int INTERVAL = 500;
 	private static final int CHANGE_FULLSCREEN_DELAY = 5 * 1000;
@@ -95,11 +103,11 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 
 		setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+			@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 			@Override
 			public void onSystemUiVisibilityChange(int visibility) {
-				final int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 				if (mFullScreen) {
-					if ((visibility & FS_FLAGS) == 0) {
+					if ((visibility & FULLSCREEN_FLAGS) == 0) {
 						// フルスクリーンが解除された
 						cancelFullScreen();
 						startFullScreenDelay();
@@ -115,6 +123,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent ev) {
+		boolean handled = super.dispatchTouchEvent(ev);
 		switch (ev.getAction() & MotionEvent.ACTION_MASK) {
 		case MotionEvent.ACTION_DOWN:
 			cancelFullScreen();
@@ -125,8 +134,20 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			}
 			break;
 		}
-		return super.dispatchTouchEvent(ev);
+		return handled;
 	}
+
+//	@Override
+//	public boolean onTouchEvent(MotionEvent ev) {
+//		switch (ev.getAction() & MotionEvent.ACTION_MASK) {
+//		case MotionEvent.ACTION_UP:
+//			if (!mFullScreen) {
+//				setFullScreen(true);
+//			}
+//			return true;
+//		}
+//		return super.onTouchEvent(ev);
+//	}
 
 	void togglePause() {
 		mPause = !mPause;
@@ -485,21 +506,18 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	 * @param fullScreen
 	 */
 	public void setFullScreen(boolean fullScreen) {
-		int FS_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_LOW_PROFILE;
 		View view = this;
 
 		int systemUiVisibility = view.getSystemUiVisibility();
 		if (fullScreen) {
 			if (Prefs.isFullScreen()) {
-				systemUiVisibility |= FS_FLAGS;
+				systemUiVisibility |= FULLSCREEN_FLAGS;
 			}
 			mFullScreen = true;
 			showToolbar(false);
 		} else {
-			if (mFullScreen || (systemUiVisibility & FS_FLAGS) != 0) {
-				systemUiVisibility &= ~FS_FLAGS;
+			if (mFullScreen || (systemUiVisibility & FULLSCREEN_FLAGS) != 0) {
+				systemUiVisibility &= ~FULLSCREEN_FLAGS;
 				mFullScreen = false;
 				showToolbar(true);
 			}

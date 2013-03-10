@@ -118,6 +118,10 @@ public class PlayerControllerView extends FrameLayout {
 
 			@Override
 			public boolean onSingleTapUp(MotionEvent e) {
+//				Log.d("", "onSingleTapUp " + mPlayer.isFullScreen());
+				if (!mPlayer.isFullScreen()) {
+					mPlayer.setFullScreen(true);
+				}
 				return false;
 			}
 
@@ -188,6 +192,7 @@ public class PlayerControllerView extends FrameLayout {
 				} else if (x > width * 2 / 3) {
 					mControlTarget = CONTROL_VOL;
 				}
+//				Log.d("", "onDown " + mPlayer.isFullScreen());
 				return mControlTarget != 0;
 			}
 		});
@@ -200,10 +205,10 @@ public class PlayerControllerView extends FrameLayout {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (true) {
+//		if (true) {
 			return mGestureDetector.onTouchEvent(event);
-		}
-		return super.onTouchEvent(event);
+//		}
+//		return super.onTouchEvent(event);
 	}
 
 	public void setCaptions(Caption [] captions) {
