@@ -16,7 +16,7 @@
     <string name="loginCompleted">ログインしました</string>
     <string name="useSyoboiServer">再生履歴を送信</string>
     <string name="useSyoboiServerSummary">GaraponMate開発者のサーバに再生履歴を送信し、各端末で再生履歴を共有します。タップすると説明画面が開きます。その先で認証を行うと利用可能になります。</string>
-    
+    <string name="fullScreen">フルスクリーン</string>
     <string name="url">URL</string>
     <string name="urlSummary">http://x.x.x.x/</string>
 

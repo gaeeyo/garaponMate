@@ -28,6 +28,7 @@ public class Prefs {
 	private static final String PROG_SEARCH_LIST = "progSearchList";
 
 	private static final String START_PAGE = "startPage";
+	private static final String FULL_SCREEN = "fullScreen";
 
 	public static final String USE_SYOBOI_SERVER = "useSyoboiServer";
 	private static final String SYOBOI_TOKEN = "syoboiToken";
@@ -193,5 +194,9 @@ public class Prefs {
 			return sPrefs.getString(SYOBOI_TOKEN, "");
 		}
 		return "";
+	}
+
+	public static boolean isFullScreen() {
+		return sPrefs.getBoolean(FULL_SCREEN, true);
 	}
 }

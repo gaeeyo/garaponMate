@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import jp.syoboi.android.garaponmate.App;
+import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.activity.MainActivity;
 import jp.syoboi.android.garaponmate.client.GaraponClient;
@@ -491,7 +492,9 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 		int systemUiVisibility = view.getSystemUiVisibility();
 		if (fullScreen) {
-			systemUiVisibility |= FS_FLAGS;
+			if (Prefs.isFullScreen()) {
+				systemUiVisibility |= FS_FLAGS;
+			}
 			mFullScreen = true;
 			showToolbar(false);
 		} else {

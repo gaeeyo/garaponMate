@@ -13,18 +13,23 @@
             android:title="@string/password" />
     </PreferenceCategory>
     <!-- 再生 -->
-    <PreferenceCategory
-        android:title="@string/player">
+    <PreferenceCategory android:title="@string/player" >
+        <!-- 再生方法 -->
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/playerEntries"
             android:entryValues="@array/playerEntryValues"
             android:key="player"
             android:title="@string/player" />
+
+        <!-- フルスクリーン -->
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="fullScreen"
+            android:title="@string/fullScreen" />
     </PreferenceCategory>
     <!-- syoboi.jp -->
-    <PreferenceCategory
-        android:title="@string/syoboi">
+    <PreferenceCategory android:title="@string/syoboi" >
         <CheckBoxPreference
             android:key="useSyoboiServer"
             android:summary="@string/useSyoboiServerSummary"
@@ -34,8 +39,9 @@
     <!-- android:key="searchListSettings" -->
     <!-- android:title="@string/searchListSettings" /> -->
 
-<!--     <PreferenceCategory android:title="@string/help" > -->
-<!--         <jp.syoboi.android.garaponmate.preference.HelpPreference /> -->
-<!--     </PreferenceCategory> -->
+
+    <!-- <PreferenceCategory android:title="@string/help" > -->
+    <!-- <jp.syoboi.android.garaponmate.preference.HelpPreference /> -->
+    <!-- </PreferenceCategory> -->
 
 </PreferenceScreen>
