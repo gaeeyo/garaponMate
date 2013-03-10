@@ -34,6 +34,7 @@ import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.task.SearchTask;
+import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
@@ -187,20 +188,16 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		}
 	}
 
-
-
 	public void showToolbar(boolean show) {
-		if (show) {
-			mPlayerOverlay.setVisibility(View.VISIBLE);
-			mTitleBar.setVisibility(View.VISIBLE);
-		} else {
-			mTitleBar.setVisibility(View.GONE);
-			mPlayerOverlay.setVisibility(View.GONE);
-		}
-	}
-
-	public boolean isToolbarShown() {
-		return mTitleBar.getVisibility() == View.VISIBLE;
+//		if (show) {
+//			mPlayerOverlay.setVisibility(View.VISIBLE);
+//			mTitleBar.setVisibility(View.VISIBLE);
+//		} else {
+//			mTitleBar.setVisibility(View.GONE);
+//			mPlayerOverlay.setVisibility(View.GONE);
+//		}
+		Utils.showAnimation(mTitleBar, 0, -1, show);
+		Utils.showAnimation(mPlayerOverlay, 0, 0, show);
 	}
 
 	View.OnClickListener mOnClickListener = new View.OnClickListener() {
