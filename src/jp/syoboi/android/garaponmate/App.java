@@ -16,7 +16,11 @@ import jp.syoboi.android.garaponmate.data.GenreGroupList;
 import jp.syoboi.android.garaponmate.data.ImageLoader;
 import jp.syoboi.android.garaponmate.data.SearchParamList;
 
+import com.deploygate.sdk.DeployGate;
+
 public class App extends Application {
+
+	public static final String TAG = "App";
 
 	public static boolean DEBUG = false;
 	public static String VERSION = "?";
@@ -63,6 +67,8 @@ public class App extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		DeployGate.install(this, null, true);
 
 		GenreGroupList.getInstance(this);
 
