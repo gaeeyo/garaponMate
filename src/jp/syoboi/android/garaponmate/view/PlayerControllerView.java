@@ -193,7 +193,7 @@ public class PlayerControllerView extends FrameLayout {
 					mControlTarget = CONTROL_VOL;
 				}
 //				Log.d("", "onDown " + mPlayer.isFullScreen());
-				return mControlTarget != 0;
+				return true; // mControlTarget != 0;
 			}
 		});
 
