@@ -239,4 +239,13 @@ public class PlayerWebView implements PlayerViewInterface {
 	public int getCurrentPos() {
 		return 0;
 	}
+
+	@Override
+	public void setSound(String lr) {
+	}
+
+	@Override
+	public boolean isSetSoundAvailable() {
+		return false;
+	}
 }

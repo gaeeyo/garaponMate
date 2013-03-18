@@ -302,6 +302,10 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	}
 
 	public void setVideo(Program p, int playerId) {
+		if (App.DEBUG) {
+			Log.d(TAG, "m3u: " + GaraponClientUtils.getM3uUrl(p.gtvid));
+		}
+
 		setProgram(p);
 		startFullScreenDelay();
 		setVideoInternal(p.gtvid, playerId);
@@ -579,6 +583,12 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			lp.screenBrightness = brightness;
 			mWindow.setAttributes(lp);
 
+		}
+	}
+
+	public void setSound(String lr) {
+		if (mPlayer != null) {
+			mPlayer.setSound(lr);
 		}
 	}
 }

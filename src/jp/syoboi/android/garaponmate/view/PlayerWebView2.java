@@ -290,4 +290,14 @@ public class PlayerWebView2 implements PlayerViewInterface {
 			}
 		}
 	}
+
+	@Override
+	public void setSound(String lr) {
+		playerCtrl(true, "method:setSound", lr);
+	}
+
+	@Override
+	public boolean isSetSoundAvailable() {
+		return false;
+	}
 }

@@ -30,6 +30,7 @@ public class PlayerVideoView implements PlayerViewInterface {
 	String		mPendingId;
 	PlayerViewCallback	mCallback;
 	Resources	mResources;
+	MediaPlayer	mMediaPlayer;
 
 	public PlayerVideoView(Context context, PlayerViewCallback callback) {
 		mResources = context.getResources();
@@ -54,6 +55,7 @@ public class PlayerVideoView implements PlayerViewInterface {
 
 			@Override
 			public void onPrepared(MediaPlayer mp) {
+				mMediaPlayer = mp;
 
 				if (mPendingId != null) {
 					mPause = false;
@@ -248,5 +250,25 @@ public class PlayerVideoView implements PlayerViewInterface {
 			return mCurPos;
 		}
 		return mVideoView.getCurrentPosition();
+	}
+
+	@Override
+	public void setSound(String lr) {
+		if (mMediaPlayer != null) {
+			if ("L".equals(lr)) {
+				mMediaPlayer.setVolume(1, 0);
+			}
+			else if ("R".equals(lr)) {
+				mMediaPlayer.setVolume(0, 1);
+			}
+			else {
+				mMediaPlayer.setVolume(1, 1);
+			}
+		}
+	}
+
+	@Override
+	public boolean isSetSoundAvailable() {
+		return false;
 	}
 }

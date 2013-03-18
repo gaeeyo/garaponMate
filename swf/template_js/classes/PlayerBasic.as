@@ -382,6 +382,22 @@ class PlayerBasic
 	{
 		this._ns.seek(Math.max(0, this._ns.time + pOffset));
 	}
+	
+	/**
+	 * Sound
+	 */
+	public function setSound(lr:String)
+	{
+		var transform:Object;
+		if (lr == "L") {
+			transform = {ll:100, lr:100, rl:0, rr:0};
+		} else if (lr == "R") {
+			transform = {ll:0, lr:0, rl:100, rr:100};
+		} else {
+			transform = {ll:100, lr:0, rl:0, rr:100};
+		}
+		this._sound.setTransform(transform);
+	}
 	/*========================== END = PUBLIC = END ==========================*/
 	/*========================================================================*/
 }

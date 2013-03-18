@@ -414,6 +414,13 @@ class TemplateJS extends ATemplate
 	{
 		this.controller.seek(Number(pOffset));
 	}
+	/**
+	 * Sound
+	 */
+	public function set setSound(lr: String)
+	{
+		this.controller.setSound(lr);
+	}
 	/*=================== END = JAVASCRIPT CONTROLS = END ====================*/
 	/*========================================================================*/
 }

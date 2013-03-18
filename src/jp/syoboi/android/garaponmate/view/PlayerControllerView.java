@@ -16,6 +16,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -35,6 +36,7 @@ public class PlayerControllerView extends FrameLayout {
 	private static final String TAG = "PlayerControllerView";
 
 	private static final int [] PLAYER_BUTTONS = { R.id.pause, R.id.previous, R.id.rew, R.id.ff, R.id.next };
+	private static final int [] SOUND_ICONS = { R.drawable.ic_sound_s, R.drawable.ic_sound_l, R.drawable.ic_sound_r };
 	private static final int INTERVAL = 500;
 
 	ImageButton		mPauseButton;
@@ -45,6 +47,7 @@ public class PlayerControllerView extends FrameLayout {
 	TextView		mTime;
 	TextView		mOsd;
 	PlayerView		mPlayer;
+	ImageView		mSound;
 	Handler			mHandler = new Handler();
 	int				mDuration;
 	int				mCurPos;
@@ -55,6 +58,7 @@ public class PlayerControllerView extends FrameLayout {
 
 	CaptionAdapter	mCaptionAdapter;
 	AudioManager	mAudioManager;
+	int				mSoundValue;
 
 	public PlayerControllerView(Context context, AttributeSet attrs, PlayerView pv) {
 		super(context, attrs);
@@ -72,6 +76,7 @@ public class PlayerControllerView extends FrameLayout {
 		mCaptionList = (ListView) findViewById(R.id.captionList);
 		mPauseButton = (ImageButton)findViewById(R.id.pause);
 		mOsd = (TextView) findViewById(R.id.osd);
+		mSound = (ImageView) findViewById(R.id.sound);
 
 		mOsd.setVisibility(View.GONE);
 
@@ -105,6 +110,18 @@ public class PlayerControllerView extends FrameLayout {
 				if (fromUser) {
 					mPlayer.seek(progress);
 				}
+			}
+		});
+
+		mSound.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mSoundValue++;
+				if (mSoundValue >= SOUND_ICONS.length) {
+					mSoundValue = 0;
+				}
+				mSound.setImageResource(SOUND_ICONS[mSoundValue]);
+				mPlayer.setSound("SLR".substring(mSoundValue, mSoundValue+1));
 			}
 		});
 

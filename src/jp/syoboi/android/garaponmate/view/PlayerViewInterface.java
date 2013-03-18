@@ -15,4 +15,6 @@ public interface PlayerViewInterface {
 	public int getCurrentPos();
 	public void jump(int msec);
 	public View getView();
+	public void setSound(String lr);
+	public boolean isSetSoundAvailable();
 }
