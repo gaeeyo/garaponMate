@@ -41,9 +41,17 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	private static final String TAG = "PlayerView";
 
 	@SuppressLint("InlinedApi")
-	private static final int FULLSCREEN_FLAGS = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-			| View.SYSTEM_UI_FLAG_FULLSCREEN
-			| View.SYSTEM_UI_FLAG_LOW_PROFILE;
+	private static final int FULLSCREEN_FLAGS_14 =
+			View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LOW_PROFILE;
+	@SuppressLint("InlinedApi")
+	private static final int FULLSCREEN_FLAGS_16 =
+			View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+	private static final int FULLSCREEN_FLAGS = 0
+			| (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH
+					? FULLSCREEN_FLAGS_14 : 0)
+			| (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
+					? FULLSCREEN_FLAGS_16 : 0);
 
 	private static final int INTERVAL = 500;
 	private static final int CHANGE_FULLSCREEN_DELAY = 5 * 1000;
@@ -108,7 +116,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			@Override
 			public void onSystemUiVisibilityChange(int visibility) {
 				if (mFullScreen) {
-					if ((visibility & FULLSCREEN_FLAGS) == 0) {
+					if ((visibility & FULLSCREEN_FLAGS) != FULLSCREEN_FLAGS) {
 						// フルスクリーンが解除された
 						cancelFullScreen();
 						startFullScreenDelay();
@@ -514,8 +522,10 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			if (Prefs.isFullScreen()) {
 				systemUiVisibility |= FULLSCREEN_FLAGS;
 			}
-			mFullScreen = true;
-			showToolbar(false);
+			if (mFullScreen != fullScreen) {
+				mFullScreen = true;
+				showToolbar(false);
+			}
 		} else {
 			if (mFullScreen || (systemUiVisibility & FULLSCREEN_FLAGS) != 0) {
 				systemUiVisibility &= ~FULLSCREEN_FLAGS;
@@ -523,8 +533,23 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 				showToolbar(true);
 			}
 		}
+		setActivityFullScreen(fullScreen);
 		view.setSystemUiVisibility(systemUiVisibility);
 		mPlayerOverlay.onPlayerStateChanged();
+	}
+
+	void setActivityFullScreen(boolean fullScreen) {
+		Context context = getContext();
+		if (context instanceof Activity) {
+			Activity a = (Activity) context;
+
+			int fsFlag = WindowManager.LayoutParams.FLAG_FULLSCREEN;
+			if (fullScreen) {
+				a.getWindow().addFlags(fsFlag);
+			} else {
+				a.getWindow().clearFlags(fsFlag);
+			}
+		}
 	}
 
 	public void updateControls() {

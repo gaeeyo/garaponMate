@@ -222,10 +222,10 @@ public class PlayerControllerView extends FrameLayout {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-//		if (true) {
+		if (!mPlayer.isFullScreen()) {
 			return mGestureDetector.onTouchEvent(event);
-//		}
-//		return super.onTouchEvent(event);
+		}
+		return false;
 	}
 
 	public void setCaptions(Caption [] captions) {
@@ -234,6 +234,9 @@ public class PlayerControllerView extends FrameLayout {
 	}
 
 	public void setProgram(Program p) {
+		if (p == null) {
+			return ;
+		}
 		mDuration = (int) p.duration;
 		if (p.duration != 0) {
 			mTime.setText(getTimeStr(mDuration));
@@ -319,7 +322,7 @@ public class PlayerControllerView extends FrameLayout {
 	Runnable	mIntervalRunnable = new Runnable() {
 		@Override
 		public void run() {
-			if (mPlayer != null) {
+			if (mPlayer != null && mPlayer.mPlayer != null) {
 				if (App.DEBUG) {
 					Log.d(TAG, "updateControls");
 				}

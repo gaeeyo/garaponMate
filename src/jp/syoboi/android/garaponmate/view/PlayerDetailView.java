@@ -30,6 +30,10 @@ public class PlayerDetailView extends FrameLayout {
 	}
 
 	public void setProgram(Program p) {
+		if (p == null) {
+			return;
+		}
+
 		Context context = getContext();
 		Resources res = context.getResources();
 

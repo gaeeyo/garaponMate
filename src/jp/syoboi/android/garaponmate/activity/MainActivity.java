@@ -1,5 +1,6 @@
 package jp.syoboi.android.garaponmate.activity;
 
+import android.animation.LayoutTransition;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
@@ -22,7 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -71,6 +72,7 @@ public class MainActivity extends Activity  {
 	boolean			mResumed;
 	int				mPage;
 	MainPagerAdapter	mPagerAdapter;
+	boolean			mShowPlayer;
 
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
@@ -165,8 +167,6 @@ public class MainActivity extends Activity  {
 		}
 		ab.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		updateMainContainer();
-
 		mPlayerClose.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -201,10 +201,6 @@ public class MainActivity extends Activity  {
 			}
 		});
 
-
-
-//		navigateFav("fav0");
-//		loginBackground();
 		int page = PAGE_PAGER;
 
 		if (savedInstanceState != null) {
@@ -221,6 +217,13 @@ public class MainActivity extends Activity  {
 			}
 		}
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+			LayoutTransition lt = new LayoutTransition();
+			lt.setDuration(250);
+			mMainContainer.setLayoutTransition(lt);
+		}
+
+		updateMainContainer();
 	}
 
 
@@ -334,28 +337,6 @@ public class MainActivity extends Activity  {
 			if (fm.getBackStackEntryCount() > 0) {
 				if (fm.getBackStackEntryCount() == 1) {
 					switchPage(PAGE_PAGER);
-//					Animation anim = mSearchPage.getAnimation();
-//					if (anim != null) {
-//						anim.setAnimationListener(new AnimationListener() {
-//
-//							@Override
-//							public void onAnimationStart(Animation animation) {
-//								// TODO Auto-generated method stub
-//
-//							}
-//
-//							@Override
-//							public void onAnimationRepeat(Animation animation) {
-//								// TODO Auto-generated method stub
-//
-//							}
-//
-//							@Override
-//							public void onAnimationEnd(Animation animation) {
-//								getFragmentManager().popBackStack();
-//							}
-//						});
-//					}
 				} else {
 				}
 				getFragmentManager().popBackStack();
@@ -404,7 +385,12 @@ public class MainActivity extends Activity  {
 
 		mPlayer.setVideo(p, playerId);
 
-		expandPlayer(false);
+		if (mShowPlayer) {
+			expandPlayer(false);
+		} else {
+			mShowPlayer = true;
+			expandPlayer(true);
+		}
 	}
 
 	public void playVideo(Program p) {
@@ -413,8 +399,9 @@ public class MainActivity extends Activity  {
 
 	public void closePlayer() {
 		mPlayer.destroy();
+		mShowPlayer = false;
 		expandPlayer(false);
-		mPlayer.setVisibility(View.GONE);
+		updatePlayerContainerSize();
 	}
 
 
@@ -443,9 +430,7 @@ public class MainActivity extends Activity  {
 
 		mPlayerClose.setVisibility(expand ? View.GONE : View.VISIBLE);
 
-		mPlayer.setVisibility(View.VISIBLE);
 		mPlayer.showToolbar(expand);
-		mContentsContainer.setVisibility(expand ? View.GONE : View.VISIBLE);
 
 		updatePlayerContainerSize();
 	}
@@ -455,8 +440,6 @@ public class MainActivity extends Activity  {
 	 */
 	void updateMainContainer() {
 
-		updatePlayerContainerSize();
-
 		switch (getResources().getConfiguration().orientation) {
 		case Configuration.ORIENTATION_LANDSCAPE:
 			mMainContainer.setOrientation(LinearLayout.HORIZONTAL);
@@ -465,27 +448,23 @@ public class MainActivity extends Activity  {
 			mMainContainer.setOrientation(LinearLayout.VERTICAL);
 			break;
 		}
+		updatePlayerContainerSize();
 	}
 
 	/**
 	 * 分割表示痔のPlayerの幅と高さを設定
 	 */
 	void updatePlayerContainerSize() {
-		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)mPlayer.getLayoutParams();
-		switch (getResources().getConfiguration().orientation) {
-		case Configuration.ORIENTATION_LANDSCAPE:
-			lp.width = mPlayerExpanded
-					? LayoutParams.MATCH_PARENT
-					: getResources().getDisplayMetrics().widthPixels / 3;
-			lp.height = LayoutParams.MATCH_PARENT;
-			break;
-		default:
-			lp.width = LayoutParams.MATCH_PARENT;
-			lp.height = mPlayerExpanded
-				? LayoutParams.MATCH_PARENT
-				: getResources().getDisplayMetrics().heightPixels / 3;
-			break;
-		}
+
+		boolean landscape = Configuration.ORIENTATION_LANDSCAPE == getResources().getConfiguration().orientation;
+		LinearLayout.LayoutParams contentslp = (LinearLayout.LayoutParams)mContentsContainer.getLayoutParams();
+		LinearLayout.LayoutParams playerLp = (LinearLayout.LayoutParams)mPlayer.getLayoutParams();
+
+		contentslp.width = playerLp.width = landscape ? 0 : LayoutParams.MATCH_PARENT;
+		contentslp.height = playerLp.height = landscape ? LayoutParams.MATCH_PARENT : 0;
+
+		mPlayer.setVisibility(mShowPlayer ? View.VISIBLE : View.GONE);
+		mContentsContainer.setVisibility(mPlayerExpanded ? View.GONE : View.VISIBLE);
 	}
 
 
