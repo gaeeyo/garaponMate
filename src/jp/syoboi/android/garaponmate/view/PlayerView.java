@@ -545,7 +545,9 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 			int fsFlag = WindowManager.LayoutParams.FLAG_FULLSCREEN;
 			if (fullScreen) {
-				a.getWindow().addFlags(fsFlag);
+				if (Prefs.isFullScreen()) {
+					a.getWindow().addFlags(fsFlag);
+				}
 			} else {
 				a.getWindow().clearFlags(fsFlag);
 			}
