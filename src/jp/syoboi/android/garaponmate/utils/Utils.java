@@ -9,6 +9,10 @@ import android.text.format.Time;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 
@@ -240,18 +244,18 @@ public class Utils {
 		float y1 = show ? fromY : 0;
 		float y2 = show ? 0 : fromY;
 
-//		AnimationSet animSet = new AnimationSet(true);
-//		animSet.addAnimation(new AlphaAnimation(a1, a2));
-//		animSet.addAnimation(new TranslateAnimation(
-//				Animation.RELATIVE_TO_SELF, x1,
-//				Animation.RELATIVE_TO_SELF, x2,
-//				Animation.RELATIVE_TO_SELF, y1,
-//				Animation.RELATIVE_TO_SELF, y2));
-//		animSet.setDuration(250);
-//		v.startAnimation(animSet);
-		//v.setVisibility(show ? View.VISIBLE : View.GONE);
-		v.setVisibility(View.VISIBLE);
-		v.animate().alpha(a2).setDuration(250);
+		AnimationSet animSet = new AnimationSet(true);
+		animSet.addAnimation(new AlphaAnimation(a1, a2));
+		animSet.addAnimation(new TranslateAnimation(
+				Animation.RELATIVE_TO_SELF, x1,
+				Animation.RELATIVE_TO_SELF, x2,
+				Animation.RELATIVE_TO_SELF, y1,
+				Animation.RELATIVE_TO_SELF, y2));
+		animSet.setDuration(250);
+		v.setVisibility(show ? View.VISIBLE : View.GONE);
+		v.startAnimation(animSet);
+//		v.setVisibility(View.VISIBLE);
+//		v.animate().alpha(a2).setDuration(250);
 	}
 
 	public static void objectToFile(File f, Serializable obj) throws FileNotFoundException, IOException {
