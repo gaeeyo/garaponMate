@@ -45,16 +45,10 @@ public class GaraponClientUtils {
 	public static HashMap<String,String> loginWeb()
 			throws MalformedURLException, NoSuchAlgorithmException, GaraponClientException, IOException, JSONException, URISyntaxException {
 
-		SharedPreferences prefs = Prefs.getInstance();
-
-		// user, pass 設定を取得
-		String user = prefs.getString(Prefs.USER, null);
-		String pass = prefs.getString(Prefs.PASSWORD, null);
-
 		String host = ensureAuth();
 
 		// 自分のガラポンWebにログインしてcookieを取得
-		HashMap<String,String> cookies = GaraponClient.loginWeb(host, user, pass);
+		HashMap<String,String> cookies = GaraponClient.loginWeb(host, Prefs.getUserId(), Prefs.getPassword());
 
 		Prefs.setGaraponAuth(cookies.get("GaraponAuth"));
 
@@ -62,18 +56,13 @@ public class GaraponClientUtils {
 	}
 
 	public static void login() throws NoSuchAlgorithmException, IOException, JSONException, NotFoundException, GaraponClientException {
-		SharedPreferences prefs = Prefs.getInstance();
-
-		// user, pass 設定を取得
-		String user = prefs.getString(Prefs.USER, null);
-		String pass = prefs.getString(Prefs.PASSWORD, null);
 
 		String host = ensureAuth();
 
 		// login が同時に実行された場合に1度しか認証が実行されないようにする
 		synchronized (TAG) {
 			if (sGtvSession == null) {
-				String gtvsessionid = GaraponClient.login(host, user, pass);
+				String gtvsessionid = GaraponClient.login(host, Prefs.getUserId(), Prefs.getPassword());
 				sGtvSession = gtvsessionid;
 				Prefs.setGtvSessionId(gtvsessionid);
 			}
@@ -81,9 +70,8 @@ public class GaraponClientUtils {
 	}
 
 	static synchronized String ensureAuth() throws MalformedURLException, NoSuchAlgorithmException, NotFoundException, IOException, GaraponClientException {
-		SharedPreferences prefs = Prefs.getInstance();
-		String user = prefs.getString(Prefs.USER, null);
-		String pass = prefs.getString(Prefs.PASSWORD, null);
+		String user = Prefs.getUserId();
+		String pass = Prefs.getPassword();
 
 		if (REFRESH_AUTH || Prefs.isEmptyIpAdr()) {
 			return auth(user, pass);
@@ -93,7 +81,7 @@ public class GaraponClientUtils {
 		}
 	}
 
-	static String auth(String user, String pass)
+	public static String auth(String user, String pass)
 			throws MalformedURLException, NoSuchAlgorithmException, IOException, NotFoundException, GaraponClientException {
 
 		SharedPreferences prefs = Prefs.getInstance();

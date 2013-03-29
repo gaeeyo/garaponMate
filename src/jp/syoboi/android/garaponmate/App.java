@@ -1,5 +1,6 @@
 package jp.syoboi.android.garaponmate;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -10,6 +11,7 @@ import android.widget.Toast;
 
 import java.io.File;
 
+import jp.syoboi.android.garaponmate.activity.LoginActivity;
 import jp.syoboi.android.garaponmate.client.GaraponClient;
 import jp.syoboi.android.garaponmate.data.ChList;
 import jp.syoboi.android.garaponmate.data.GenreGroupList;
@@ -150,4 +152,17 @@ public class App extends Application {
 		return fallback;
 	}
 
+	/**
+	 * 未認証ならLoginActivityに飛ばしてfinishする
+	 * @param a
+	 * @return
+	 */
+	public static boolean forwardLoginActivity(Activity a) {
+		if (!Prefs.isAuthorized()) {
+			LoginActivity.startActivity(a);
+			a.finish();
+			return true;
+		}
+		return false;
+	}
 }

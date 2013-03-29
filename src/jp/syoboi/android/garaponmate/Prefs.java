@@ -3,18 +3,17 @@ package jp.syoboi.android.garaponmate;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import jp.syoboi.android.garaponmate.data.ProgSearchList;
 
 public class Prefs {
+	@SuppressWarnings("unused")
 	private static final String TAG = "Prefs";
 
-	public static final String USER = "user";
-	public static final String PASSWORD = "password";
+	private static final String USER = "user";
+	private static final String PASSWORD = "password";
 
 	public static final String IP_ADDR = "ipaddr";
 	public static final String P_IP_ADDR = "pipaddr";
@@ -38,48 +37,20 @@ public class Prefs {
 
 	private static SharedPreferences sPrefs;
 
-	private static String sUser;
-	private static String sPass;
-
 	public static SharedPreferences getInstance() {
 		return sPrefs;
 	}
 
 	public static void init(Context context) {
 		sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-		sUser = sPrefs.getString(USER, null);
-		sPass = sPrefs.getString(PASSWORD, null);
-
-		sPrefs.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {
-			@Override
-			public void onSharedPreferenceChanged(SharedPreferences sp,
-					String key) {
-
-				if (USER.equals(key) || PASSWORD.equals(key)) {
-					String user = sPrefs.getString(USER, null);
-					String pass = sPrefs.getString(PASSWORD, null);
-
-					if (!TextUtils.equals(user, sUser) || !TextUtils.equals(pass, sPass)) {
-						// user, pass が変更されていたら関連する情報を削除する
-						clearSession();
-						sUser = user;
-						sPass = pass;
-					}
-				}
-			}
-		});
 	}
 
-	public static void clearSession() {
-		Log.v(TAG, "clearSession");
-		Editor editor = sPrefs.edit();
-		for (String key2: new String [] {
-				IP_ADDR, P_IP_ADDR, G_IP_ADDR, PORT, TS_PORT,
-				GARAPON_AUTH, GTV_SESSION_ID }) {
-			editor.remove(key2);
-		}
-		editor.commit();
+	/**
+	 * 認証済み?
+	 * @return
+	 */
+	public static boolean isAuthorized() {
+		return !TextUtils.isEmpty(getUserId()) && !TextUtils.isEmpty(getPassword());
 	}
 
 	public static boolean isEmptyIpAdr() {
@@ -88,6 +59,25 @@ public class Prefs {
 
 	public static String getUserId() {
 		return sPrefs.getString(USER, "");
+	}
+
+	public static String getPassword() {
+		return sPrefs.getString(PASSWORD, "");
+	}
+
+	public static void setUser(String userId, String pass) {
+		Editor editor = sPrefs.edit();
+
+		editor.putString(USER, userId)
+		.putString(PASSWORD, pass);
+
+		for (String key2: new String [] {
+				IP_ADDR, P_IP_ADDR, G_IP_ADDR, PORT, TS_PORT,
+				GARAPON_AUTH, GTV_SESSION_ID }) {
+			editor.remove(key2);
+		}
+
+		editor.commit();
 	}
 
 	private static String getIpAdr() {
@@ -198,5 +188,9 @@ public class Prefs {
 
 	public static boolean isFullScreen() {
 		return sPrefs.getBoolean(FULL_SCREEN, true);
+	}
+
+	public static void logout() {
+		setUser("", "");
 	}
 }

@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <!-- ガラポンTVのアカウント -->
-    <PreferenceCategory android:title="@string/account" >
-        <EditTextPreference
-            android:key="user"
-            android:singleLine="true"
-            android:title="@string/user" />
-        <EditTextPreference
-            android:key="password"
-            android:singleLine="true"
-            android:title="@string/password" />
-    </PreferenceCategory>
     <!-- 再生 -->
     <PreferenceCategory android:title="@string/player" >
+
         <!-- 再生方法 -->
         <ListPreference
             android:defaultValue="0"
@@ -43,5 +33,15 @@
     <!-- <PreferenceCategory android:title="@string/help" > -->
     <!-- <jp.syoboi.android.garaponmate.preference.HelpPreference /> -->
     <!-- </PreferenceCategory> -->
+
+
+    <!-- アカウント -->
+    <PreferenceCategory android:title="@string/account" >
+
+        <!-- ログアウト -->
+        <Preference
+            android:key="logout"
+            android:title="@string/logout" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

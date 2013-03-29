@@ -19,6 +19,8 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <!-- メイン -->
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"
@@ -30,10 +32,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- ログイン -->
+        <activity
+            android:name=".activity.LoginActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"
+            android:label="@string/login" >
+<!--             <intent-filter> -->
+<!--                 <action android:name="android.intent.action.MAIN" /> -->
+<!--             </intent-filter> -->
+        </activity>
+        <!-- 設定 -->
         <activity
             android:name=".activity.SettingActivity"
             android:label="@string/settings"
             android:theme="@android:style/Theme.Holo.Light" />
+        <!-- 検索リスト -->
         <activity
             android:name=".activity.ProgSearchListActivity"
             android:label="@string/searchListSettings"
@@ -44,6 +57,7 @@
                 <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             </intent-filter>
         </activity>
+        <!-- 単体プレイヤー -->
         <activity
             android:name=".activity.PlayerActivity"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"

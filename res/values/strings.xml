@@ -8,11 +8,14 @@
     <string name="add">追加</string>
     <string name="help">ヘルプ</string>
     <string name="account">アカウント</string>
+    <string name="logout">ログアウト</string>
     <string name="syoboi">syoboi.jp</string>
     <string name="play">再生</string>
     <string name="delete">削除</string>
     <string name="deleteSearchParam">検索条件を削除</string>
     <string name="reload">再読み込み</string>
+    <string name="login">ログイン</string>
+    <string name="confirmLogout">ログアウトしますか?</string>
     <string name="loginCompleted">ログインしました</string>
     <string name="useSyoboiServer">再生履歴を送信</string>
     <string name="useSyoboiServerSummary">GaraponMate開発者のサーバに再生履歴を送信し、各端末で再生履歴を共有します。タップすると説明画面が開きます。その先で認証を行うと利用可能になります。</string>
@@ -91,6 +94,7 @@
     </string-array>
     
     <string name="settingsWarning">設定でガラポンTVのID、パスワードを設定してください</string>
+    <string name="errFormEmpty">入力してください</string>
     
     <string name="searchCondition">検索条件</string>
     <string name="searchConditionEmpty">「キーワード」「チャンネル」「ジャンル」「お気に入りのみ」のどれかを必ず設定する必要があります</string>

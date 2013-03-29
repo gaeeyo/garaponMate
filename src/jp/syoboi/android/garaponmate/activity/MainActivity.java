@@ -57,6 +57,12 @@ public class MainActivity extends Activity  {
 	private static final int PAGE_PAGER = 0;
 	private static final int PAGE_SEARCH = 1;
 
+	public static void startActivity(Activity a) {
+		Intent i = new Intent(a, MainActivity.class);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		a.startActivity(i);
+	}
+
 
 	Handler			mHandler = new Handler();
 	LinearLayout	mMainContainer;
@@ -74,10 +80,22 @@ public class MainActivity extends Activity  {
 	MainPagerAdapter	mPagerAdapter;
 	boolean			mShowPlayer;
 
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		if (App.forwardLoginActivity(this)) {
+			return;
+		}
+	}
+
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		if (App.forwardLoginActivity(this)) {
+			return;
+		}
 
 //		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);

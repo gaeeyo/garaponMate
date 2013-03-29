@@ -8,8 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,6 +34,7 @@ import jp.syoboi.android.garaponmate.utils.Utils;
 
 public class MainBaseFragment extends ListFragment {
 
+	@SuppressWarnings("unused")
 	private static final String TAG = "MainBaseFragment";
 
 	private static final IntentFilter sIntentFilter = new IntentFilter();
@@ -46,23 +45,6 @@ public class MainBaseFragment extends ListFragment {
 		sIntentFilter.addAction(App.ACTION_REFRESH);
 		sIntentFilter.addAction(App.ACTION_HISTORY_UPDATED);
 	}
-
-	private boolean 	mNeedReload;
-
-	OnSharedPreferenceChangeListener	mPrefsChangeListener = new OnSharedPreferenceChangeListener() {
-
-		@Override
-		public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-				String key) {
-			if (Prefs.USER.equals(key) || Prefs.PASSWORD.equals(key)) {
-				if (isResumed()) {
-					reload();
-				} else {
-					mNeedReload = true;
-				}
-			}
-		}
-	};
 
 	private BroadcastReceiver	mReceiver = new BroadcastReceiver() {
 		@Override
@@ -78,13 +60,11 @@ public class MainBaseFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Prefs.getInstance().registerOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver, sIntentFilter);
 	}
 
 	@Override
 	public void onDestroy() {
-		Prefs.getInstance().unregisterOnSharedPreferenceChangeListener(mPrefsChangeListener);
 		LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mReceiver);
 		super.onDestroy();
 	}
@@ -97,15 +77,6 @@ public class MainBaseFragment extends ListFragment {
 
 	public CharSequence getTitle() {
 		return "";
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		if (mNeedReload) {
-			mNeedReload = false;
-			reload();
-		}
 	}
 
 	public void reload() {
