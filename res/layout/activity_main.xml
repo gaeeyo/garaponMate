@@ -6,8 +6,8 @@
 
     <jp.syoboi.android.garaponmate.view.PlayerView
         android:id="@+id/player"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dip"
+        android:layout_height="0dip"
         android:background="#ff000000"
         android:visibility="gone" >
 
@@ -18,11 +18,11 @@
 
         <ImageButton
             android:id="@+id/playerClose"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dip"
+            android:layout_height="48dip"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:layout_margin="8dip"
+            android:layout_margin="0dip"
             android:background="@drawable/transparent_button_bg_dark"
             android:src="@drawable/ic_menu_close_clear_cancel" />
     </jp.syoboi.android.garaponmate.view.PlayerView>
