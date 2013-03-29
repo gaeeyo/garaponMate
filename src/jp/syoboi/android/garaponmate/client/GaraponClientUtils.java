@@ -276,7 +276,7 @@ public class GaraponClientUtils {
 		}
 		if (p.durationMin != 0 && p.durationMax != 0) {
 			sb.append(separator)
-			.append(context.getString(R.string.durationMinFmt,
+			.append(context.getString(R.string.durationMinMaxFmt,
 					p.durationMin / DateUtils.MINUTE_IN_MILLIS,
 					p.durationMax / DateUtils.MINUTE_IN_MILLIS));
 		}
