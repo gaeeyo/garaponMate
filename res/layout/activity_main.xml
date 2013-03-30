@@ -28,9 +28,10 @@
             android:src="@drawable/ic_menu_close_clear_cancel" />
     </jp.syoboi.android.garaponmate.view.PlayerView>
 
-    <RelativeLayout
+    <FrameLayout
         android:id="@+id/contentsContainer"
         android:layout_weight="7"
+        android:foreground="@drawable/ab_solid_shadow_holo"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
@@ -58,6 +59,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone" />
-    </RelativeLayout>
+    </FrameLayout>
 
 </LinearLayout>
