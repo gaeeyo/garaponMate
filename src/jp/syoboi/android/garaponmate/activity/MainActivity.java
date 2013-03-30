@@ -368,6 +368,12 @@ public class MainActivity extends Activity  {
 			return;
 		}
 
+		// プレイヤーが表示されていたら閉じる
+		if (mShowPlayer) {
+			closePlayer();
+			return;
+		}
+
 		if (mPage == PAGE_SEARCH) {
 			FragmentManager fm = getFragmentManager();
 			if (fm.getBackStackEntryCount() > 0) {
