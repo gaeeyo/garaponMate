@@ -11,6 +11,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 
+import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.SyoboiClient;
@@ -79,7 +80,7 @@ public class SettingActivity extends PreferenceActivity {
 			.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					Prefs.logout();
+					App.from(SettingActivity.this).logout();
 					MainActivity.startActivity(SettingActivity.this);
 					finish();
 				}

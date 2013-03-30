@@ -111,16 +111,33 @@ public class App extends Application {
 		return toast;
 	}
 
-	public static File getSearchResultCache(Context context, long id) {
-		File dir = new File(context.getCacheDir(), "search");
-//		File dir = new File(context.getExternalCacheDir(), "search");
+	public File getSearchResultCacheDir() {
+		File dir = new File(getCacheDir(), "search");
 		dir.mkdirs();
-		return new File(dir, String.valueOf(id));
+		return dir;
 	}
 
-	public static void deleteSearchResultCache(Context context, long id) {
-		File f = getSearchResultCache(context, id);
+	public File getSearchResultCacheFile(long id) {
+		return new File(getSearchResultCacheDir(), String.valueOf(id));
+	}
+
+	public void deleteSearchResultCacheFile(long id) {
+		File f = getSearchResultCacheFile(id);
 		f.delete();
+	}
+
+	public void clearSeachResultCache() {
+		try {
+			File dir = getSearchResultCacheDir();
+			File [] files = dir.listFiles();
+			if (files != null) {
+				for (File f: files) {
+					f.delete();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static SearchParamList getSearchParamList() {
@@ -165,5 +182,10 @@ public class App extends Application {
 			return true;
 		}
 		return false;
+	}
+
+	public void logout() {
+		Prefs.logout();
+		clearSeachResultCache();
 	}
 }

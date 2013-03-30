@@ -156,7 +156,7 @@ public class SearchListFragment extends MainBaseFragment {
 				if (sp.id == 0) {
 					search(sp);
 				} else {
-					App.deleteSearchResultCache(getActivity(), sp.id);
+					App.from(getActivity()).deleteSearchResultCacheFile(sp.id);
 					refreshAll();
 				}
 			}

@@ -32,7 +32,7 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 //		mLoadFromCache = loadFromCache;
 
 		if (loadFromCache && param.id != 0 && param.page == 1) {
-			mCacheFile = App.getSearchResultCache(mContext, param.id);
+			mCacheFile = App.from(mContext).getSearchResultCacheFile(param.id);
 		}
 	}
 
