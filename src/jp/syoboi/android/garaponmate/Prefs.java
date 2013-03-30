@@ -123,6 +123,7 @@ public class Prefs {
 		.putString(G_IP_ADDR, result.get("gipaddr"))
 		.putString(TS_PORT, result.get("port2"))
 		.putString(GTV_VER, result.get("gtvver"))
+		.remove(GTV_SESSION_ID)
 		.commit();
 	}
 
