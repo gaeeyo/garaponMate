@@ -341,7 +341,7 @@ public class GaraponWebFragment extends MainBaseFragment {
 
 				if (result instanceof Throwable) {
 					// ログインエラー時はダイアログ表示
-					ErrorDialogFragment.show(getFragmentManager(), (Throwable)result);
+					showError((Throwable)result);
 				}
 				else if (result instanceof HashMap<?,?>) {
 

@@ -229,6 +229,10 @@ public class PlayerWebView2 implements PlayerViewInterface {
 		String html = sTemplate.replace("\"{JSOBJ}\"", mJsObjId)
 				.replace("{RTMP}", rtmp)
 				.replace("{FLV}", flvPath);
+		if (App.DEBUG) {
+			Log.v(TAG, "url: " + rtmp);
+			Log.v(TAG, "flv: " + flvPath);
+		}
 		mWebView.loadDataWithBaseURL(Prefs.getBaseUrl(),
 				html, "text/html", "UTF-8", null);
 	}

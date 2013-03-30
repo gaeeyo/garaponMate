@@ -235,8 +235,7 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 				}
 
 				if (result instanceof Throwable) {
-					ErrorDialogFragment.show(getFragmentManager(),
-							(Throwable)result);
+					showError((Throwable)result);
 				}
 				else if (result instanceof SearchResult) {
 					SearchResult sr = (SearchResult)result;

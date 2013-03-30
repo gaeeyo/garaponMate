@@ -46,6 +46,8 @@ public class MainBaseFragment extends ListFragment {
 		sIntentFilter.addAction(App.ACTION_HISTORY_UPDATED);
 	}
 
+	Throwable	mError;
+
 	private BroadcastReceiver	mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -206,5 +208,23 @@ public class MainBaseFragment extends ListFragment {
 		req.setDescription(path.getPath());
 		req.setDestinationUri(Uri.fromFile(path));
 		dm.enqueue(req);
+	}
+
+	public void showError(Throwable error) {
+		if (isResumed()) {
+			mError = null;
+			ErrorDialogFragment.show(getFragmentManager(),
+					error);
+		} else {
+			mError = error;
+		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		if (mError != null) {
+			showError(mError);
+		}
 	}
 }
