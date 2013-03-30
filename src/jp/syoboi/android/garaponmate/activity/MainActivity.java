@@ -23,6 +23,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -97,6 +99,7 @@ public class MainActivity extends Activity  {
 			return;
 		}
 
+		requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
 //		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 
@@ -119,7 +122,6 @@ public class MainActivity extends Activity  {
 		mPagerAdapter = new MainPagerAdapter(
 				getFragmentManager(), getApplicationContext());
 		mViewPager.setAdapter(mPagerAdapter);
-
 
 		TabListener tabListener = new TabListener() {
 
@@ -215,6 +217,22 @@ public class MainActivity extends Activity  {
 					return true;
 				} else {
 					return false;
+				}
+			}
+		});
+
+		mMainContainer.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+
+			@Override
+			public void onGlobalLayout() {
+//				Log.v("", "actionBarHeight:" +  getActionBar().getHeight());
+				ActionBar ab = getActionBar();
+				View v = mMainContainer;
+				int abHeight = ab.isShowing() ? ab.getHeight() : 0;
+
+				if (v.getPaddingTop() != abHeight) {
+					mMainContainer.setPadding(v.getPaddingLeft(), abHeight,
+							v.getPaddingRight(), v.getPaddingBottom());
 				}
 			}
 		});
