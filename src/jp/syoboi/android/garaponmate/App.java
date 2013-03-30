@@ -89,6 +89,7 @@ public class App extends Application {
 
 		Prefs.init(this);
 		GaraponClient.init(this);
+		GaraponClient.setVersion(Prefs.getGtvVer());
 	}
 
 	public synchronized ImageLoader getImageLoader() {

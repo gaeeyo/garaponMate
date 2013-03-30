@@ -1,7 +1,6 @@
 package jp.syoboi.android.garaponmate.client;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources.NotFoundException;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -45,10 +44,11 @@ public class GaraponClientUtils {
 	public static HashMap<String,String> loginWeb()
 			throws MalformedURLException, NoSuchAlgorithmException, GaraponClientException, IOException, JSONException, URISyntaxException {
 
-		String host = ensureAuth();
+		ensureAuth();
 
 		// 自分のガラポンWebにログインしてcookieを取得
-		HashMap<String,String> cookies = GaraponClient.loginWeb(host, Prefs.getUserId(), Prefs.getPassword());
+		HashMap<String,String> cookies = GaraponClient.loginWeb(
+				Prefs.getGaraponHost(), Prefs.getUserId(), Prefs.getPassword());
 
 		Prefs.setGaraponAuth(cookies.get("GaraponAuth"));
 
@@ -57,53 +57,39 @@ public class GaraponClientUtils {
 
 	public static void login() throws NoSuchAlgorithmException, IOException, JSONException, NotFoundException, GaraponClientException {
 
-		String host = ensureAuth();
+		ensureAuth();
 
 		// login が同時に実行された場合に1度しか認証が実行されないようにする
 		synchronized (TAG) {
 			if (sGtvSession == null) {
-				String gtvsessionid = GaraponClient.login(host, Prefs.getUserId(), Prefs.getPassword());
+				String gtvsessionid = GaraponClient.login(
+						Prefs.getGaraponHost(), Prefs.getUserId(), Prefs.getPassword());
 				sGtvSession = gtvsessionid;
 				Prefs.setGtvSessionId(gtvsessionid);
 			}
 		}
 	}
 
-	static synchronized String ensureAuth() throws MalformedURLException, NoSuchAlgorithmException, NotFoundException, IOException, GaraponClientException {
+	static synchronized void ensureAuth() throws MalformedURLException, NoSuchAlgorithmException, NotFoundException, IOException, GaraponClientException {
 		String user = Prefs.getUserId();
 		String pass = Prefs.getPassword();
 
 		if (REFRESH_AUTH || Prefs.isEmptyIpAdr()) {
-			return auth(user, pass);
-		}
-		else {
-			return Prefs.getGaraponHost();
+			auth(user, pass);
 		}
 	}
 
-	public static String auth(String user, String pass)
+	public static void auth(String user, String pass)
 			throws MalformedURLException, NoSuchAlgorithmException, IOException, NotFoundException, GaraponClientException {
-
-		SharedPreferences prefs = Prefs.getInstance();
 
 		HashMap<String, String> result = GaraponClient.auth(user, pass);
 
-		String ipaddr = result.get("ipaddr");
-		String port = result.get("port");
-
 		// 取得した情報を保存
-		prefs.edit()
-		.putString(Prefs.IP_ADDR, ipaddr)
-		.putString(Prefs.P_IP_ADDR, result.get("pipaddr"))
-		.putString(Prefs.G_IP_ADDR, result.get("gipaddr"))
-		.putString(Prefs.PORT, port)
-		.putString(Prefs.TS_PORT, result.get("port2"))
-		.commit();
+		Prefs.setAuthResult(result);
+		GaraponClient.setVersion(Prefs.getGtvVer());
 
 		REFRESH_AUTH = false;
 		sGtvSession = null;
-
-		return ipaddr + ":" + port;
 	}
 
 	/**

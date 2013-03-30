@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jp.syoboi.android.garaponmate.App;
+import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.ProgramList;
@@ -49,9 +50,14 @@ public class GaraponClient {
 	public static final String AUTH_URL = "http://garagw.garapon.info/getgtvaddress";
 
 	public static final String WEB_LOGIN_PATH = "/";
-	public static final String LOGIN_PATH = "/gapi/v2/auth";
-	public static final String SEARCH_PATH = "/gapi/v2/search";
-	public static final String FAVORITE_PATH = "/gapi/v2/favorite";
+
+	public static final String LOGIN_PATH = "auth";
+	public static final String SEARCH_PATH = "search";
+	public static final String FAVORITE_PATH = "favorite";
+
+	private static final String API_BASE_V2 = "/gapi/v2/";
+	private static final String API_BASE_V3 = "/gapi/v3/";
+	public static String API_BASE = API_BASE_V2;
 
 	public static final int LOGIN_SUCCESS = 1;
 
@@ -66,6 +72,25 @@ public class GaraponClient {
 
 	public static void init(Context context) {
 		sResources = context.getApplicationContext().getResources();
+	}
+
+	public static void setVersion(String gtvver) {
+		if (TextUtils.equals(gtvver, "GTV3.0")) {
+			API_BASE = API_BASE_V3;
+		} else {
+			API_BASE = API_BASE_V2;
+		}
+	}
+
+	public static String getRTMPPath(String gtvid) {
+		String path;
+		if (API_BASE == API_BASE_V3) {
+			path = gtvid + "-" + Prefs.getCommonSessionId() + "-1";
+		}
+		else {
+			path = gtvid.substring(6,8) + "/" + gtvid + ".ts-" + Prefs.getCommonSessionId();
+		}
+		return path;
 	}
 
 	/**
@@ -150,7 +175,7 @@ public class GaraponClient {
 			Log.i(TAG, "ガラポンTVログイン");
 		}
 
-		HttpURLConnection con = openConnection("http://" + host + LOGIN_PATH);
+		HttpURLConnection con = openConnection("http://" + host + API_BASE + LOGIN_PATH);
 		try {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
@@ -339,7 +364,7 @@ public class GaraponClient {
 		}
 
 		HttpURLConnection con = openConnection(
-				"http://" + ipaddr + SEARCH_PATH
+				"http://" + ipaddr + API_BASE + SEARCH_PATH
 				+ "?gtvsession=" + sessionId);
 
 		try {
@@ -416,7 +441,7 @@ public class GaraponClient {
 		}
 
 		HttpURLConnection con = openConnection(
-				"http://" + ipaddr + FAVORITE_PATH
+				"http://" + ipaddr + API_BASE + FAVORITE_PATH
 				+ "?gtvsession=" + sessionId);
 
 		try {

@@ -6,6 +6,8 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import java.util.HashMap;
+
 import jp.syoboi.android.garaponmate.data.ProgSearchList;
 
 public class Prefs {
@@ -15,6 +17,7 @@ public class Prefs {
 	private static final String USER = "user";
 	private static final String PASSWORD = "password";
 
+	private static final String GTV_VER = "gtvver";
 	public static final String IP_ADDR = "ipaddr";
 	public static final String P_IP_ADDR = "pipaddr";
 	public static final String G_IP_ADDR = "gipaddr";
@@ -110,6 +113,21 @@ public class Prefs {
 		} else {
 			return getIpAdr();
 		}
+	}
+
+	public static void setAuthResult(HashMap<String,String> result) {
+		sPrefs.edit()
+		.putString(IP_ADDR, result.get("ipaddr"))
+		.putString(PORT, result.get("port"))
+		.putString(P_IP_ADDR, result.get("pipaddr"))
+		.putString(G_IP_ADDR, result.get("gipaddr"))
+		.putString(TS_PORT, result.get("port2"))
+		.putString(GTV_VER, result.get("gtvver"))
+		.commit();
+	}
+
+	public static String getGtvVer() {
+		return sPrefs.getString(GTV_VER, "");
 	}
 
 	public static String getBaseUrl() {

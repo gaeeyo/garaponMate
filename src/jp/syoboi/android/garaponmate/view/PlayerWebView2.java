@@ -20,6 +20,7 @@ import java.io.StringWriter;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
+import jp.syoboi.android.garaponmate.client.GaraponClient;
 
 /**
  * カスタマイズしたFlashのMediaPlayerを使った PlayerView
@@ -221,7 +222,7 @@ public class PlayerWebView2 implements PlayerViewInterface {
 	}
 
 	private void setVideoInternal(String id) {
-		String flvPath = id.substring(6,8) + "/" + id + ".ts-" + Prefs.getCommonSessionId();
+		String flvPath = GaraponClient.getRTMPPath(id);
 
 		String rtmp = "rtmp://" + Prefs.getGaraponTsHost() + "/";
 
