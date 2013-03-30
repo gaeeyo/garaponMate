@@ -368,12 +368,6 @@ public class MainActivity extends Activity  {
 			return;
 		}
 
-		// プレイヤーが表示されていたら閉じる
-		if (mShowPlayer) {
-			closePlayer();
-			return;
-		}
-
 		if (mPage == PAGE_SEARCH) {
 			FragmentManager fm = getFragmentManager();
 			if (fm.getBackStackEntryCount() > 0) {
@@ -390,6 +384,14 @@ public class MainActivity extends Activity  {
 			switchPage(PAGE_PAGER);
 			return;
 		}
+
+		// プレイヤーが表示されていたら閉じる
+		if (mShowPlayer) {
+			closePlayer();
+			return;
+		}
+
+
 //		//ページが戻れる状態だったら戻る
 //		if (mWebView.canGoBack()) {
 //			mWebView.goBack();
