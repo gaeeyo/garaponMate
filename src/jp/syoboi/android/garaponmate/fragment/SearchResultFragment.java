@@ -138,6 +138,8 @@ public class SearchResultFragment extends MainBaseFragment {
 		updateTitle();
 		mSearchParam.page = mPage;
 		mSearchParam.count = PAGE_COUNT;
+
+		getListView().requestFocus();
 	}
 
 	@Override

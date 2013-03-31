@@ -10,11 +10,13 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.provider.SearchRecentSuggestions;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.SyoboiClient;
+import jp.syoboi.android.garaponmate.provider.MySearchSuggestionsProvider;
 
 public class SettingActivity extends PreferenceActivity {
 
@@ -46,6 +48,24 @@ public class SettingActivity extends PreferenceActivity {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				showDialog(DLG_CONFIRM_LOGOUT);
+				return true;
+			}
+		});
+
+		findPreference("clearSearchHistory").setOnPreferenceClickListener(new OnPreferenceClickListener() {
+
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				preference.setEnabled(false);
+
+		        SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
+		        		SettingActivity.this,
+		                MySearchSuggestionsProvider.AUTHORITY,
+		                MySearchSuggestionsProvider.MODE);
+		        suggestions.clearHistory();
+		        App.from(getApplicationContext()).showToast(
+		        		getString(R.string.clearSearchHistoryCompleted));
+
 				return true;
 			}
 		});

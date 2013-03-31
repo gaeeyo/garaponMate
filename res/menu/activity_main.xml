@@ -5,8 +5,7 @@
         android:id="@+id/search"
         android:actionViewClass="android.widget.SearchView"
         android:icon="@drawable/ic_search_light"
-        android:imeOptions="flagNoFullscreen"
-        android:showAsAction="always"
+        android:showAsAction="ifRoom"
         android:title="@string/search"/>
     <item
         android:id="@+id/settings"

@@ -9,6 +9,8 @@ import android.app.ActionBar.TabListener;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.SearchManager;
+import android.app.SearchableInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -16,6 +18,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.SearchRecentSuggestions;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
@@ -30,7 +33,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
@@ -45,6 +47,7 @@ import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.fragment.SearchResultFragment;
+import jp.syoboi.android.garaponmate.provider.MySearchSuggestionsProvider;
 import jp.syoboi.android.garaponmate.service.PlayerService;
 import jp.syoboi.android.garaponmate.view.PlayerView;
 
@@ -88,6 +91,7 @@ public class MainActivity extends Activity  {
 		if (App.forwardLoginActivity(this)) {
 			return;
 		}
+		handleIntent(intent);
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
@@ -174,6 +178,7 @@ public class MainActivity extends Activity  {
 			}
 		});
 
+		// ActionBar
 		ActionBar ab = getActionBar();
 //		ab.setDisplayShowTitleEnabled(false);
 		ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_HOME);
@@ -260,9 +265,14 @@ public class MainActivity extends Activity  {
 		}
 
 		updateMainContainer();
+		handleIntent(getIntent());
 	}
 
-
+	void handleIntent(Intent intent) {
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+			doSearch(intent.getStringExtra(SearchManager.QUERY));
+		}
+	}
 
 	@Override
 	protected void onDestroy() {
@@ -313,16 +323,24 @@ public class MainActivity extends Activity  {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
+
+		// SearchView の設定
 		SearchView sv = (SearchView) menu.findItem(R.id.search).getActionView();
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-			sv.setImeOptions(EditorInfo.IME_ACTION_SEARCH | EditorInfo.IME_FLAG_NO_FULLSCREEN);
+
+		// タブレットのときは検索窓がデフォルトで広がった状態にする
+		if (getResources().getBoolean(R.bool.tablet)) {
+			sv.setIconifiedByDefault(false);
 		}
+
+		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+		SearchableInfo si = searchManager.getSearchableInfo(getComponentName());
+		sv.setSearchableInfo(si);
+
 		sv.setOnQueryTextListener(new OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
-				SearchParam sp = new SearchParam();
-				sp.keyword = query;
-				search(sp);
+				doSearch(query);
+
 				return false;
 			}
 			@Override
@@ -330,6 +348,7 @@ public class MainActivity extends Activity  {
 				return false;
 			}
 		});
+
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -572,6 +591,26 @@ public class MainActivity extends Activity  {
 		}
 	}
 
+	/**
+	 * キーワードを指定して検索を実行
+	 * @param query
+	 */
+	private void doSearch(String query) {
+		SearchParam sp = new SearchParam();
+		sp.keyword = query;
+		search(sp);
+
+		SearchRecentSuggestions srs = new SearchRecentSuggestions(
+				MainActivity.this,
+				MySearchSuggestionsProvider.AUTHORITY,
+				MySearchSuggestionsProvider.MODE);
+		srs.saveRecentQuery(query, null);
+	}
+
+	/**
+	 * 検索パラメータを指定して検索を実行
+	 * @param searchParam
+	 */
 	public void search(SearchParam searchParam) {
 		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 		imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);

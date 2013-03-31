@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
-        android:name=".App"
+        android:name="jp.syoboi.android.garaponmate.App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -22,7 +22,7 @@
 
         <!-- メイン -->
         <activity
-            android:name=".activity.MainActivity"
+            android:name="jp.syoboi.android.garaponmate.activity.MainActivity"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"
             android:label="@string/app_name"
             android:launchMode="singleTask" >
@@ -31,24 +31,32 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/search_garapon" />
         </activity>
         <!-- ログイン -->
         <activity
-            android:name=".activity.LoginActivity"
+            android:name="jp.syoboi.android.garaponmate.activity.LoginActivity"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"
             android:label="@string/login" >
-<!--             <intent-filter> -->
-<!--                 <action android:name="android.intent.action.MAIN" /> -->
-<!--             </intent-filter> -->
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <!-- 設定 -->
         <activity
-            android:name=".activity.SettingActivity"
+            android:name="jp.syoboi.android.garaponmate.activity.SettingActivity"
             android:label="@string/settings"
             android:theme="@android:style/Theme.Holo.Light" />
         <!-- 検索リスト -->
         <activity
-            android:name=".activity.ProgSearchListActivity"
+            android:name="jp.syoboi.android.garaponmate.activity.ProgSearchListActivity"
             android:label="@string/searchListSettings"
             android:theme="@android:style/Theme.Holo.Light" >
             <intent-filter>
@@ -59,17 +67,17 @@
         </activity>
         <!-- 単体プレイヤー -->
         <activity
-            android:name=".activity.PlayerActivity"
+            android:name="jp.syoboi.android.garaponmate.activity.PlayerActivity"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"
             android:launchMode="singleInstance" />
 
         <!-- ダイアログだけ表示 -->
         <activity
-            android:name=".activity.DialogActivity"
+            android:name="jp.syoboi.android.garaponmate.activity.DialogActivity"
             android:theme="@android:style/Theme.Translucent" />
 
         <!-- 認証 -->
-        <activity android:name=".activity.AuthCallbackActivity" >
+        <activity android:name="jp.syoboi.android.garaponmate.activity.AuthCallbackActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -84,11 +92,11 @@
 
         <!-- WebActivity -->
         <activity
-            android:name=".activity.WebActivity"
+            android:name="jp.syoboi.android.garaponmate.activity.WebActivity"
             android:parentActivityName=".activity.MainActivity" />
 
         <!-- BroadcastReceiver -->
-        <receiver android:name=".receiver.Receiver" >
+        <receiver android:name="jp.syoboi.android.garaponmate.receiver.Receiver" >
 
             <!-- ダウンロードマネージャからの通知 -->
             <intent-filter>
@@ -96,8 +104,15 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".service.PlayerService" />
-        <service android:name=".service.DownloadService" />
+        <service android:name="jp.syoboi.android.garaponmate.service.PlayerService" />
+        <service android:name="jp.syoboi.android.garaponmate.service.DownloadService" />
+
+        <!-- 検索のサジェスト -->
+        <provider
+            android:name=".provider.MySearchSuggestionsProvider"
+            android:authorities="jp.syoboi.android.garaponmate.SearchRecentSuggestions"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
+    <!-- 検索履歴 -->
+    <PreferenceCategory android:title="@string/general" >
+        <Preference
+            android:key="clearSearchHistory"
+            android:title="@string/clearSearchHistory" />
+    </PreferenceCategory>
+
     <!-- 再生 -->
     <PreferenceCategory android:title="@string/player" >
 
