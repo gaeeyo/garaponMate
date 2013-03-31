@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.syoboi.android.garaponmate"
-    android:versionCode="25"
-    android:versionName="0.8.1" >
+    android:versionCode="26"
+    android:versionName="0.9.0" >
 
     <uses-sdk
         android:minSdkVersion="11"
@@ -110,6 +110,13 @@
         <!-- 検索のサジェスト -->
         <provider
             android:name=".provider.MySearchSuggestionsProvider"
+            android:authorities="jp.syoboi.android.garaponmate.SearchSuggestions"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- 検索履歴のサジェスト -->
+        <provider
+            android:name=".provider.MySearchRecentSuggestionsProvider"
             android:authorities="jp.syoboi.android.garaponmate.SearchRecentSuggestions"
             android:enabled="true"
             android:exported="false" />
