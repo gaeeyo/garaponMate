@@ -184,6 +184,12 @@ public class Utils {
 	 * @return
 	 */
 	public static String createSearchTitle(String title) {
+		synchronized (TITLE_MATCHER) {
+			if (TITLE_MATCHER.reset(title).find()) {
+				return TITLE_MATCHER.group(1);
+			}
+		}
+
 		if (!TextUtils.isEmpty(title)) {
 			String newTitle = title.replaceAll("▽.*|「.*」|【.*】|#.*|～.*～|第.*?話|\\(\\d+\\)|\\[.\\]|[ 　].*|＃.*", "").trim();
 			if (!TextUtils.isEmpty(newTitle)) {
@@ -192,6 +198,8 @@ public class Utils {
 		}
 		return title;
 	}
+
+	static Matcher TITLE_MATCHER = Pattern.compile("^([^【「『]{4,})").matcher("");
 
 	public static String formatDuration(long time) {
 		time /= 1000;

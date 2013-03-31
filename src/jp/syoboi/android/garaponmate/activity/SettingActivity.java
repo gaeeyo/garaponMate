@@ -16,7 +16,7 @@ import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.SyoboiClient;
-import jp.syoboi.android.garaponmate.provider.MySearchSuggestionsProvider;
+import jp.syoboi.android.garaponmate.provider.MySearchRecentSuggestionsProvider;
 
 public class SettingActivity extends PreferenceActivity {
 
@@ -60,8 +60,8 @@ public class SettingActivity extends PreferenceActivity {
 
 		        SearchRecentSuggestions suggestions = new SearchRecentSuggestions(
 		        		SettingActivity.this,
-		                MySearchSuggestionsProvider.AUTHORITY,
-		                MySearchSuggestionsProvider.MODE);
+		                MySearchRecentSuggestionsProvider.AUTHORITY,
+		                MySearchRecentSuggestionsProvider.MODE);
 		        suggestions.clearHistory();
 		        App.from(getApplicationContext()).showToast(
 		        		getString(R.string.clearSearchHistoryCompleted));

@@ -350,7 +350,6 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		sp.gtvid = p.gtvid;
 		sp.count = 1;
 		sp.searchType = SearchParam.STYPE_CAPTION;
-		sp.video = SearchParam.VIDEO_ALL;
 
 		mSearchTask = new SearchTask(getContext(), sp, false) {
 			@Override

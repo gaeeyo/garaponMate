@@ -89,6 +89,7 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 					SearchParam param = new SearchParam();
 					param.comment = getString(R.string.searchCh, p.ch.bc);
 					param.ch = p.ch.ch;
+					param.video = 0;
 					((MainActivity)getActivity()).search(param);
 				}
 			}

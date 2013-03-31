@@ -4,7 +4,7 @@
     android:imeOptions="flagNoExtractUi|actionSearch"
     android:label="@string/app_name"
     android:searchButtonText="@string/search"
-    android:searchSuggestAuthority="jp.syoboi.android.garaponmate.SearchRecentSuggestions"
+    android:searchSuggestAuthority="jp.syoboi.android.garaponmate.SearchSuggestions"
     android:searchSuggestSelection=" ? "
     android:voiceLanguageModel="web_search"
     android:voiceSearchMode="showVoiceSearchButton|launchRecognizer" />

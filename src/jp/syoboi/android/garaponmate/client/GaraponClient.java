@@ -716,6 +716,6 @@ public class GaraponClient {
 		public long edate;
 		public int rank;
 		public int sort = SORT_STD;
-		public int video;
+		public int video = VIDEO_ALL;
 	}
 }

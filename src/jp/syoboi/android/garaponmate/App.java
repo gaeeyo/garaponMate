@@ -59,6 +59,7 @@ public class App extends Application {
 	private static ChList			sChList;
 	private static SparseIntArray	sPlayerResIdToPlayerId = getPlayerResIdToPlayerIdMap();
 
+	public static final String SEARCH_QUERY_PREFIX_CAPTION = "caption:";
 
 	private ImageLoader 		mImageLoader;
 

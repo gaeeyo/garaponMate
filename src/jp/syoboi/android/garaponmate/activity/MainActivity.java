@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +37,6 @@ import android.view.animation.ScaleAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
-import android.widget.SearchView.OnQueryTextListener;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
@@ -47,7 +47,7 @@ import jp.syoboi.android.garaponmate.client.SyoboiClientUtils;
 import jp.syoboi.android.garaponmate.data.Program;
 import jp.syoboi.android.garaponmate.data.SearchParam;
 import jp.syoboi.android.garaponmate.fragment.SearchResultFragment;
-import jp.syoboi.android.garaponmate.provider.MySearchSuggestionsProvider;
+import jp.syoboi.android.garaponmate.provider.MySearchRecentSuggestionsProvider;
 import jp.syoboi.android.garaponmate.service.PlayerService;
 import jp.syoboi.android.garaponmate.view.PlayerView;
 
@@ -336,18 +336,20 @@ public class MainActivity extends Activity  {
 		SearchableInfo si = searchManager.getSearchableInfo(getComponentName());
 		sv.setSearchableInfo(si);
 
-		sv.setOnQueryTextListener(new OnQueryTextListener() {
-			@Override
-			public boolean onQueryTextSubmit(String query) {
-				doSearch(query);
+		sv.setQueryRefinementEnabled(true);
 
-				return false;
-			}
-			@Override
-			public boolean onQueryTextChange(String newText) {
-				return false;
-			}
-		});
+//		sv.setOnQueryTextListener(new OnQueryTextListener() {
+//			@Override
+//			public boolean onQueryTextSubmit(String query) {
+//				doSearch(query);
+//
+//				return false;
+//			}
+//			@Override
+//			public boolean onQueryTextChange(String newText) {
+//				return false;
+//			}
+//		});
 
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -596,15 +598,24 @@ public class MainActivity extends Activity  {
 	 * @param query
 	 */
 	private void doSearch(String query) {
+		if (TextUtils.isEmpty(query)) {
+			return;
+		}
+
 		SearchParam sp = new SearchParam();
-		sp.keyword = query;
+		if (query.startsWith(App.SEARCH_QUERY_PREFIX_CAPTION)) {
+			sp.searchType = SearchParam.STYPE_CAPTION;
+			sp.keyword = query.substring(App.SEARCH_QUERY_PREFIX_CAPTION.length()).trim();
+		} else {
+			sp.keyword = query;
+		}
 		search(sp);
 
 		SearchRecentSuggestions srs = new SearchRecentSuggestions(
 				MainActivity.this,
-				MySearchSuggestionsProvider.AUTHORITY,
-				MySearchSuggestionsProvider.MODE);
-		srs.saveRecentQuery(query, null);
+				MySearchRecentSuggestionsProvider.AUTHORITY,
+				MySearchRecentSuggestionsProvider.MODE);
+		srs.saveRecentQuery(sp.keyword, null);
 	}
 
 	/**

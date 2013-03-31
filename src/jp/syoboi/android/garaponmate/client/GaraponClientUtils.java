@@ -105,7 +105,6 @@ public class GaraponClientUtils {
 		param.sdate = now;
 		param.edate = now + 6 * DateUtils.HOUR_IN_MILLIS;
 		param.sort = SearchParam.SORT_STA;
-		param.video = SearchParam.VIDEO_ALL;
 
 		SearchResult sr = search(param);
 
