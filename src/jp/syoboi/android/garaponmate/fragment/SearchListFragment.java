@@ -273,7 +273,13 @@ public class SearchListFragment extends MainBaseFragment {
 				publishProgress(P_START, p);
 				try {
 					final CountDownLatch cdl = new CountDownLatch(1);
-					SearchTask st = new SearchTask(mContext, p, true) {
+
+					SearchParam sp = p.clone();
+					sp.edate = System.currentTimeMillis();
+					sp.searchTime = SearchParam.STIME_START;
+					sp.page = 1;
+
+					SearchTask st = new SearchTask(mContext, sp, true) {
 						@Override
 						protected void onPostExecute(Object result) {
 							cdl.countDown();

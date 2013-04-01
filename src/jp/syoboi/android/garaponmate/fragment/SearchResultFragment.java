@@ -264,7 +264,11 @@ public class SearchResultFragment extends MainBaseFragment {
 		mSearchParam.page = mPage;
 		mLoadingRow.setLoading();
 
-		mSearchTask = new SearchTask(getActivity(), mSearchParam, false) {
+		SearchParam sp = mSearchParam.clone();
+		sp.edate = System.currentTimeMillis();
+		sp.searchTime = SearchParam.STIME_START;
+
+		mSearchTask = new SearchTask(getActivity(), sp, false) {
 			@Override
 			protected void onPostExecute(Object result) {
 				super.onPostExecute(result);
