@@ -2,6 +2,7 @@ package jp.syoboi.android.garaponmate.view;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -149,6 +150,7 @@ public class ProgramGridView extends FrameLayout {
 	}
 
 	public void setPrograms(List<Program> programs, SearchParam sp) {
+
 		if (programs == null) {
 			mPrograms = PROGRAM_EMPTY;
 		} else {
@@ -259,6 +261,7 @@ public class ProgramGridView extends FrameLayout {
 	public static class ViewHolder {
 		public Program		mProgram;
 
+		View		mRoot;
 		View		mThumbContainer;
 		TextView	mTime;
 		TextView	mDuration;
@@ -271,6 +274,7 @@ public class ProgramGridView extends FrameLayout {
 		ImageLoader	mImageLoader;
 
 		public ViewHolder(View v) {
+			mRoot = v;
 			mThumbContainer = v.findViewById(R.id.thumbContainer);
 			mTime = (TextView) v.findViewById(R.id.time);
 			mDuration = (TextView) v.findViewById(R.id.duration);
@@ -286,6 +290,19 @@ public class ProgramGridView extends FrameLayout {
 			mProgram = p;
 
 			Context context = mTime.getContext();
+
+
+			Drawable d = mRoot.getBackground();
+			if (d != null) {
+				long now = System.currentTimeMillis();
+				int backgroundLevel = 0;
+				if (TextUtils.equals(p.gtvid, PlayerView.getLatestPlayingId())) {
+					backgroundLevel = 1;
+				} else if (p.startdate <= now && now < p.startdate + p.duration){
+					backgroundLevel = 2;
+				}
+				d.setLevel(backgroundLevel);
+			}
 
 			long now = System.currentTimeMillis();
 			CharSequence timeStr;

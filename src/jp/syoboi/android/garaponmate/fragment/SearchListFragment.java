@@ -189,7 +189,12 @@ public class SearchListFragment extends MainBaseFragment {
 			if (App.ACTION_REFRESH.equals(action)) {
 				refreshAll();
 			}
-			if (App.ACTION_HISTORY_UPDATED.equals(action)) {
+			else if (App.ACTION_HISTORY_UPDATED.equals(action)) {
+				if (mAdapter != null) {
+					mAdapter.notifyDataSetChanged();
+				}
+			}
+			else {
 				if (mAdapter != null) {
 					mAdapter.notifyDataSetChanged();
 				}
