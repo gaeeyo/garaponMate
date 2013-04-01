@@ -361,7 +361,7 @@ public class MainActivity extends Activity  {
 			startSettingsActivity();
 			return true;
 		case android.R.id.home:
-			onBackPressed();
+			switchPage(PAGE_PAGER);
 			break;
 		case R.id.search:
 			break;
@@ -540,6 +540,8 @@ public class MainActivity extends Activity  {
 
 		setPageVisibility(mViewPager, page == PAGE_PAGER, 0.5f);
 		if (mPage != PAGE_SEARCH) {
+			// 検索結果からもとにもどるときは、検索のFragmentをすべて消す
+			// UPボタンを無効化
 			FragmentManager fm = getFragmentManager();
 			while (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
@@ -547,6 +549,7 @@ public class MainActivity extends Activity  {
 			getActionBar().setDisplayOptions(0, ActionBar.DISPLAY_HOME_AS_UP);
 			updateNavigationMode();
 		} else {
+			// 検索結果が表示されるときはUPボタンを有効にする
 			getActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
 			updateNavigationMode();
 		}
