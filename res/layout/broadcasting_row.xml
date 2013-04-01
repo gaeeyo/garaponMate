@@ -13,7 +13,7 @@
 
         <LinearLayout
             android:id="@+id/ch"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/transparent_button_bg_dark"
             android:clickable="true"
