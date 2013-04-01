@@ -24,9 +24,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -488,12 +488,17 @@ public class ImageLoader {
 			if (App.DEBUG) {
 				Log.v(TAG, "読み込み開始: " + url + " => " + tmpFile.getPath());
 			}
-			URLConnection connection;
+			HttpURLConnection connection;
 			try {
 				long size = 0;
 				byte[] buf = new byte[4096];
 
-				connection = new URL(url).openConnection();
+				connection = (HttpURLConnection) new URL(url).openConnection();
+
+				if (connection.getResponseCode() != 200) {
+					throw new IOException("HTTP Status " + connection.getResponseCode());
+				}
+
 //				connection.setRequestProperty("User-Agent", AppVersion.USER_AGENT);
 				InputStream is = new BufferedInputStream(
 						connection.getInputStream());
