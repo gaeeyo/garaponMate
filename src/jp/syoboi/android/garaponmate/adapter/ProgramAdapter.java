@@ -97,11 +97,9 @@ public class ProgramAdapter extends BaseAdapter {
 		}
 
 		Program p = mItems.get(position);
-		vh.bind(p, mHighlightMatcher, mHighlightBgColor, mHistories);
-
 		boolean selected = TextUtils.equals(p.gtvid, mSelection);
-		Drawable d = v.getBackground();
-		d.setLevel(selected ? 1 : 0);
+
+		vh.bind(p, mHighlightMatcher, mHighlightBgColor, mHistories, selected);
 
 		return v;
 	}
@@ -125,35 +123,67 @@ public class ProgramAdapter extends BaseAdapter {
 		TextView	mTitle;
 		TextView	mDescription;
 		TextView	mCaption;
+		TextView	mDuration;
 		MyImageView	mThumbnail;
 		int			mIndent;
 		ImageLoader	mImageLoader;
+		View		mRoot;
 
 		public ViewHolder(View v) {
+			mRoot = v;
 			mTime = (TextView) v.findViewById(R.id.time);
 			mChName = (TextView) v.findViewById(R.id.chName);
 			mTitle = (TextView) v.findViewById(R.id.title);
 			mDescription = (TextView) v.findViewById(R.id.description);
 			mCaption = (TextView) v.findViewById(R.id.caption);
 			mThumbnail = (MyImageView) v.findViewById(R.id.thumbnail);
+			mDuration = (TextView) v.findViewById(R.id.duration);
 			mImageLoader = App.from(v.getContext()).getImageLoader();
 		}
 
-		public void bind(Program p, Matcher m, int highlightColor, Histories histories) {
+		public void bind(Program p, Matcher m, int highlightColor, Histories histories, boolean selected) {
 			mProgram = p;
 
 			Context context = mTime.getContext();
 			int min = (int)(p.duration / 1000 / 60);
 
-			String timeStr = String.format(Locale.ENGLISH, "%s - %s (%d:%02d)",
+			String timeStr = String.format(Locale.ENGLISH, "%s - %s",
 					DateUtils.formatDateTime(context, p.startdate, STARTTIME_FMT),
-					DateUtils.formatDateTime(context, p.startdate + p.duration, ENDTIME_FMT),
-					min / 60, min % 60
+					DateUtils.formatDateTime(context, p.startdate + p.duration, ENDTIME_FMT)
 					);
 
 			mTime.setText(timeStr);
 			mChName.setText(Utils.convertCoolTitle(p.ch.bc));
-			mTitle.setText(deco(p.title, m, highlightColor));
+
+			long now = System.currentTimeMillis();
+			int backgroundLevel = 0;
+			if (p.startdate <= now && now < p.startdate + p.duration) {
+				Resources res = mTitle.getResources();
+
+				CharSequence cs = deco(p.title, m, highlightColor);
+				SpannableStringBuilder ssb = new SpannableStringBuilder();
+				ssb.append('[')
+				.append(res.getString(R.string.nowBroadcasting))
+				.append("] ");
+//				ssb.setSpan(
+//						new BackgroundColorSpan(res.getColor(R.color.nowStartedBackgroundColor)),
+//						0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+				backgroundLevel = 2;
+
+				ssb.append(cs);
+				mTitle.setText(ssb);
+
+			} else {
+				mTitle.setText(deco(p.title, m, highlightColor));
+			}
+
+			if (mDuration != null) {
+				mDuration.setText(Utils.formatDurationMinute(p.duration));
+			}
+
+			Drawable d = mRoot.getBackground();
+			d.setLevel(selected ? 1 : backgroundLevel);
 
 			if (TextUtils.isEmpty(p.description)) {
 				mDescription.setVisibility(View.GONE);

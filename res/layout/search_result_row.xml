@@ -38,6 +38,15 @@
         android:scaleType="fitXY" />
 
     <TextView
+        android:id="@+id/duration"
+        style="@style/thumbDurationStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/thumbnail"
+        android:layout_alignTop="@+id/thumbnail"
+        android:text="@string/duration" />
+
+    <TextView
         android:id="@+id/title"
         style="@style/titleStyle"
         android:layout_width="wrap_content"

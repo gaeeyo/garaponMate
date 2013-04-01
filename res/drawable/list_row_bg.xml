@@ -10,5 +10,11 @@
             <item android:drawable="@drawable/list_row_bg_normal"/>
         </layer-list>
     </item>
-
+    <item android:maxLevel="2">
+        <layer-list>
+            <item android:drawable="@color/nowStartedBackgroundColor"/>
+            <item android:drawable="@drawable/list_row_bg_normal"/>
+        </layer-list>
+    </item>
+    
 </level-list>
