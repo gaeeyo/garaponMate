@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">GaraponMate</string>
+    <string name="helpUrl">https://sites.google.com/site/garaponmate/help</string>
 
     <string name="topPage">トップページ</string>
     <string name="settings">設定</string>

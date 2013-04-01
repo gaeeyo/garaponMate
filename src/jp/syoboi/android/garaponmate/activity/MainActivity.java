@@ -367,8 +367,9 @@ public class MainActivity extends Activity  {
 			break;
 		case R.id.help:
 			{
-				Intent intent = new Intent(this, WebActivity.class);
-				intent.setData(Uri.parse("file:///android_asset/help.html"));
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse(getString(R.string.helpUrl)));
+				//intent.setData(Uri.parse("file:///android_asset/help.html"));
 				startActivity(intent);
 			}
 			break;
