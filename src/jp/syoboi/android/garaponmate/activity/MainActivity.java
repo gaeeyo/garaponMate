@@ -369,7 +369,13 @@ public class MainActivity extends Activity  {
 			{
 				Intent intent = new Intent(Intent.ACTION_VIEW);
 				intent.setData(Uri.parse(getString(R.string.helpUrl)));
-				//intent.setData(Uri.parse("file:///android_asset/help.html"));
+				startActivity(intent);
+			}
+			break;
+		case R.id.icon:
+			{
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse("https://crowdworks.jp/public/jobs/7212"));
 				startActivity(intent);
 			}
 			break;
