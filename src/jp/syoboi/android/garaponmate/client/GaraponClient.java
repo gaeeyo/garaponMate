@@ -85,7 +85,7 @@ public class GaraponClient {
 	public static String getRTMPPath(String gtvid) {
 		String path;
 		if (API_BASE == API_BASE_V3) {
-			path = gtvid + "-" + Prefs.getCommonSessionId() + "-1";
+			path = gtvid + "-" + Prefs.getCommonSessionId();
 		}
 		else {
 			path = gtvid.substring(6,8) + "/" + gtvid + ".ts-" + Prefs.getCommonSessionId();
