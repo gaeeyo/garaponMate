@@ -20,6 +20,9 @@ import android.widget.ProgressBar;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,9 +155,9 @@ public class ImageLoader {
     	return mCacheFile.get(url) != null;
     }
 
-    public File getFile(String url) {
-    	return mCacheFile.get(url);
-    }
+//    public File getFile(String url) {
+//    	return mCacheFile.get(url);
+//    }
 
     public void loadPhoto(MyImageViewInterface iv, String url, int loadingImageId, ProgressBar progress) {
     	loadImage(iv, url, PRIORITY_PHOTO, 0, 0,
@@ -379,17 +382,31 @@ public class ImageLoader {
 		protected Bitmap doInBackground(Object... params) {
 
 			QueueItem item = this.item;
-			File f = mCacheFile.alloc(item.url);
+			CacheEntry cacheEntry = mCacheFile.alloc(item.url);
 
 			try {
 				Bitmap bmp = null;
-				if (!f.exists()) {
-					if (downloadToFile(item.url, f)) {
-						downloaded = true;
-						bmp = decodeBitmap(f.getPath(), item.maxWidth, item.maxHeight);
+
+				if (downloadToFile(item.url, cacheEntry)) {
+					downloaded = true;
+
+					FileInputStream fis = null;
+					try {
+						fis = new FileInputStream(cacheEntry.getFile());
+						bmp = decodeBitmap(fis.getFD(), item.maxWidth, item.maxHeight);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						if (fis != null) {
+							try {
+								fis.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
 					}
-				} else {
-					bmp = decodeBitmap(f.getPath(), item.maxWidth, item.maxHeight);
 				}
 
                 if (bmp != null) {
@@ -441,7 +458,7 @@ public class ImageLoader {
 		}
 
 
-		Bitmap decodeBitmap(String filename, int maxWidth, int maxHeight) {
+		Bitmap decodeBitmap(FileDescriptor fd, int maxWidth, int maxHeight) {
 			synchronized (DECODING) {
 				if (isCancelled()) {
 					return null;
@@ -449,13 +466,13 @@ public class ImageLoader {
 				if (maxWidth > 0 && maxHeight > 0) {
 					final BitmapFactory.Options options = new BitmapFactory.Options();
 					options.inJustDecodeBounds = true;
-					BitmapFactory.decodeFile(filename, options);
+					BitmapFactory.decodeFileDescriptor(fd, null, options);
 
 					options.inSampleSize = calculateInSampleSize(options, maxWidth,
 							maxHeight);
 
 					options.inJustDecodeBounds = false;
-					Bitmap bmp = BitmapFactory.decodeFile(filename, options);
+					Bitmap bmp = BitmapFactory.decodeFileDescriptor(fd, null, options);
 					if (bmp != null && bmp.getWidth() > maxWidth && bmp.getHeight() > maxHeight) {
 						int scaledWidth = maxWidth;
 						int scaledHeight = Math.round((float)bmp.getHeight() * maxWidth / bmp.getWidth());
@@ -473,17 +490,17 @@ public class ImageLoader {
 
 					return bmp;
 				} else {
-					Bitmap bmp = BitmapFactory.decodeFile(filename);
+					Bitmap bmp = BitmapFactory.decodeFileDescriptor(fd);
 					//Log.v(TAG, "decodeBitmap width:" + bmp.getWidth());
 					return bmp;
 				}
 			}
 		}
 
-		boolean downloadToFile(String url, File f) {
-			f.getParentFile().mkdirs();
+		boolean downloadToFile(String url, CacheEntry entry) {
 
-			File tmpFile = new File(f.getPath() + ".tmp");
+			File dstFile = entry.getFile();
+			File tmpFile = new File(dstFile.getPath() + ".tmp");
 			long start = System.currentTimeMillis();
 			if (App.DEBUG) {
 				Log.v(TAG, "読み込み開始: " + url + " => " + tmpFile.getPath());
@@ -495,9 +512,31 @@ public class ImageLoader {
 
 				connection = (HttpURLConnection) new URL(url).openConnection();
 
-				if (connection.getResponseCode() != 200) {
+				if (dstFile.exists()) {
+					if (!TextUtils.isEmpty(entry.lastModified)) {
+						connection.setRequestProperty("If-Modified-Since", entry.lastModified);
+					}
+					if (!TextUtils.isEmpty(entry.etag)) {
+						connection.setRequestProperty("If-None-Match", entry.etag);
+					}
+				}
+
+				int statusCode = connection.getResponseCode();
+				if (App.DEBUG) {
+					Log.d(TAG, "HTTP Status:" + statusCode);
+				}
+
+				if (statusCode == 304) {
+					return true;
+				}
+				if (statusCode != 200) {
+					entry.etag = null;
+					entry.lastModified = null;
 					throw new IOException("HTTP Status " + connection.getResponseCode());
 				}
+
+				entry.etag = connection.getHeaderField("ETag");
+				entry.lastModified = connection.getHeaderField("Last-Modified");
 
 //				connection.setRequestProperty("User-Agent", AppVersion.USER_AGENT);
 				InputStream is = new BufferedInputStream(
@@ -525,7 +564,7 @@ public class ImageLoader {
 										time/1000f,
 										size/(time/1000f)/1024f));
 					}
-					tmpFile.renameTo(f);
+					tmpFile.renameTo(dstFile);
 				} else {
 					if (App.DEBUG) {
 						Log.v(TAG, "読み込みエラー "

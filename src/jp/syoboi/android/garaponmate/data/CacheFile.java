@@ -1,6 +1,7 @@
 package jp.syoboi.android.garaponmate.data;
 
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -27,7 +28,7 @@ public class CacheFile {
 	File		mDir;
 	Handler		mHandler = new Handler();
 
-	LinkedHashMap<String, Long>	mItems;
+	LinkedHashMap<String, CacheEntry>	mItems;
 
 	Runnable	mPostSave = new Runnable() {
 		@Override
@@ -42,12 +43,12 @@ public class CacheFile {
 		mMaxCount = maxCount;
 	}
 
-	public synchronized File alloc(String key) {
+	public synchronized CacheEntry alloc(String url) {
 		ensureIndex();
-		File file = get(key);
-		if (file == null) {
+		CacheEntry entry = get(url);
+		if (entry == null) {
 			if (App.DEBUG) {
-				Log.v(TAG, "alloc key:" + key);
+				Log.v(TAG, "alloc key:" + url);
 			}
 			mHandler.removeCallbacks(mPostSave);
 			mHandler.postDelayed(mPostSave, 5000);
@@ -56,8 +57,8 @@ public class CacheFile {
 
 			for (;newId < Long.MAX_VALUE; newId++) {
 				boolean exists = false;
-				for (Long x: mItems.values()) {
-					if (x == newId) {
+				for (CacheEntry e: mItems.values()) {
+					if (e.id == newId) {
 						exists = true;
 						break;
 					}
@@ -66,30 +67,25 @@ public class CacheFile {
 					break;
 				}
 			}
-			mItems.put(key, newId);
-			file = getFile(newId);
+			entry = new CacheEntry(this, newId);
+			mItems.put(url,  entry);
 		}
-		return file;
+		return entry;
 	}
 
-	public synchronized File get(String key) {
+	public synchronized CacheEntry get(String url) {
 		ensureIndex();
-		Long id = mItems.get(key);
-		if (id == null) {
-			return null;
-		}
-		else {
-			return getFile(id);
-		}
+		return mItems.get(url);
 	}
 
-	File getFile(long id) {
-		return new File(mDir, String.valueOf(id));
+	File getFile(CacheEntry entry) {
+		mDir.mkdirs();
+		return new File(mDir, String.valueOf(entry.id));
 	}
 
 	void ensureIndex() {
 		if (mItems == null) {
-			mItems = new LinkedHashMap<String,Long>();
+			mItems = new LinkedHashMap<String,CacheEntry>();
 			loadIndex();
 		}
 	}
@@ -99,8 +95,8 @@ public class CacheFile {
 	 */
 	void deleteUntrackedFile() {
 		HashSet<Long> ids = new HashSet<Long>();
-		for (Long id: mItems.values()) {
-			ids.add(id);
+		for (CacheEntry entry: mItems.values()) {
+			ids.add(entry.id);
 		}
 
 		File [] files = mDir.listFiles();
@@ -135,12 +131,16 @@ public class CacheFile {
 
 				String line;
 				while ((line = in.readLine()) != null) {
-					int pos = line.indexOf("\t");
-					if (pos != -1) {
+					String [] values = line.split("\t");
+					if (values.length >= 4) {
 						try {
-							Long id = Long.valueOf(line.substring(0, pos));
-							String url = line.substring(pos + 1);
-							mItems.put(url, id);
+							CacheEntry entry = new CacheEntry(this,
+									Long.parseLong(values[0], 10));
+							entry.lastModified = values[2];
+							entry.etag = values[3];
+
+							String url = values[1];
+							mItems.put(url, entry);
 						}
 						catch (NumberFormatException e) {
 							e.printStackTrace();
@@ -165,12 +165,12 @@ public class CacheFile {
 	 * mItems から不要になったデータを取り除き、取り除かれたキャッシュのidの配列を返す
 	 * @return
 	 */
-	synchronized long [] trim() {
-		long [] removeItems = null;
+	synchronized CacheEntry [] trim() {
+		CacheEntry [] removeItems = null;
 		if (mItems.size() > mMaxCount) {
 
 			int deleteCount = Math.max(mMaxCount / 10, 5);
-			removeItems = new long [deleteCount];
+			removeItems = new CacheEntry [deleteCount];
 			String [] urls = new String [deleteCount];
 
 			Iterator<String> keys = mItems.keySet().iterator();
@@ -190,8 +190,8 @@ public class CacheFile {
 		return removeItems;
 	}
 
-	synchronized LinkedHashMap<String, Long> cloneItems() {
-		return new LinkedHashMap<String, Long>(mItems);
+	synchronized LinkedHashMap<String, CacheEntry> cloneItems() {
+		return new LinkedHashMap<String, CacheEntry>(mItems);
 	}
 
 	void saveIndex() {
@@ -199,21 +199,21 @@ public class CacheFile {
 			Log.v(TAG, "インデックス保存");
 		}
 
-		final long [] deletedIds = trim();
-		final LinkedHashMap<String, Long> items = cloneItems();
+		final CacheEntry [] deletedEntries = trim();
+		final LinkedHashMap<String, CacheEntry> items = cloneItems();
 
 		// スレッドでファイルの物理削除とキャッシュのインデックスを出力
 		new Thread() {
 			@Override
 			public void run() {
 				// キャッシュを削除
-				if (deletedIds != null) {
-					for (long id: deletedIds) {
+				if (deletedEntries != null) {
+					for (CacheEntry entry: deletedEntries) {
 						if (App.DEBUG) {
-							Log.v(TAG, "キャッシュを削除 id:" + id);
+							Log.v(TAG, "キャッシュを削除 id:" + entry);
 						}
 						try {
-							File f = getFile(id);
+							File f = getFile(entry);
 							f.delete();
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -232,10 +232,18 @@ public class CacheFile {
 						osw = new OutputStreamWriter(
 								new GZIPOutputStream(fos), "UTF-8");
 						for (String url: items.keySet()) {
-							Long id = items.get(url);
-							osw.write(String.valueOf(id));
+							CacheEntry entry = items.get(url);
+							osw.write(String.valueOf(entry.id));
 							osw.write("\t");
 							osw.write(url);
+							osw.write("\t");
+							if (!TextUtils.isEmpty(entry.lastModified)) {
+								osw.write(entry.lastModified);
+							}
+							osw.write("\t");
+							if (!TextUtils.isEmpty(entry.etag)) {
+								osw.write(entry.etag);
+							}
 							osw.write("\n");
 						}
 					}
@@ -254,5 +262,4 @@ public class CacheFile {
 			}
 		}.start();
 	}
-
 }
