@@ -50,6 +50,8 @@ class TemplateJS extends ATemplate
 	 * The init feedback is launched	 */
 	private var _isInit:Boolean = false;
 	
+	private var _intervalId:Number;
+	
 	/*============================= CONSTRUCTOR ==============================*/
 	/*========================================================================*/
 	/**
@@ -81,7 +83,6 @@ class TemplateJS extends ATemplate
 		if (_root.interval) {
 			_intervalUpdate = Number(_root.interval);
 		}
-		setInterval(this, "_enterFrame", _intervalUpdate);
 	}
 	/**
 	 * Lancé par mtasc
@@ -227,7 +228,11 @@ class TemplateJS extends ATemplate
 	public function playRelease()
 	{
 		super.playRelease();
-		
+
+		if (_intervalId == undefined) {
+			_intervalId = setInterval(this, "_enterFrame", _intervalUpdate);
+		}
+
 		this.controller["_ns"].onStatus = function(info:Object){
 			switch(info.code){
 				case "NetStream.Buffer.Empty":
@@ -322,6 +327,14 @@ class TemplateJS extends ATemplate
 		var movie:MovieClip = top.getInstanceAtDepth(pDepth);
 		movie.removeMovieClip();
 	}
+	
+	private function pauseTimer() {
+		if (_intervalId != undefined) {
+			clearInterval(_intervalId);
+			_intervalId = undefined;
+		}
+	}
+	
 	/*========================== END = PUBLIC = END ==========================*/
 	/*========================================================================*/
 	
@@ -348,6 +361,7 @@ class TemplateJS extends ATemplate
 	 * Pause	 */
 	public function set pause(n:String)
 	{
+		pauseTimer();
 		if (this.controller.isPlaying) {
 			this.pauseRelease();
 		}
@@ -356,6 +370,7 @@ class TemplateJS extends ATemplate
 	 * Stop the video	 */
 	public function set stop(n:String)
 	{
+		pauseTimer();
 		this.stopRelease();
 	}
 	/**
