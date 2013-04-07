@@ -416,11 +416,7 @@ public class MainActivity extends Activity  {
 
 		if (mPage == PAGE_SEARCH) {
 			FragmentManager fm = getFragmentManager();
-			if (fm.getBackStackEntryCount() > 0) {
-				if (fm.getBackStackEntryCount() == 1) {
-					switchPage(PAGE_PAGER);
-				} else {
-				}
+			if (fm.getBackStackEntryCount() > 1) {
 				getFragmentManager().popBackStack();
 				return;
 			}
