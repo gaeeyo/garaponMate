@@ -314,9 +314,9 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			Log.d(TAG, "m3u: " + GaraponClientUtils.getM3uUrl(p.gtvid));
 		}
 
-		setProgram(p);
 		startFullScreenDelay();
 		setVideoInternal(p.gtvid, playerId);
+		setProgram(p);
 
 		// 通知
 		sLatestProgram = p;

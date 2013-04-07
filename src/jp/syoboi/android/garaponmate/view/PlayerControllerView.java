@@ -96,20 +96,20 @@ public class PlayerControllerView extends FrameLayout {
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-
+//				Log.d(TAG, "onStopTrackingTouch");
+				mPlayer.seek(seekBar.getProgress());
 			}
 
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
-
+//				Log.d(TAG, "onStartTrackingTouch");
 			}
 
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
-				if (fromUser) {
-					mPlayer.seek(progress);
-				}
+//				Log.d(TAG, "onProgressChanged fromUser:" + fromUser);
+				updateTime(progress);
 			}
 		});
 
@@ -245,6 +245,9 @@ public class PlayerControllerView extends FrameLayout {
 		}
 		mSeekBar.setVisibility(View.GONE);
 
+		mSound.setVisibility(
+				mPlayer.mPlayer.isSetSoundAvailable() ? View.VISIBLE : View.GONE);
+
 		updateCaptionAdapter();
 		updateIntervalTimer();
 	}
@@ -343,9 +346,10 @@ public class PlayerControllerView extends FrameLayout {
 				if (mCurPos != curPos) {
 					mCurPos = curPos;
 					if (mDuration > 0) {
-						mSeekBar.setProgress(curPos);
-						mTime.setText(getTimeStr(mCurPos) + " / "
-								+ getTimeStr(mDuration));
+						if (!mSeekBar.isPressed()) {
+							mSeekBar.setProgress(curPos);
+							updateTime(mCurPos);
+						}
 					}
 				}
 				if (!mPlayer.mPause) {
@@ -355,6 +359,11 @@ public class PlayerControllerView extends FrameLayout {
 			}
 		}
 	};
+
+	void updateTime(int pos) {
+		mTime.setText(getTimeStr(pos) + " / "
+				+ getTimeStr(mDuration));
+	}
 
 	String getTimeStr(int millis) {
 		int sec = millis / 1000;
