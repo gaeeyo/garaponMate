@@ -6,9 +6,18 @@ import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import jp.syoboi.android.garaponmate.data.GaraponAccount;
 import jp.syoboi.android.garaponmate.data.ProgSearchList;
+import jp.syoboi.android.util.JksnUtils;
+import jp.syoboi.android.util.JksnUtils.JksnObject;
+
+import org.codehaus.jackson.JsonGenerator;
 
 public class Prefs {
 	@SuppressWarnings("unused")
@@ -34,6 +43,7 @@ public class Prefs {
 
 	public static final String USE_SYOBOI_SERVER = "useSyoboiServer";
 	private static final String SYOBOI_TOKEN = "syoboiToken";
+	private static final String LOGIN_HISTORY = "loginHistory";
 
 	//private static final String USE_VIDEO_VIEW = "useVideoView";	// 廃止
 	private static final String PLAYER = "player";
@@ -211,5 +221,89 @@ public class Prefs {
 
 	public static void logout() {
 		setUser("", "");
+	}
+
+	/**
+	 * ログイン履歴を取得
+	 * @return
+	 */
+	public static List<GaraponAccount> getLoginHistory() {
+		ArrayList<GaraponAccount> accounts = new ArrayList<GaraponAccount>();
+		String history = sPrefs.getString(LOGIN_HISTORY, "");
+		try {
+			JksnObject jo = (JksnObject) JksnUtils.parseJson(history);
+			for (Object hist: jo.getArray("accounts")) {
+				accounts.add(GaraponAccount.parse((JksnObject)hist));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return accounts;
+	}
+
+	/**
+	 * ログイン履歴を保存
+	 */
+	public static void addLoginHistory(GaraponAccount newAccount) {
+		List<GaraponAccount> accounts = getLoginHistory();
+		for (GaraponAccount account: accounts) {
+			if (TextUtils.equals(account.garaponId, newAccount.garaponId)) {
+				accounts.remove(account);
+				break;
+			}
+		}
+
+		accounts.add(0, newAccount);
+		setLoginHistory(accounts);
+	}
+
+	/**
+	 * ログイン履歴を保存
+	 * @param accounts
+	 */
+	public static void setLoginHistory(List<GaraponAccount> accounts) {
+		StringWriter sw = new StringWriter();
+		JsonGenerator g = null;
+		try {
+			g = JksnUtils.getFactory().createJsonGenerator(sw);
+			g.writeStartObject();
+			g.writeFieldName("accounts");
+			g.writeStartArray();
+			for (GaraponAccount account: accounts) {
+				account.write(g);
+			}
+			g.writeEndArray();
+			g.writeEndObject();
+			g.flush();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (g != null) {
+				try {
+					g.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		sPrefs.edit()
+		.putString(LOGIN_HISTORY, sw.toString())
+		.commit();
+	}
+
+	/**
+	 * ログイン履歴から削除
+	 * @param garaponId
+	 */
+	public static void removeLoginHistory(String garaponId) {
+		List<GaraponAccount> list = getLoginHistory();
+		for (GaraponAccount account: list) {
+			if (TextUtils.equals(account.garaponId, garaponId)) {
+				list.remove(account);
+				setLoginHistory(list);
+				break;
+			}
+		}
 	}
 }

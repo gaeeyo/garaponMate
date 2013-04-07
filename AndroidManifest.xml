@@ -43,7 +43,8 @@
         <activity
             android:name="jp.syoboi.android.garaponmate.activity.LoginActivity"
             android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|layoutDirection|fontScale"
-            android:label="@string/login" >
+            android:label="@string/login"
+            android:windowSoftInputMode="stateUnchanged|adjustResize" >
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
@@ -113,7 +114,7 @@
             android:authorities="jp.syoboi.android.garaponmate.SearchSuggestions"
             android:enabled="true"
             android:exported="false" />
-        
+
         <!-- 検索履歴のサジェスト -->
         <provider
             android:name=".provider.MySearchRecentSuggestionsProvider"

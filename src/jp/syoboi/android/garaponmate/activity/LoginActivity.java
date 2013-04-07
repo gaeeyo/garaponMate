@@ -1,25 +1,36 @@
 package jp.syoboi.android.garaponmate.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import java.util.List;
 
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.client.GaraponClientUtils;
+import jp.syoboi.android.garaponmate.data.GaraponAccount;
 
 public class LoginActivity extends Activity {
 
-	View		mLoginFormView;
-	TextView	mUserView;
-	TextView	mPassView;
-	TextView	mMessage;
-	View		mProgressView;
+	View			mLoginFormView;
+	TextView		mUserView;
+	TextView		mPassView;
+	TextView		mMessage;
+	View			mProgressView;
+	View			mLoginHistory;
+	LinearLayout	mLoginHistoryList;
+
 	LoginTask	mLoginTask;
 
 	boolean		mIsLoginProgress;
@@ -41,6 +52,8 @@ public class LoginActivity extends Activity {
 		mUserView = (TextView) findViewById(R.id.user);
 		mPassView = (TextView) findViewById(R.id.password);
 		mMessage = (TextView) findViewById(R.id.message);
+		mLoginHistory = findViewById(R.id.loginHistory);
+		mLoginHistoryList = (LinearLayout) findViewById(R.id.loginHistoryList);
 
 		findViewById(R.id.login).setOnClickListener(new OnClickListener() {
 			@Override
@@ -50,6 +63,8 @@ public class LoginActivity extends Activity {
 		});
 
 		mMessage.setText(null);
+
+		updateLoginHistoryView();
 	}
 
 	@Override
@@ -65,12 +80,80 @@ public class LoginActivity extends Activity {
 	}
 
 	/**
+	 * ログイン履歴のViewを更新
+	 */
+	void updateLoginHistoryView() {
+		List<GaraponAccount> list = Prefs.getLoginHistory();
+
+		mLoginHistory.setVisibility(list.size() > 0 ? View.VISIBLE : View.GONE);
+		mLoginHistoryList.removeAllViews();
+
+		for (final GaraponAccount account: list) {
+			View v = View.inflate(mLoginHistoryList.getContext(),
+					R.layout.login_history_row, null);
+			LoginHistoryViewHolder vh = new LoginHistoryViewHolder(v);
+			vh.bind(account);
+
+			// アカウントの削除ボタン
+			vh.mDeleteView.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					confirmRemoveAccount(account.garaponId);
+				}
+			});
+
+			// アカウントをタップしたらログイン
+			vh.mTextView.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					mUserView.setText(account.garaponId);
+					mPassView.setText(account.password);
+					startLogin();
+				}
+			});
+
+			mLoginHistoryList.addView(v);
+		}
+	}
+
+	void confirmRemoveAccount(final String garaponId) {
+		new AlertDialog.Builder(this)
+		.setMessage(getString(R.string.confirmRemoveAccountFmt, garaponId))
+		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Prefs.removeLoginHistory(garaponId);
+				updateLoginHistoryView();
+			}
+		})
+		.setNegativeButton(android.R.string.no, (DialogInterface.OnClickListener)null)
+		.show();
+	}
+
+	private static class LoginHistoryViewHolder {
+		public TextView mTextView;
+		public View mDeleteView;
+
+		public LoginHistoryViewHolder(View v) {
+			mTextView = (TextView) v.findViewById(R.id.user);
+			mDeleteView = v.findViewById(R.id.delete);
+		}
+
+		public void bind(GaraponAccount account) {
+			mTextView.setText(account.garaponId);
+		}
+	}
+
+	/**
 	 * ログインを開始
 	 */
 	void startLogin() {
 		if (mIsLoginProgress) {
 			return;
 		}
+
+		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
 
 		final String user = mUserView.getText().toString().trim();
 		final String pass = mPassView.getText().toString().trim();
@@ -116,6 +199,7 @@ public class LoginActivity extends Activity {
 					// エラーがなければuser,passを保存して
 					// MainActivityを起動
 					Prefs.setUser(user, pass);
+					Prefs.addLoginHistory(new GaraponAccount(user, pass));
 					MainActivity.startActivity(LoginActivity.this);
 					finish();
 				}

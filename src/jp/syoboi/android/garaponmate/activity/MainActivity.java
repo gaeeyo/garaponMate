@@ -355,6 +355,16 @@ public class MainActivity extends Activity  {
 	}
 
 	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		MenuItem mi = menu.findItem(R.id.logout);
+		if (mi != null) {
+			mi.setVisible(Prefs.getLoginHistory().size() > 1);
+		}
+
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.settings:
@@ -378,6 +388,11 @@ public class MainActivity extends Activity  {
 				intent.setData(Uri.parse("https://crowdworks.jp/public/jobs/7212"));
 				startActivity(intent);
 			}
+			break;
+		case R.id.logout:
+			App.from(this).logout();
+			MainActivity.startActivity(this);
+			finish();
 			break;
 		}
 		return super.onOptionsItemSelected(item);

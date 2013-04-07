@@ -14,6 +14,8 @@
     <string name="play">再生</string>
     <string name="general">全般</string>
     <string name="delete">削除</string>
+    <string name="confirmRemoveAccountFmt">アカウント %1$s を履歴から削除しますか?</string>
+    <string name="loginHistory">過去に使用したアカウント</string>
     <string name="searchCaptionFmt">%1$s (字幕)</string>
     <string name="deleteSearchParam">検索条件を削除</string>
     <string name="clearSearchHistory">検索履歴を消去</string>
