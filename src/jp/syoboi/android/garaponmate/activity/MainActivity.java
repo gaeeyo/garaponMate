@@ -32,6 +32,7 @@ import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.inputmethod.InputMethodManager;
@@ -84,6 +85,7 @@ public class MainActivity extends Activity  {
 	int				mPage;
 	MainPagerAdapter	mPagerAdapter;
 	boolean			mShowPlayer;
+	int				mReturnPage;
 
 	@Override
 	protected void onNewIntent(Intent intent) {
@@ -558,8 +560,20 @@ public class MainActivity extends Activity  {
 
 
 	void switchPage(int page) {
+		if (mPage == page) {
+			return;
+		}
+
+		if (page == PAGE_SEARCH) {
+			mReturnPage = mViewPager.getCurrentItem();
+			mPagerAdapter.setEnableDummyPage(true);
+		} else {
+			mPagerAdapter.setEnableDummyPage(false);
+		}
+
 		mPage = page;
 
+		mViewPager.clearAnimation();
 		setPageVisibility(mViewPager, page == PAGE_PAGER, 0.5f);
 		if (mPage != PAGE_SEARCH) {
 			// 検索結果からもとにもどるときは、検索のFragmentをすべて消す
@@ -574,6 +588,28 @@ public class MainActivity extends Activity  {
 			// 検索結果が表示されるときはUPボタンを有効にする
 			getActionBar().setDisplayOptions(ActionBar.DISPLAY_HOME_AS_UP, ActionBar.DISPLAY_HOME_AS_UP);
 			updateNavigationMode();
+		}
+
+		if (page == PAGE_PAGER) {
+			mViewPager.setCurrentItem(mReturnPage, false);
+		} else {
+			mViewPager.getAnimation().setAnimationListener(new AnimationListener() {
+
+				@Override
+				public void onAnimationStart(Animation animation) {
+				}
+
+				@Override
+				public void onAnimationRepeat(Animation animation) {
+				}
+
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					if (mPage == PAGE_SEARCH) {
+						mViewPager.setCurrentItem(MainPagerAdapter.PAGE_EMPTY, false);
+					}
+				}
+			});
 		}
 	}
 

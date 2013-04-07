@@ -6,6 +6,7 @@ import android.content.Context;
 import android.support.v13.app.FragmentStatePagerAdapter;
 
 import jp.syoboi.android.garaponmate.R;
+import jp.syoboi.android.garaponmate.fragment.EmptyFragment;
 import jp.syoboi.android.garaponmate.fragment.GaraponWebFragment;
 import jp.syoboi.android.garaponmate.fragment.NowBroadcastingFragment;
 import jp.syoboi.android.garaponmate.fragment.SearchListFragment;
@@ -19,12 +20,21 @@ public class MainPagerAdapter extends FragmentStatePagerAdapter {
 	public static final int PAGE_WEB = 2;
 
 	public static final int PAGE_COUNT = 3;
+	public static final int PAGE_EMPTY = PAGE_COUNT;
 
 	private Context mContext;
+	private boolean	mEnableDummyPage;
 
 	public MainPagerAdapter(FragmentManager fm, Context context) {
 		super(fm);
 		mContext = context.getApplicationContext();
+	}
+
+	public void setEnableDummyPage(boolean enable) {
+		if (mEnableDummyPage != enable) {
+			mEnableDummyPage = enable;
+			notifyDataSetChanged();
+		}
 	}
 
 	@Override
@@ -40,6 +50,9 @@ public class MainPagerAdapter extends FragmentStatePagerAdapter {
 			break;
 		case PAGE_WEB:
 			f = new GaraponWebFragment();
+			break;
+		case PAGE_EMPTY:
+			f = new EmptyFragment();
 			break;
 		}
 		return f;
@@ -62,6 +75,9 @@ public class MainPagerAdapter extends FragmentStatePagerAdapter {
 
 	@Override
 	public int getCount() {
+		if (mEnableDummyPage) {
+			return PAGE_COUNT + 1;
+		}
 		return PAGE_COUNT;
 	}
 }
