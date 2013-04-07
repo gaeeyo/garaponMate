@@ -256,7 +256,7 @@ public class ProgramGridView extends FrameLayout {
 
 	static SpannableStringBuilder sTmpSb = new SpannableStringBuilder();
 	static final int STARTTIME_FMT = DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME
-			| DateUtils.FORMAT_SHOW_WEEKDAY;
+			| DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_ABBREV_ALL;
 
 	public static class ViewHolder {
 		public Program		mProgram;
