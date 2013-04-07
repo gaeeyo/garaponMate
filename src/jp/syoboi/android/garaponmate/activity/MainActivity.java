@@ -267,6 +267,7 @@ public class MainActivity extends Activity  {
 		}
 
 		updateMainContainer();
+		updateNavigationMode();
 		handleIntent(getIntent());
 	}
 
