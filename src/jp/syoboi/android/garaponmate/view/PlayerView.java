@@ -52,9 +52,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			| (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
 					? FULLSCREEN_FLAGS_16 : 0);
 
-	private static final int INTERVAL = 500;
 	private static final int CHANGE_FULLSCREEN_DELAY = 5 * 1000;
-	private static final int SEND_PLAY_DELAY = 10*1000;
 
 	public static Program	sLatestProgram;
 
@@ -468,9 +466,14 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	}
 
 	@Override
-	public void onMessage(String message) {
+	public void onMessage(final String message) {
 		cancelFullScreen();
-		setMessage(message);
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				setMessage(message);
+			}
+		});
 	}
 
 	void setMessage(String message) {
@@ -621,6 +624,11 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	@Override
 	public void onFinished() {
-		pause();
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				pause();
+			}
+		});
 	}
 }
