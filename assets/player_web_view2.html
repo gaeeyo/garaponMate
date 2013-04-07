@@ -23,13 +23,16 @@ myListener.onUpdate = function() {
 myListener.onInit = function() {};
 myListener.onClick = function() {};
 myListener.onKeyUp = function(pKey) {};
-myListener.onFinished = function() {};
+myListener.onFinished = function() {
+    host.onFinished();
+};
 
 </script>
 </head>
 <body onresize="resize()">
 <object id="player" type="application/x-shockwave-flash" data="/player_flv_js.swf">
 <param name="allowScriptAccess" value="always">
+<param name="bgcolor" value="000000" />
 <param name="flashvars" value="flv={FLV}&amp;netconnection={RTMP}&amp;bgcolor=111111&amp;listener=myListener&amp;interval=500&amp;autoplay=1">
 </object>
 <script type="text/javascript">
@@ -46,11 +49,11 @@ function resize() {
         width = clientHeight * 16 / 9;
     }
     
-    console.log("resized w:" + width + " h:" + height + " clientWidth:" + clientWidth);
     player.style.marginTop = ((clientHeight - height) / 2) + "px";
     player.style.marginLeft = ((clientWidth - width) / 2) + "px";
     player.style.width = (width)+ "px";
     player.style.height = height + "px";
+    //console.log("resized w:" + width + " h:" + height + " clientWidth:" + clientWidth + " left:" + player.style.marginLeft + " top:" + player.style.marginTop);
 }
 resize();
 </script>

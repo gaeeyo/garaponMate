@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -257,6 +258,8 @@ public class PlayerWebView2 implements PlayerViewInterface {
 
 	public class JsObj {
 		int mBuffPos = -1;
+
+		@JavascriptInterface
 		public void reportPos(String pos) {
 			if (App.DEBUG) {
 				Log.v(TAG, String.format("pos:%s", pos));
@@ -267,6 +270,8 @@ public class PlayerWebView2 implements PlayerViewInterface {
 				e.printStackTrace();
 			}
 		}
+
+		@JavascriptInterface
 		public void reportFull(String pos, String duration,
 				String bufLen, String bufTime, String isPlaying, String volume) {
 			if (App.DEBUG) {
@@ -293,6 +298,10 @@ public class PlayerWebView2 implements PlayerViewInterface {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		@JavascriptInterface
+		public void onFinished() {
+			mCallback.onFinished();
 		}
 	}
 

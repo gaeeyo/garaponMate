@@ -617,4 +617,10 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			mPlayer.setSound(lr);
 		}
 	}
+
+
+	@Override
+	public void onFinished() {
+		pause();
+	}
 }
