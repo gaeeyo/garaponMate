@@ -347,6 +347,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 		SearchParam sp = new SearchParam();
 		sp.gtvid = p.gtvid;
 		sp.count = 1;
+		sp.video = SearchParam.VIDEO_ALL;
 		sp.searchType = SearchParam.STYPE_CAPTION;
 
 		mSearchTask = new SearchTask(getContext(), sp, false) {
@@ -357,6 +358,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 					if (sr.program.size() > 0) {
 						mProgram = sr.program.get(0);
 						mPlayerOverlay.setProgramDetail(mProgram);
+						mTitle.setText(mProgram.title);
 						updateControls();
 					}
 				}

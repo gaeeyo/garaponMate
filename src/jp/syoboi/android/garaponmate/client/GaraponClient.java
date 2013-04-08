@@ -303,6 +303,12 @@ public class GaraponClient {
 		}
 		if (gtvid != null) {
 			builder.appendQueryParameter("gtvid", gtvid);
+
+			// v2 の場合は、STYPE_CAPTION を指定しなければ字幕が取得できないが
+			// v3 ではSTYPE_EPGでも字幕が取得でき、STYPE_CAPTIONではタイムアウトしてしまう
+			if (API_BASE == API_BASE_V3) {
+				searchType = Search.STYPE_EPG;
+			}
 		}
 		if (genre0 != Search.GENRE_EMPTY) {
 			builder.appendQueryParameter("genre0", String.valueOf(genre0));
