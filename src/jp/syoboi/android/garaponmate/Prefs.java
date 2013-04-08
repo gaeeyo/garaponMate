@@ -142,7 +142,7 @@ public class Prefs {
 	}
 
 	public static String getBaseUrl() {
-		return "http://" + sPrefs.getString(IP_ADDR, "");
+		return "http://" + getGaraponHost();
 	}
 
 	public static String getCommonSessionId() {
