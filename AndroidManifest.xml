@@ -121,6 +121,13 @@
             android:authorities="jp.syoboi.android.garaponmate.SearchRecentSuggestions"
             android:enabled="true"
             android:exported="false" />
+        <!-- TsのContentProvider -->
+        <provider
+            android:name=".provider.TSProvider"
+            android:authorities="jp.syoboi.android.garaponmate.TS"
+            android:enabled="true"
+            android:exported="true" />
+        <service android:name=".service.TSServer" />
     </application>
 
 </manifest>

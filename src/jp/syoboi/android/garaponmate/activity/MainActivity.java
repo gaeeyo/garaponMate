@@ -455,6 +455,18 @@ public class MainActivity extends Activity  {
 	 * @param id
 	 */
 	public void playVideo(Program p, int playerId) {
+
+//		if (true) {
+//			startService(new Intent(this, TSServer.class));
+//
+//			Intent i = new Intent(Intent.ACTION_VIEW);
+//			i.setDataAndType(Uri.parse("http://127.0.0.1:50000/" + p.gtvid),
+//					"video/ts");
+//					//"application/vnd.apple.mpegurl");
+//			startActivity(i);
+//			return;
+//		}
+
 		switch (playerId) {
 		case App.PLAYER_POPUP:
 			{
