@@ -22,6 +22,7 @@ import android.provider.SearchRecentSuggestions;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.text.TextUtils;
+import android.text.format.Time;
 import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -495,6 +496,22 @@ public class MainActivity extends Activity  {
 		Uri uri = Uri.parse(GaraponClientUtils.getM3uUrl(p.gtvid));
 		Intent i = new Intent(Intent.ACTION_VIEW);
 		i.setDataAndType(uri, "application/vnd.apple.mpegurl");
+
+		Time t = new Time();
+		t.set(p.startdate);
+		String dateTimeText = t.format("%Y%m%d-%H%M");
+
+		String filename = dateTimeText + " " + p.title.replaceAll("./:\\*\\?\\|<>", "_")
+				+ " [" + p.ch.bc + "]";
+
+		i.putExtra(Intent.EXTRA_TITLE, filename);
+		i.putExtra(Intent.EXTRA_SUBJECT, p.title);
+		i.putExtra(Intent.EXTRA_TEXT, p.description);
+
+		i.putExtra("start", p.startdate);
+		i.putExtra("end", p.startdate + p.duration);
+		i.putExtra("ch", p.ch.bc);
+
 		startActivity(i);
 	}
 
