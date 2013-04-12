@@ -22,11 +22,17 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,11 +84,13 @@ public class DownloadService extends Service {
 					task = new DownloadTask(this, p, sTaskId++) {
 						@Override
 						protected void onPostExecute(Object result) {
+							super.onPostExecute(result);
 							mTaskMap.remove(id);
 							stopOrContinue();
 						}
 						@Override
 						protected void onCancelled(Object result) {
+							super.onCancelled(result);
 							mTaskMap.remove(id);
 							stopOrContinue();
 						}
@@ -153,6 +161,8 @@ public class DownloadService extends Service {
 		private File			mDst;
 		private long			mDownloadProgressUpdated;
 		private int				mId;
+		private Exception		mThreadException;
+		private Queue<byte[]>	mBuffers = new ConcurrentLinkedQueue<byte[]>();
 
 		public DownloadTask(Context context, Program p, int id) {
 			mId = id;
@@ -170,35 +180,84 @@ public class DownloadService extends Service {
 		}
 
 		@Override
+		protected void onPostExecute(Object result) {
+			if (App.DEBUG) {
+				Log.d(TAG, "bufferes size:" + mBuffers.size());
+			}
+			mBuffers.clear();
+			super.onPostExecute(result);
+		}
+
+		@Override
 		protected Object doInBackground(Object... params) {
 
+			showDownloadProgress();
 			RandomAccessFile out = null;
 			boolean success = false;
-			try {
-				String m3u = GaraponClientUtils.getM3uUrl(mProgram.gtvid);
+			long start = System.currentTimeMillis();
 
+			ExecutorService svc = Executors.newFixedThreadPool(7);
+			try {
+				final String m3u = GaraponClientUtils.getM3uUrl(mProgram.gtvid);
+
+				mDst.delete();
 				out = new RandomAccessFile(mDst, "rw");
 
-				ArrayList<String> urls = downloadM3u(m3u);
+				List<String> urls = downloadM3u(m3u);
 
-				calcContentLength(urls);
+				List<FileInfo> files = prepareUrls(urls);
 
-				for (int j=0; j<urls.size(); j++) {
-					if (isCancelled()) {
+				try {
+					for (final FileInfo file: files) {
+						final RandomAccessFile outFile = out;
+						svc.execute(new Runnable() {
+
+							@Override
+							public void run() {
+								String tsUrl;
+								try {
+									tsUrl = new URI(m3u).resolve(file.url).toString();
+									downloadFile(tsUrl, outFile, file.start, file.length);
+								} catch (MalformedURLException e) {
+									e.printStackTrace();
+									mThreadException = e;
+									cancel(true);
+								} catch (IOException e) {
+									e.printStackTrace();
+									mThreadException = e;
+									cancel(true);
+								} catch (URISyntaxException e) {
+									e.printStackTrace();
+									mThreadException = e;
+									cancel(true);
+								}
+							}
+						});
+					}
+				} finally {
+					svc.shutdown();
+				}
+				while (true) {
+					if (svc.awaitTermination(500, TimeUnit.MILLISECONDS)) {
 						break;
 					}
-
-					String url = urls.get(j);
-					String tsUrl = new URI(m3u).resolve(url).toString();
-
-					downloadFile(tsUrl, out);
 				}
+
+				long end = System.currentTimeMillis();
+
+				Log.d(TAG, "ダウンロード時間:" + (end - start) / DateUtils.SECOND_IN_MILLIS + "sec" );
+
 				if (!isCancelled()) {
 					success = true;
 					showSuccessNotification();
 				}
 				return null;
 			} catch (Exception e) {
+				if (mThreadException != null) {
+					e = mThreadException;
+				}
+				mDst.delete();
+				svc.shutdownNow();
 				e.printStackTrace();
 				showErrorNotification(e);
 				return e;
@@ -217,8 +276,20 @@ public class DownloadService extends Service {
 			}
 		}
 
-		private void calcContentLength(List<String> urls) throws Exception {
+		private static class FileInfo {
+			public final String url;
+			public final int 	start;
+			public final int 	length;
+			public FileInfo(String url, int start, int length) {
+				this.url = url;
+				this.start = start;
+				this.length = length;
+			}
+		}
 
+		private List<FileInfo> prepareUrls(List<String> urls) throws Exception {
+
+			ArrayList<FileInfo> results = new ArrayList<FileInfo>();
 			Matcher m = Pattern.compile("start=(\\d+)&length=(\\d+)").matcher("");
 
 			// ファイルサイズを計算
@@ -228,11 +299,19 @@ public class DownloadService extends Service {
 				if (!m.find()) {
 					throw new Exception("想定外のTSのURL");
 				}
-				long size = Long.valueOf(m.group(2), 10);
-				total += size;
+
+				FileInfo fi = new FileInfo(url,
+						Integer.parseInt(m.group(1), 10),
+						Integer.parseInt(m.group(2), 10));
+				results.add(fi);
+				total += fi.length;
 			}
 
 			mTotalContentLength = total;
+			if (App.DEBUG) {
+				Log.d(TAG, "TotalContentLength: " + total);
+			}
+			return results;
 		}
 
 		/**
@@ -287,11 +366,17 @@ public class DownloadService extends Service {
 			long now = System.currentTimeMillis();
 			if (now - mDownloadProgressUpdated > DateUtils.SECOND_IN_MILLIS) {
 				mDownloadProgressUpdated = now;
-				String msg = String.format(Locale.ENGLISH,
+
+				String msg;
+				if (mTotalContentLength > 0) {
+					msg = String.format(Locale.ENGLISH,
 						"%d%% (%dMB/%dMB) %s",
 						mDownloadedSize * 100 / mTotalContentLength,
 						mDownloadedSize / MB, mTotalContentLength / MB,
 						mDst.getName());
+				} else {
+					msg = mDst.getName();
+				}
 
 				if (mNotification == null) {
 					mNotification = new Notification(
@@ -308,20 +393,53 @@ public class DownloadService extends Service {
 			}
 		}
 
-		private int downloadFile(String url, RandomAccessFile out) throws MalformedURLException, IOException {
+		private int downloadFile(String url, RandomAccessFile out, int start, int length) throws MalformedURLException, IOException {
+//			FileChannel channel = out.getChannel();
 			InputStream is = null;
 			int totalReadSize = 0;
 			try {
+				if (App.DEBUG) {
+					Log.d(TAG, "downloadFile url:" + url);
+				}
 				is = Utils.openConnection(url).getInputStream();
 
-				byte [] buf = new byte [8192];
-				int readSize;
-				while ((readSize = is.read(buf)) >= 0) {
-					out.write(buf, 0, readSize);
-					totalReadSize += readSize;
-					mDownloadedSize += readSize;
-					showDownloadProgress();
+				byte [] buf = mBuffers.poll();
+				if (buf == null || buf.length < length) {
+					int bufSize = length + 4 * 1024;
+					if (App.DEBUG) {
+						Log.d(TAG, "alloc buf size:" + bufSize);
+					}
+					buf = new byte [bufSize];
 				}
+
+				int pos = 0;
+				int readSize;
+				while ((readSize = is.read(buf, pos, length - pos)) >= 0) {
+					pos += readSize;
+					if (pos >= length) {
+						break;
+					}
+				}
+
+				if (App.DEBUG) {
+					Log.d(TAG, "readSize:" + pos + " length:" + length
+							+ " " + (pos != length ? "ダウンロード失敗" : ""));
+				}
+
+				if (pos != length) {
+					throw new IOException("取得したデータの長さが異常でした");
+				}
+
+//				channel.position(start);
+//				channel.write(ByteBuffer.wrap(buf, 0, length));
+				synchronized (out) {
+					out.seek(start);
+					out.write(buf, 0, length);
+					mDownloadedSize += length;
+				}
+				showDownloadProgress();
+				mBuffers.add(buf);
+
 			} finally {
 				if (is != null) {
 					is.close();
@@ -334,6 +452,7 @@ public class DownloadService extends Service {
 			String fileName = getFilename(p);
 
 			File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+			dir.mkdirs();
 			File file = new File(dir, fileName + ".ts");
 			return file;
 		}
