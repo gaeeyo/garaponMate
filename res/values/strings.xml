@@ -30,8 +30,6 @@
     <string name="url">URL</string>
     <string name="urlSummary">http://x.x.x.x/</string>
 
-    <string name="downloading">ダウンロード中…</string>
-    <string name="downloadComplete">ダウンロード完了</string>
     <string name="volumeOsd">音量 %d%%</string>
     <string name="screenBrightnessOsd">明るさ %d%%</string>
     <string name="user">ガラポンID</string>
@@ -44,9 +42,6 @@
     <string name="minute">分</string>
     <string name="ch">チャンネル</string>
     <string name="keyword">キーワード</string>
-    <string name="download">ダウンロード</string>
-    <string name="downloadError">ダウンロードエラー</string>
-    <string name="confirmCancelDownload">ダウンロードをキャンセルしますか?</string>
     <string name="favoriteOnly">お気に入りのみ</string>
     <string name="favorite">お気に入り</string>
     <string name="home">ホーム</string>

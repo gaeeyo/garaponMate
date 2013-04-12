@@ -146,11 +146,6 @@ public class SummaryFragment extends MainBaseFragment {
 			if (acmi.targetView == mBcView) {
 				Program p = (Program)mBcView.getTag();
 				inflateProgramMenu(getActivity(), menu, v, menuInfo, p);
-
-				MenuItem mi = menu.findItem(R.id.download);
-				if (mi != null) {
-					mi.setVisible(false);
-				}
 			}
 			else if (v == getListView()) {
 				Object obj = getListView().getItemAtPosition(acmi.position);

@@ -29,13 +29,6 @@ public class App extends Application {
 
 	public static final String PKG = "jp.syoboi.android.garaponmate";
 
-	// Notification
-	public static final int NOTIFY_ID_DOWNLOADING = 1000;
-	public static final int NOTIFY_ID_DOWNLOAD_RESULT = 2000;
-
-	// Activity
-	public static final String ACTION_DOWNLOAD_NOTIFICATION_CLICKED = "action.download.notification.clicked";
-
 	// Broadcast
 	public static final String ACTION_PLAYER_ACTIVITY_FINISH = PKG + ".playerActivity.finish";
 	public static final String ACTION_PLAYER_ACTIVITY_FULLSCREEN = PKG + ".playerActivity.fullScreen";
