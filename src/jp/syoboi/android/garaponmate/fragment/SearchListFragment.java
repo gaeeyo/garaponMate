@@ -56,7 +56,7 @@ public class SearchListFragment extends MainBaseFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		return inflater.inflate(R.layout.fragment_summary, null);
+		return inflater.inflate(R.layout.fragment_search_list, null);
 	}
 
 	@Override
