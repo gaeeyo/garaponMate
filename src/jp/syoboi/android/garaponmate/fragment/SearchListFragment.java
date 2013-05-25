@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import jp.syoboi.android.garaponmate.App;
@@ -139,7 +140,9 @@ public class SearchListFragment extends MainBaseFragment {
 				Object obj = getListView().getItemAtPosition(acmi.position);
 				if (obj instanceof SearchParam) {
 					SearchParam sp = (SearchParam)obj;
+					cancelReloadTask();
 					App.getSearchParamList().removeById(sp.id);
+					reload();
 				}
 			}
 		}
@@ -220,6 +223,12 @@ public class SearchListFragment extends MainBaseFragment {
 		refreshAll();
 	}
 
+	void cancelReloadTask() {
+		if (mRefreshTask != null) {
+			mRefreshTask.cancel(true);
+		}
+	}
+
 	void refreshAll() {
 		if (mRefreshTask != null) {
 			mRefreshTask.cancel(true);
@@ -263,15 +272,18 @@ public class SearchListFragment extends MainBaseFragment {
 		public static String P_END= "end";
 
 		private Context mContext;
+		ArrayList<SearchParam> mItems;
 
 		public RefreshTask(Context context) {
 			mContext = context.getApplicationContext();
+			mItems = new ArrayList<SearchParam>(
+					App.getSearchParamList().items());
 		}
 
 		@Override
 		protected Object doInBackground(Object... params) {
 
-			for (final SearchParam p: App.getSearchParamList().items()) {
+			for (final SearchParam p: mItems) {
 				if (isCancelled()) {
 					return null;
 				}
