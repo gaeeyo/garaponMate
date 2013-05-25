@@ -52,6 +52,7 @@ public class ChList {
 	}
 
 	public Collection<Ch> toArray(boolean sort) {
+		ensureItems();
 		ArrayList<Ch> items = new ArrayList<Ch>(mItems.values());
 
 		if (sort) {
