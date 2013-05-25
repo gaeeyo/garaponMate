@@ -269,6 +269,6 @@ public class PlayerVideoView implements PlayerViewInterface {
 
 	@Override
 	public boolean isSetSoundAvailable() {
-		return false;
+		return true;
 	}
 }
