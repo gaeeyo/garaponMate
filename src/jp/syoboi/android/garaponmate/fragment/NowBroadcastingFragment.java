@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
@@ -95,6 +96,18 @@ public class NowBroadcastingFragment extends MainBaseFragment {
 			}
 		});
 
+		getListView().addOnLayoutChangeListener(new OnLayoutChangeListener() {
+
+			@Override
+			public void onLayoutChange(View v, int left, int top, int right,
+					int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+				int newHeight = bottom - top;
+				int oldHeight = oldBottom - oldTop;
+				if (oldHeight != newHeight) {
+					mBcView.adjustHeight(newHeight);
+				}
+			}
+		});
 		getListView().addHeaderView(mBcView);
 //		getListView().addFooterView(View.inflate(getActivity(), R.layout.dummy_row, null),
 //				null, false);

@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/list_row_bg"
-    android:minHeight="?android:attr/listPreferredItemHeight"
     android:orientation="horizontal" >
 
     <FrameLayout
@@ -20,8 +19,8 @@
             android:gravity="center"
             android:orientation="vertical"
             android:paddingBottom="2dip"
-            android:paddingLeft="8dip"
-            android:paddingRight="8dip"
+            android:paddingLeft="@dimen/broadcastingTablePaddingWidth"
+            android:paddingRight="@dimen/broadcastingTablePaddingWidth"
             android:paddingTop="2dip" >
 
             <TextView
@@ -54,12 +53,11 @@
         android:layout_weight="1"
         android:background="@drawable/transparent_button_bg_dark"
         android:clickable="true"
+        android:ellipsize="end"
         android:focusable="true"
         android:gravity="center_vertical"
-        android:paddingBottom="2dip"
-        android:paddingLeft="8dip"
-        android:paddingRight="8dip"
-        android:paddingTop="2dip"
+        android:paddingLeft="@dimen/broadcastingTablePaddingWidth"
+        android:paddingRight="@dimen/broadcastingTablePaddingWidth"
         android:text="@string/title"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 

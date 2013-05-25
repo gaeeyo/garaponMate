@@ -6,10 +6,13 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Typeface;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.format.Time;
+import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -42,6 +45,8 @@ public class BroadcastingView extends FrameLayout {
 	float			mTimeBarTextSize;
 	Time			mTmpTime = new Time();
 	String			mSelectedGtvid;
+	int				mBestHeight;
+	int				mRowMinHeight;
 	OnBroadcastingViewListener	mListener;
 
 	public BroadcastingView(Context context, AttributeSet attrs) {
@@ -69,6 +74,7 @@ public class BroadcastingView extends FrameLayout {
 
 	public void setItems(List<Program> items) {
 		mItems = items;
+		updateRowMinHeight();
 		updateViews();
 	}
 
@@ -81,7 +87,41 @@ public class BroadcastingView extends FrameLayout {
 		invalidate();
 	}
 
+	public void adjustHeight(int height) {
+		if (mBestHeight != height) {
+			mBestHeight = height;
+			updateRowMinHeight();
+			updateViews();
+		}
+	}
+
+	public void updateRowMinHeight() {
+		if (mItems == null) {
+			return;
+		}
+		int rows = mItems.size();
+		if (rows > 0) {
+			int minHeight = (int)(48 * getResources().getDisplayMetrics().density);
+
+			int tableHeight = mBestHeight - mTable.getTop();
+			int rowMinHeight = Math.max(minHeight, tableHeight / rows);
+			if (mRowMinHeight != rowMinHeight) {
+				mRowMinHeight = rowMinHeight;
+				post(new Runnable() {
+					@Override
+					public void run() {
+						requestLayout();
+					}
+				});
+			}
+		}
+	}
+
 	void updateViews() {
+		if (mItems == null) {
+			return;
+		}
+
 		mBottomTitle = null;
 
 		while (mTable.getChildCount() > mItems.size()) {
@@ -118,6 +158,8 @@ public class BroadcastingView extends FrameLayout {
 		Time t = mTmpTime;
 		SpannableStringBuilder ssb = new SpannableStringBuilder();
 
+		int titleLines = -1;
+
 		for (int j=mItems.size()-1; j>=0; j--) {
 			Program p = mItems.get(j);
 			View row = mTable.getChildAt(j);
@@ -126,6 +168,14 @@ public class BroadcastingView extends FrameLayout {
 			TextView time = (TextView) row.findViewById(R.id.time);
 			TextView title = (TextView) row.findViewById(R.id.title);
 
+			row.setMinimumHeight(mRowMinHeight);
+
+			if (titleLines == -1) {
+				Paint paint = title.getPaint();
+				int lineHeight = (int) Math.ceil(paint.descent() - paint.ascent());
+				int margin = (int) Math.ceil(1 * getResources().getDisplayMetrics().density);
+				titleLines = (mRowMinHeight - margin * 2) / lineHeight;
+			}
 
 			long min = p.duration / 1000 / 60;
 
@@ -138,7 +188,24 @@ public class BroadcastingView extends FrameLayout {
 
 			chName.setText(Utils.convertCoolTitle(p.ch.bc));
 			time.setText(ssb.toString());
-			title.setText(Utils.convertCoolTitle(p.title));
+
+			title.setMaxLines(titleLines);
+			if (titleLines == 1 || TextUtils.isEmpty(p.description)) {
+				title.setText(Utils.convertCoolTitle(p.title));
+			} else {
+				ssb.delete(0, ssb.length());
+				ssb.append(Utils.convertCoolTitle(p.title));
+				ssb.append("\n");
+
+				int descStart = ssb.length();
+				ssb.append(Utils.convertCoolTitle(p.description));
+				SpannableString ss = new SpannableString(ssb);
+				ss.setSpan(new TextAppearanceSpan(getContext(), R.style.descriptionStyle),
+						descStart, ss.length(),
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+				title.setText(ss);
+			}
 			mBottomTitle = title;
 		}
 	}
