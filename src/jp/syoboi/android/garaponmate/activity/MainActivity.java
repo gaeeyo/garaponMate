@@ -386,13 +386,6 @@ public class MainActivity extends Activity  {
 				startActivity(intent);
 			}
 			break;
-		case R.id.icon:
-			{
-				Intent intent = new Intent(Intent.ACTION_VIEW);
-				intent.setData(Uri.parse("https://crowdworks.jp/public/jobs/7212"));
-				startActivity(intent);
-			}
-			break;
 		case R.id.logout:
 			App.from(this).logout();
 			MainActivity.startActivity(this);
