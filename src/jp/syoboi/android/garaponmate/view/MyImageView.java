@@ -11,6 +11,8 @@ import android.widget.ImageView;
  */
 public class MyImageView extends ImageView implements MyImageViewInterface {
 
+	boolean mInInvalidateDrawable;
+
 	public MyImageView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
@@ -41,10 +43,14 @@ public class MyImageView extends ImageView implements MyImageViewInterface {
 
 	@Override
 	public void invalidateDrawable(Drawable dr) {
-		super.invalidateDrawable(dr);
-		if (dr == getDrawable()) {
-			setImageDrawable(null);
-			setImageDrawable(dr);
+		if (!mInInvalidateDrawable) {
+			mInInvalidateDrawable = true;
+			super.invalidateDrawable(dr);
+			if (dr == getDrawable()) {
+				setImageDrawable(null);
+				setImageDrawable(dr);
+			}
+			mInInvalidateDrawable = false;
 		}
 	}
 

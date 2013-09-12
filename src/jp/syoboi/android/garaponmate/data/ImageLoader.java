@@ -628,6 +628,7 @@ public class ImageLoader {
 		public Drawable	mDrawable;
 		int				mAlpha = 255;
 		Rect			mBounds = new Rect();
+		boolean			mInSetBounds;
 		WeakReference<MyImageViewInterface>	mClient;
 
 		public ImageLoaderDrawable(Drawable loading) {
@@ -651,11 +652,15 @@ public class ImageLoader {
 
 		@Override
 		public void setBounds(int left, int top, int right, int bottom) {
-			if (mDrawable != null) {
-				mBounds.set(left, top, right, bottom);
-				mDrawable.setBounds(left, top, right, bottom);
+			if (!mInSetBounds) {
+				mInSetBounds = true;
+				if (mDrawable != null) {
+					mBounds.set(left, top, right, bottom);
+					mDrawable.setBounds(left, top, right, bottom);
+				}
+				super.setBounds(left, top, right, bottom);
+				mInSetBounds = false;
 			}
-			super.setBounds(left, top, right, bottom);
 		}
 
 		@Override
