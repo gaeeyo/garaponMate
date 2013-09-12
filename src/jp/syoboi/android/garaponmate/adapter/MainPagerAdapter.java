@@ -7,8 +7,8 @@ import android.support.v13.app.FragmentStatePagerAdapter;
 
 import jp.syoboi.android.garaponmate.R;
 import jp.syoboi.android.garaponmate.fragment.EmptyFragment;
+import jp.syoboi.android.garaponmate.fragment.EpgFragment;
 import jp.syoboi.android.garaponmate.fragment.GaraponWebFragment;
-import jp.syoboi.android.garaponmate.fragment.NowBroadcastingFragment;
 import jp.syoboi.android.garaponmate.fragment.SearchListFragment;
 
 
@@ -43,7 +43,8 @@ public class MainPagerAdapter extends FragmentStatePagerAdapter {
 
 		switch (position) {
 		case PAGE_NOWBROADCASTING:
-			f = new NowBroadcastingFragment();
+//			f = new NowBroadcastingFragment();
+			f = new EpgFragment();
 			break;
 		case PAGE_SEARCH:
 			f = new SearchListFragment();

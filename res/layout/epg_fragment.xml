@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <jp.syoboi.android.garaponmate.view.EpgChView
+        android:id="@+id/epgChView"
+        android:layout_width="match_parent"
+        android:layout_height="24dip"
+        android:layout_alignParentTop="true"
+        android:background="#80008800" />
+
+    <jp.syoboi.android.garaponmate.view.EpgView
+        android:id="@+id/epgView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/epgChView"
+        android:layout_marginTop="@dimen/epgChRowHeight" />
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/epgChView"
+        android:background="#AA000000"
+        android:paddingBottom="4dip"
+        android:paddingLeft="8dip"
+        android:paddingRight="8dip"
+        android:paddingTop="4dip"
+        android:textColor="#ffffffff"
+        android:textSize="16sp" />
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/date"
+        android:visibility="gone" />
+
+</RelativeLayout>

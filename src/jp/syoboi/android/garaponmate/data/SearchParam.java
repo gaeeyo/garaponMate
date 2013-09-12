@@ -18,6 +18,7 @@ public class SearchParam extends GaraponClient.Search implements Serializable, C
 	private static final long serialVersionUID = -1535056156459423850L;
 
 
+	public static final int COUNT_MAX = 100;
 	public long id;
 	public String comment;
 

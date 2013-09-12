@@ -1,6 +1,7 @@
 package jp.syoboi.android.garaponmate.data;
 
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,10 +9,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.client.GaraponClient.Ch;
@@ -27,17 +27,20 @@ public class ChList {
 	private static final String TAG = "ChList";
 
 	private File	mFile;
-	private LinkedHashMap<Integer, Ch> mItems;
+
+	SparseArray<Ch> mMap;
+	Ch []			mSorted;
 
 	public ChList(File f) {
 		mFile = f;
 	}
 
 	private synchronized void ensureItems() {
-		if (mItems == null) {
-			mItems = new LinkedHashMap<Integer, Ch>();
+		if (mMap == null) {
+			mMap = new SparseArray<Ch>();
+			mSorted = new Ch [0];
 			try {
-				loadFromFile(mFile);
+				setItems(loadFromFile(mFile));
 			} catch (JsonParseException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -46,53 +49,70 @@ public class ChList {
 		}
 	}
 
+	public int size() {
+		return mMap.size();
+	}
+
+	public Ch get(int index) {
+		return mMap.valueAt(index);
+	}
+
 	public synchronized Ch getCh(int number) {
 		ensureItems();
-		return mItems.get(number);
+		return mMap.get(number);
 	}
 
 	public Collection<Ch> toArray(boolean sort) {
 		ensureItems();
-		ArrayList<Ch> items = new ArrayList<Ch>(mItems.values());
 
-		if (sort) {
-			Collections.sort(items, new Comparator<Ch>() {
-				@Override
-				public int compare(Ch lhs, Ch rhs) {
-					return rhs.ch - lhs.ch;
-//					return lhs.ch - rhs.ch;
-				}
-			});
+		ArrayList<Ch> items = new ArrayList<Ch>();
+		for (Ch ch: mSorted) {
+			items.add(ch);
 		}
 		return items;
 	}
 
 	public synchronized void setCh(Collection<Ch> items) {
-
 		ensureItems();
+		if (setItems(items)) {
+			saveToFile(mFile);
+		}
+	}
 
-		if (items.size() == mItems.size()) {
+	private synchronized boolean setItems(Collection<Ch> items) {
+		if (items.size() == mMap.size()) {
 			boolean changed = false;
 			for (Ch ch: items) {
-				if (!ch.equals(mItems.get(ch.ch))) {
+				if (!ch.equals(mMap.get(ch.ch))) {
 					changed = true;
 					break;
 				}
 			}
 			if (!changed) {
 				if (App.DEBUG) Log.v(TAG, "変更が無かったので保存しない");
-				return;
+				return false;
 			}
 		}
 
 		if (App.DEBUG) Log.v(TAG, "ChList 保存");
 
-		mItems.clear();
+		mMap.clear();
+		mSorted = new Ch [items.size()];
+
+		int idx = 0;
 		for (Ch ch: items) {
-			mItems.put(ch.ch, ch);
+			mMap.put(ch.ch, ch);
+			mSorted[idx++] = ch;
 		}
 
-		saveToFile(mFile);
+		Arrays.sort(mSorted, new Comparator<Ch>() {
+				@Override
+				public int compare(Ch lhs, Ch rhs) {
+					return rhs.ch - lhs.ch;
+				}
+		});
+
+		return true;
 	}
 
 	void saveToFile(File file) {
@@ -115,7 +135,7 @@ public class ChList {
 			jg.writeStartObject();
 			jg.writeFieldName("items");
 			jg.writeStartArray();
-			for (Ch ch: mItems.values()) {
+			for (Ch ch: mSorted) {
 				ch.write(jg);
 			}
 			jg.writeEndArray();
@@ -134,8 +154,10 @@ public class ChList {
 		return false;
 	}
 
-	void loadFromFile(File file) throws JsonParseException, IOException {
-		mItems.clear();
+	static ArrayList<Ch> loadFromFile(File file) throws JsonParseException, IOException {
+
+		ArrayList<Ch> items = new ArrayList<Ch>();
+
 		FileInputStream fis = new FileInputStream(file);
 		try {
 			JksnObject jo = (JksnObject) JksnUtils.parseJson(fis, null);
@@ -144,7 +166,7 @@ public class ChList {
 			for (Object o: ja) {
 				if (o instanceof JksnObject) {
 					Ch ch = new Ch((JksnObject)o);
-					mItems.put(ch.ch, ch);
+					items.add(ch);
 				}
 			}
 
@@ -155,6 +177,7 @@ public class ChList {
 				e.printStackTrace();
 			}
 		}
+		return items;
 	}
 
 }

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="broadcastingTablePaddingWidth">4dip</dimen>    
+    <dimen name="broadcastingTablePaddingWidth">4dip</dimen>
+    <dimen name="epgChRowHeight">24dip</dimen>
 </resources>
