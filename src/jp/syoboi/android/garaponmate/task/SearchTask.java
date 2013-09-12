@@ -44,7 +44,10 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 			long now = Utils.currentTimeMillisJp();
 
 			boolean setRange = false;
+
+
 			SearchResult cache = getCache(mCacheFile);
+			/*
 			if (cache != null) {
 				if (cache.program != null && cache.program.size() > 0
 						&& param.rank == 0) {
@@ -56,6 +59,7 @@ public class SearchTask extends AsyncTask<Object, Object, Object> {
 					setRange = true;
 				}
 			}
+			*/
 			SearchResult sr = GaraponClientUtils.search(param);
 
 			if (setRange) {
