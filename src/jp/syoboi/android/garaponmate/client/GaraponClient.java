@@ -1,6 +1,9 @@
 package jp.syoboi.android.garaponmate.client;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
 import android.net.Uri;
@@ -10,6 +13,7 @@ import android.text.format.Time;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -69,9 +73,21 @@ public class GaraponClient {
 	public static final int STATUS_DB_CONNECTION_FAILED = 200;
 
 	private static Resources sResources;
+	private static String DEV_ID = null;
 
 	public static void init(Context context) {
 		sResources = context.getApplicationContext().getResources();
+
+		PackageInfo packageInfo;
+		try {
+			packageInfo = context.getPackageManager().getPackageInfo(
+					context.getPackageName(),
+					PackageManager.GET_META_DATA);
+			DEV_ID = packageInfo.applicationInfo.metaData.getString("garapon_dev_id");
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public static void setVersion(String gtvver) {
@@ -119,7 +135,7 @@ public class GaraponClient {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 
-			String query = new Uri.Builder()
+			String query = newUriBuilder()
 			.appendQueryParameter("user", id)
 			.appendQueryParameter("md5passwd", md5(pass))
 			.build().getEncodedQuery();
@@ -180,7 +196,7 @@ public class GaraponClient {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 
-			String query = new Uri.Builder()
+			String query = newUriBuilder()
 				.appendQueryParameter("type", "login")
 				.appendQueryParameter("loginid", id)
 				.appendQueryParameter("md5pswd", md5(pass))
@@ -221,7 +237,7 @@ public class GaraponClient {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 
-			String query = new Uri.Builder()
+			String query = newUriBuilder()
 				.appendQueryParameter("LoginID", id)
 				.appendQueryParameter("Passwd", pass)
 				.build().getEncodedQuery();
@@ -260,6 +276,12 @@ public class GaraponClient {
 				param.video);
 	}
 
+	private static Uri.Builder newUriBuilder() {
+		Uri.Builder builder = new Uri.Builder();
+		builder.appendQueryParameter("dev_id", DEV_ID);
+		return builder;
+	}
+
 	/**
 	 *
 	 * @param ipaddr  IPアドレス
@@ -289,7 +311,7 @@ public class GaraponClient {
 			int searchTime, long sdate, long edate,
 			int rank, int sort, int video) throws MalformedURLException, IOException {
 
-		Uri.Builder builder = new Uri.Builder();
+		Uri.Builder builder = newUriBuilder();
 
 		if (count != 0) {
 			builder.appendQueryParameter("n", String.valueOf(count));
@@ -373,21 +395,67 @@ public class GaraponClient {
 				"http://" + ipaddr + API_BASE + SEARCH_PATH
 				+ "?gtvsession=" + sessionId);
 
+		CountInputStream fis = null;
 		try {
+			long start = System.currentTimeMillis();
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 
 			con.getOutputStream().write(query.getBytes());
 			con.connect();
 
-			SearchResult result = parseSearchResult(con.getInputStream());
+			fis = new CountInputStream(con.getInputStream());
+
+			SearchResult result = parseSearchResult(fis);
 			if (App.DEBUG) {
-				Log.d(TAG, "検索結果 status:" + result.status + " hit:" + result.program.size());
+				long end = System.currentTimeMillis();
+				Log.d(TAG, "検索結果 status:" + result.status + " hit:" + result.program.size()
+						+ " time:" + (end - start) + " size:" + fis.mCount);
 			}
 
 			return result;
 		} finally {
+			if (fis != null) {
+				fis.close();
+			}
 			con.disconnect();
+		}
+
+	}
+
+	public static class CountInputStream extends FilterInputStream {
+
+		int mCount;
+		protected CountInputStream(InputStream in) {
+			super(in);
+		}
+
+		@Override
+		public int read() throws IOException {
+			int ret = super.read();
+			if (ret >= 0) {
+				mCount++;
+			}
+			return ret;
+		}
+
+		@Override
+		public int read(byte[] buffer) throws IOException {
+			int size = super.read(buffer);
+			if (size > 0) {
+				mCount += size;
+			}
+			return size;
+		}
+
+		@Override
+		public int read(byte[] buffer, int offset, int count)
+				throws IOException {
+			int size = super.read(buffer, offset, count);
+			if (size > 0) {
+				mCount += size;
+			}
+			return size;
 		}
 
 	}
@@ -436,7 +504,7 @@ public class GaraponClient {
 	}
 
 	public static ApiResult favorite(String ipaddr, String sessionId, String gtvid, boolean favorite) throws MalformedURLException, IOException {
-		Uri.Builder builder = new Uri.Builder();
+		Uri.Builder builder = newUriBuilder();
 
 		builder.appendQueryParameter("gtvid", gtvid);
 		builder.appendQueryParameter("rank", (favorite ? "1" : "0"));
@@ -494,9 +562,10 @@ public class GaraponClient {
 	}
 
 	public static long parseTimeStr(String str) {
-		int hour = Integer.valueOf(str.substring(0, 2), 10);
-		int minute = Integer.valueOf(str.substring(3, 5), 10);
-		int second = Integer.valueOf(str.substring(6, 8), 10);
+		int hourEnd = str.indexOf(':');
+		int hour = Integer.valueOf(str.substring(0, hourEnd), 10);
+		int minute = Integer.valueOf(str.substring(3, hourEnd + 3), 10);
+		int second = Integer.valueOf(str.substring(6, hourEnd + 6), 10);
 		return hour * DateUtils.HOUR_IN_MILLIS
 				+ minute * DateUtils.MINUTE_IN_MILLIS
 				+ second * DateUtils.SECOND_IN_MILLIS;
