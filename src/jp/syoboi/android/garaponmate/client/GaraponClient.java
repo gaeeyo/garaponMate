@@ -135,9 +135,10 @@ public class GaraponClient {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 
-			String query = newUriBuilder()
+			String query = new Uri.Builder()
 			.appendQueryParameter("user", id)
 			.appendQueryParameter("md5passwd", md5(pass))
+			.appendQueryParameter("dev_id", DEV_ID)
 			.build().getEncodedQuery();
 
 			con.getOutputStream().write(query.getBytes());
@@ -191,12 +192,12 @@ public class GaraponClient {
 			Log.i(TAG, "ガラポンTVログイン");
 		}
 
-		HttpURLConnection con = openConnection("http://" + host + API_BASE + LOGIN_PATH);
+		HttpURLConnection con = openApiConnection(host, LOGIN_PATH, null);
 		try {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 
-			String query = newUriBuilder()
+			String query = new Uri.Builder()
 				.appendQueryParameter("type", "login")
 				.appendQueryParameter("loginid", id)
 				.appendQueryParameter("md5pswd", md5(pass))
@@ -225,7 +226,6 @@ public class GaraponClient {
 		}
 	}
 
-
 	public static HashMap<String,String> loginWeb(String host, String id, String pass)
 			throws IOException, NoSuchAlgorithmException, JSONException, URISyntaxException {
 		if (App.DEBUG) {
@@ -237,7 +237,7 @@ public class GaraponClient {
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
 
-			String query = newUriBuilder()
+			String query = new Uri.Builder()
 				.appendQueryParameter("LoginID", id)
 				.appendQueryParameter("Passwd", pass)
 				.build().getEncodedQuery();
@@ -276,12 +276,6 @@ public class GaraponClient {
 				param.video);
 	}
 
-	private static Uri.Builder newUriBuilder() {
-		Uri.Builder builder = new Uri.Builder();
-		builder.appendQueryParameter("dev_id", DEV_ID);
-		return builder;
-	}
-
 	/**
 	 *
 	 * @param ipaddr  IPアドレス
@@ -311,7 +305,7 @@ public class GaraponClient {
 			int searchTime, long sdate, long edate,
 			int rank, int sort, int video) throws MalformedURLException, IOException {
 
-		Uri.Builder builder = newUriBuilder();
+		Uri.Builder builder = new Uri.Builder();
 
 		if (count != 0) {
 			builder.appendQueryParameter("n", String.valueOf(count));
@@ -391,9 +385,7 @@ public class GaraponClient {
 			Log.d(TAG, "検索 " + builder.build().getQuery());
 		}
 
-		HttpURLConnection con = openConnection(
-				"http://" + ipaddr + API_BASE + SEARCH_PATH
-				+ "?gtvsession=" + sessionId);
+		HttpURLConnection con = openApiConnection(ipaddr, SEARCH_PATH, sessionId);
 
 		CountInputStream fis = null;
 		try {
@@ -504,7 +496,7 @@ public class GaraponClient {
 	}
 
 	public static ApiResult favorite(String ipaddr, String sessionId, String gtvid, boolean favorite) throws MalformedURLException, IOException {
-		Uri.Builder builder = newUriBuilder();
+		Uri.Builder builder = new Uri.Builder();
 
 		builder.appendQueryParameter("gtvid", gtvid);
 		builder.appendQueryParameter("rank", (favorite ? "1" : "0"));
@@ -514,9 +506,7 @@ public class GaraponClient {
 			Log.i(TAG, "favorite favorite:" + favorite);
 		}
 
-		HttpURLConnection con = openConnection(
-				"http://" + ipaddr + API_BASE + FAVORITE_PATH
-				+ "?gtvsession=" + sessionId);
+		HttpURLConnection con = openApiConnection(ipaddr, FAVORITE_PATH, sessionId);
 
 		try {
 			con.setDoOutput(true);
@@ -687,6 +677,18 @@ public class GaraponClient {
 	}
 
 	static HttpURLConnection openConnection(String url) throws MalformedURLException, IOException {
+		HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
+		con.setConnectTimeout(10*1000);
+		con.setReadTimeout(10*1000);
+		return con;
+	}
+
+	static HttpURLConnection openApiConnection(String host, String path, String sessionId) throws MalformedURLException, IOException {
+		String url = "http://" + host + API_BASE + path + "?dev_id=" + DEV_ID;
+		if (sessionId != null) {
+			url += "&gtvsession=" + sessionId;
+		}
+
 		HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
 		con.setConnectTimeout(10*1000);
 		con.setReadTimeout(10*1000);
