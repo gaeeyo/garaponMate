@@ -22,3 +22,7 @@
 -keep class * extends java.lang.Throwable
 -keepattributes SourceFile,LineNumberTable
 -keep class com.deploygate.service.IDeployGateSdkService
+
+# vitamio
+-keep class io.vov.utils.** { *; }
+-keep class io.vov.vitamio.** { *; }

@@ -40,6 +40,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 
+import io.vov.vitamio.LibsChecker;
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
 import jp.syoboi.android.garaponmate.R;
@@ -103,6 +104,9 @@ public class MainActivity extends Activity  {
 		super.onCreate(savedInstanceState);
 
 		if (App.forwardLoginActivity(this)) {
+			return;
+		}
+		if (!LibsChecker.checkVitamioLibs(this)) {
 			return;
 		}
 

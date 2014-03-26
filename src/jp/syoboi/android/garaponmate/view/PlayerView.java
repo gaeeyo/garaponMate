@@ -419,7 +419,7 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 	}
 
 	PlayerViewInterface createPlayerVideoView() {
-		return new PlayerVideoView(getContext(), this);
+		return new PlayerVitamioVideoView(getContext(), this);
 	}
 
 	public int getPos() {
@@ -469,7 +469,8 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 
 	@Override
 	public void onMessage(final String message) {
-		cancelFullScreen();
+		Log.v(TAG, "onMessage message:" + message);
+//		cancelFullScreen();
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
