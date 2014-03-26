@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="36dip"
+        android:layout_marginBottom="44dip"
         android:gravity="center"
         android:shadowColor="#ff000000"
         android:shadowDx="0"
@@ -93,7 +93,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="72dip"
+        android:layout_marginBottom="96dip"
         android:layout_marginLeft="16dip"
         android:layout_marginRight="16dip"
         android:background="@drawable/video_toolbar_bg"
@@ -153,6 +153,16 @@
             android:contentDescription="@string/next"
             android:src="@drawable/ic_media_next"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/speed"
+            android:layout_width="48sp"
+            android:layout_height="64dip"
+            android:layout_weight="1"
+            android:background="@drawable/transparent_button_bg_dark"
+            android:gravity="center"
+            android:textColor="#fff"
+            android:textSize="16dip" />
     </LinearLayout>
 
 </RelativeLayout>

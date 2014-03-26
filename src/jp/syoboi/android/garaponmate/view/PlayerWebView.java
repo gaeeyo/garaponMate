@@ -248,4 +248,16 @@ public class PlayerWebView implements PlayerViewInterface {
 	public boolean isSetSoundAvailable() {
 		return false;
 	}
+
+	@Override
+	public void setSpeed(float speed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isSpeedAvailable() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

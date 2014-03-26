@@ -23,7 +23,6 @@ import jp.syoboi.android.garaponmate.client.GaraponClient;
 public class PlayerVitamioVideoView implements PlayerViewInterface {
 	private static final String TAG = "PlayerVideoView";
 
-//	FrameLayout	mViewWrapper;
 	VideoView	mVideoView;
 	boolean		mPause;
 	boolean		mStarted;
@@ -36,30 +35,16 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 	PlayerViewCallback	mCallback;
 	Resources	mResources;
 	MediaPlayer	mMediaPlayer;
+	float		mSpeed = 1f;
 
 	public PlayerVitamioVideoView(Context context, PlayerViewCallback callback) {
 		mResources = context.getResources();
 		mVideoView = new MyVideoView(context);
-		
-//		mViewWrapper = new FrameLayout(context) {
-//			@Override
-//			protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//				super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//				measureChild(mVideoView, widthMeasureSpec, heightMeasureSpec);
-//				set
-//			}
-//			@Override
-//			protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//				super.onSizeChanged(w, h, oldw, oldh);
-//				set
-//			}
-//		};
-//		mViewWrapper.addView(mVideoView, new FrameLayout.LayoutPa);
+		mVideoView.setBufferSize(200*1024);
 		
 		mCallback = callback;
 
 		mVideoView.setOnCompletionListener(new OnCompletionListener() {
-
 			@Override
 			public void onCompletion(MediaPlayer mp) {
 				mPause = true;
@@ -71,9 +56,6 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 			@Override
 			public void onPrepared(MediaPlayer mp) {
 				mMediaPlayer = mp;
-				mVideoView.setVideoLayout(VideoView.VIDEO_LAYOUT_ZOOM, 16/9f);
-
-//				mp.setPlaybackSpeed(1.5f);
 
 				if (mPendingId != null) {
 					mPause = false;
@@ -83,6 +65,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 					setVideo(id);
 					return;
 				}
+				mp.setPlaybackSpeed(mSpeed);
 
 				if (mCallback != null) {
 					mCallback.onMessage(null);
@@ -92,7 +75,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 					@Override
 					public void onBufferingUpdate(MediaPlayer mp, int percent) {
 						if (mCallback != null) {
-							if (percent == 100 || !mp.isBuffering()) {
+							if (percent >= 95 || !mp.isBuffering() || mp.isPlaying()) {
 								mCallback.onMessage(null);
 							} else {
 								mCallback.onMessage(mResources.getString(R.string.bufferingFmt, percent));
@@ -108,6 +91,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 						if (mSeekPos != -1) {
 							long seekPos = mSeekPos;
 							mSeekPos = -1;
+							mCallback.onMessage(null);
 							seek((int)seekPos);
 						} else {
 							mp.start();
@@ -193,16 +177,11 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 		mDuration = 0;
 		mStarted = false;
 		mStopped = false;
-//		Uri uri = Uri.parse("http://" + Prefs.getGaraponHost()
-//				+ "/cgi-bin/play/m3u8.cgi?"
-//				+ id + "-" + Prefs.getCommonSessionId());
-//		mVideoView.setVideoURI(uri);
 		
 		Uri uri = Uri.parse("rtmp://" + Prefs.getGaraponTsHost() + "/");
 		HashMap<String,String> options = new HashMap<String,String>();
 		options.put("rtmp_playpath", GaraponClient.getRTMPPath(id));
 		
-		mVideoView.setBufferSize(128*1024);
 		mVideoView.setVideoURI(uri, options);
 	}
 
@@ -382,6 +361,20 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 		@Override
 		public void setVideoLayout(int layout, float aspectRatio) {
 			getHolder().setFixedSize(getVideoWidth(), getVideoHeight());
+		}
+	}
+
+
+	@Override
+	public boolean isSpeedAvailable() {
+		return true;
+	}
+
+	@Override
+	public void setSpeed(float speed) {
+		mSpeed = speed;
+		if (mMediaPlayer != null) {
+			mMediaPlayer.setPlaybackSpeed(speed);
 		}
 	}
 }

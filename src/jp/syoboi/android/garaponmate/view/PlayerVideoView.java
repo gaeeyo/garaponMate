@@ -271,4 +271,16 @@ public class PlayerVideoView implements PlayerViewInterface {
 	public boolean isSetSoundAvailable() {
 		return true;
 	}
+
+	@Override
+	public void setSpeed(float speed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isSpeedAvailable() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

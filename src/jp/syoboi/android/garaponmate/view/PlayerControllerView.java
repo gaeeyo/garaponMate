@@ -46,6 +46,7 @@ public class PlayerControllerView extends FrameLayout {
 	SeekBar			mSeekBar;
 	TextView		mTime;
 	TextView		mOsd;
+	TextView		mSpeed;
 	PlayerView		mPlayer;
 	ImageView		mSound;
 	Handler			mHandler = new Handler();
@@ -56,9 +57,11 @@ public class PlayerControllerView extends FrameLayout {
 	GestureDetector	mGestureDetector;
 	Animation		mOsdCloseAnimation;
 
+	Program			mProgram;
 	CaptionAdapter	mCaptionAdapter;
 	AudioManager	mAudioManager;
 	int				mSoundValue;
+	float			mCurSpeed;
 
 	public PlayerControllerView(Context context, AttributeSet attrs, PlayerView pv) {
 		super(context, attrs);
@@ -77,6 +80,7 @@ public class PlayerControllerView extends FrameLayout {
 		mPauseButton = (ImageButton)findViewById(R.id.pause);
 		mOsd = (TextView) findViewById(R.id.osd);
 		mSound = (ImageView) findViewById(R.id.sound);
+		mSpeed = (TextView) findViewById(R.id.speed);
 
 		mOsd.setVisibility(View.GONE);
 
@@ -122,6 +126,23 @@ public class PlayerControllerView extends FrameLayout {
 				}
 				mSound.setImageResource(SOUND_ICONS[mSoundValue]);
 				mPlayer.setSound("SLR".substring(mSoundValue, mSoundValue+1));
+			}
+		});
+		
+		mSpeed.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (mCurSpeed == 1f) {
+					mCurSpeed = 1.4f;
+				}
+				else if (mCurSpeed == 1.4f) {
+					mCurSpeed = 1.2f;
+				}
+				else {
+					mCurSpeed = 1f;
+				}
+				updateSpeed();
+				mPlayer.mPlayer.setSpeed(mCurSpeed);
 			}
 		});
 
@@ -234,6 +255,7 @@ public class PlayerControllerView extends FrameLayout {
 	}
 
 	public void setProgram(Program p) {
+		mProgram = p;
 		if (p == null) {
 			return ;
 		}
@@ -247,6 +269,10 @@ public class PlayerControllerView extends FrameLayout {
 
 		mSound.setVisibility(
 				mPlayer.mPlayer.isSetSoundAvailable() ? View.VISIBLE : View.GONE);
+		mSpeed.setVisibility(
+				mPlayer.mPlayer.isSpeedAvailable() ? View.VISIBLE : View.GONE);
+		mCurSpeed = 1f;
+		updateSpeed();
 
 		updateCaptionAdapter();
 		updateIntervalTimer();
@@ -273,6 +299,10 @@ public class PlayerControllerView extends FrameLayout {
 		mSeekBar.setVisibility(mDuration > 0
 				? View.VISIBLE : View.GONE);
 		updateIntervalTimer();
+	}
+	
+	void updateSpeed() {
+		mSpeed.setText(String.format(Locale.ENGLISH, "x%.1f", mCurSpeed));
 	}
 
 	void updateIntervalTimer() {
@@ -359,10 +389,26 @@ public class PlayerControllerView extends FrameLayout {
 			}
 		}
 	};
+	
+	StringBuilder	mTimeStr = new StringBuilder();
 
 	void updateTime(int pos) {
-		mTime.setText(getTimeStr(pos) + " / "
-				+ getTimeStr(mDuration));
+		mTimeStr.delete(0, mTimeStr.length());
+		
+		if (mProgram != null) {
+			// 放送時間も表示
+			mTimeStr.append(DateUtils.formatDateTime(getContext(), 
+					mProgram.startdate + pos, 
+					DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME
+					| DateUtils.FORMAT_SHOW_WEEKDAY 
+					| DateUtils.FORMAT_ABBREV_ALL));
+			mTimeStr.append("\n");
+		}
+		mTimeStr.append(getTimeStr(pos));
+		
+		mTimeStr.append(" / ");
+		mTimeStr.append(getTimeStr(mDuration));
+		mTime.setText(mTimeStr);
 	}
 
 	String getTimeStr(int millis) {

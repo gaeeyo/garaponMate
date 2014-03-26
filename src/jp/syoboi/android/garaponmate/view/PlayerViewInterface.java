@@ -16,5 +16,7 @@ public interface PlayerViewInterface {
 	public void jump(int msec);
 	public View getView();
 	public void setSound(String lr);
+	public void setSpeed(float speed);
 	public boolean isSetSoundAvailable();
+	public boolean isSpeedAvailable();
 }
