@@ -13,7 +13,7 @@
 
         <!-- 再生方法 -->
         <ListPreference
-            android:defaultValue="0"
+            android:defaultValue="1"
             android:entries="@array/playerEntries"
             android:entryValues="@array/playerEntryValues"
             android:key="player"
@@ -21,7 +21,7 @@
 
         <!-- フルスクリーン -->
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="fullScreen"
             android:title="@string/fullScreen" />
     </PreferenceCategory>
