@@ -104,12 +104,6 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 					public void onSeekComplete(MediaPlayer mp) {
 						mSeeking = false;
 						mSeekPos = -1;
-//						if (mSeekPos != -1) {
-//							long seekPos = mSeekPos;
-//							mSeekPos = -1;
-//							mCallback.onMessage(null);
-//							seek((int)seekPos);
-//						}
 					}
 				});
 				mp.setScreenOnWhilePlaying(true);
@@ -235,6 +229,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 		}
 
 		mSeeking = true;
+		mCallback.onUpdateTime();
 		mVideoView.removeCallbacks(mPostSeekRunnable);
 		mVideoView.postDelayed(mPostSeekRunnable, 1000);
 	}
@@ -259,6 +254,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 	public void seek(int msec) {
 		mSeeking = true;
 		mSeekPos = msec;
+		mCallback.onUpdateTime();
 		mVideoView.removeCallbacks(mPostSeekRunnable);
 		mVideoView.postDelayed(mPostSeekRunnable, 0);
 	}
@@ -271,10 +267,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 	@Override
 	public int getCurrentPos() {
 		if (mSeeking) {
-			if (mSeekPos != -1) {
-				return (int) mSeekPos;
-			}
-			return (int) mCurPos;
+			return (int) mSeekPos;
 		}
 		return (int) mVideoView.getCurrentPosition();
 	}

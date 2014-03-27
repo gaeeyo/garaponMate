@@ -634,4 +634,10 @@ public class PlayerView extends RelativeLayout implements PlayerViewCallback {
 			}
 		});
 	}
+
+
+	@Override
+	public void onUpdateTime() {
+		mPlayerOverlay.onPlayerStateChanged();
+	}
 }

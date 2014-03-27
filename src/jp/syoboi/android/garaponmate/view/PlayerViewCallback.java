@@ -4,4 +4,5 @@ public interface PlayerViewCallback {
 	public void onMessage(String message);
 	public void onBuffering(int pos, int max);
 	public void onFinished();
+	public void onUpdateTime();
 }
