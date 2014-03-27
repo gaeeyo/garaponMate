@@ -14,6 +14,7 @@ import io.vov.vitamio.MediaPlayer.OnPreparedListener;
 import io.vov.vitamio.MediaPlayer.OnSeekCompleteListener;
 import io.vov.vitamio.widget.VideoView;
 
+import java.io.File;
 import java.util.HashMap;
 
 import jp.syoboi.android.garaponmate.Prefs;
@@ -40,10 +41,10 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 	public PlayerVitamioVideoView(Context context, PlayerViewCallback callback) {
 		mResources = context.getResources();
 		mVideoView = new MyVideoView(context);
-		mVideoView.setBufferSize(200*1024);
+		mVideoView.setBufferSize(128*1024);
 		
 		mCallback = callback;
-
+		
 		mVideoView.setOnCompletionListener(new OnCompletionListener() {
 			@Override
 			public void onCompletion(MediaPlayer mp) {
@@ -93,8 +94,6 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 							mSeekPos = -1;
 							mCallback.onMessage(null);
 							seek((int)seekPos);
-						} else {
-							mp.start();
 						}
 					}
 				});
@@ -181,6 +180,8 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 		Uri uri = Uri.parse("rtmp://" + Prefs.getGaraponTsHost() + "/");
 		HashMap<String,String> options = new HashMap<String,String>();
 		options.put("rtmp_playpath", GaraponClient.getRTMPPath(id));
+//		options.put("rtmp_live","record");
+//		options.put("rtmp_buffer","10000");
 		
 		mVideoView.setVideoURI(uri, options);
 	}
@@ -227,7 +228,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 			}
 		} else {
 			if (mSeekPos == -1) {
-				mVideoView.pause();
+//				mVideoView.pause();
 				mSeekPos = mCurPos + sec * 1000;
 			} else {
 				mSeekPos = mSeekPos + sec * 1000;
@@ -367,7 +368,7 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 
 	@Override
 	public boolean isSpeedAvailable() {
-		return true;
+		return false;
 	}
 
 	@Override
