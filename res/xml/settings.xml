@@ -51,4 +51,14 @@
             android:title="@string/logout" />
     </PreferenceCategory>
 
+    <!-- アプリについて -->
+    <PreferenceCategory android:title="@string/aboutApp" >
+        <Preference
+            android:key="oss"
+            android:title="@string/openSourceLicense" />
+        <Preference
+            android:key="version"
+            android:title="@string/version" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

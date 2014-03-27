@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -11,6 +13,10 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.provider.SearchRecentSuggestions;
+import android.text.format.DateUtils;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.webkit.WebView;
 
 import jp.syoboi.android.garaponmate.App;
 import jp.syoboi.android.garaponmate.Prefs;
@@ -21,6 +27,7 @@ import jp.syoboi.android.garaponmate.provider.MySearchRecentSuggestionsProvider;
 public class SettingActivity extends PreferenceActivity {
 
 	private static final int DLG_CONFIRM_LOGOUT = 1;
+	private static final int DLG_OSS = 2;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -77,6 +84,30 @@ public class SettingActivity extends PreferenceActivity {
 //				return true;
 //			}
 //		});
+		
+		findPreference("oss").setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				showDialog(DLG_OSS);
+				return true;
+			}
+		});
+		
+		Preference ver = findPreference("version");
+		PackageInfo pi;
+		try {
+			pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+			ver.setSummary(pi.versionName 
+					+ " (" + pi.versionCode + ") "
+					+ DateUtils.formatDateTime(this, pi.lastUpdateTime,
+							DateUtils.FORMAT_SHOW_WEEKDAY
+							| DateUtils.FORMAT_SHOW_DATE
+							| DateUtils.FORMAT_SHOW_WEEKDAY
+							| DateUtils.FORMAT_SHOW_TIME));
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@SuppressWarnings("deprecation")
@@ -85,6 +116,8 @@ public class SettingActivity extends PreferenceActivity {
 		switch (id) {
 		case DLG_CONFIRM_LOGOUT:
 			return createLogoutDialog();
+		case DLG_OSS:
+			return createOssDialog();
 		}
 
 		return super.onCreateDialog(id);
@@ -107,6 +140,25 @@ public class SettingActivity extends PreferenceActivity {
 			})
 			.setNegativeButton(android.R.string.no, (DialogInterface.OnClickListener)null)
 			.create();
+		return dlg;
+	}
+	
+	/**
+	 * OSSダイアログ
+	 */
+	Dialog createOssDialog() {
+		Dialog dlg = new Dialog(this);
+		WebView webView = new WebView(dlg.getContext());
+		dlg.setTitle(R.string.openSourceLicense);
+		
+		webView.getSettings().setAllowFileAccess(true);
+		webView.loadUrl("file:///android_asset/oss.html");
+
+		dlg.setContentView(webView,
+				new ViewGroup.LayoutParams(
+						LayoutParams.MATCH_PARENT, 
+						ViewGroup.LayoutParams.WRAP_CONTENT));
+		
 		return dlg;
 	}
 }

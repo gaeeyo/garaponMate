@@ -8,6 +8,9 @@
     <string name="settings">設定</string>
     <string name="add">追加</string>
     <string name="help">ヘルプ</string>
+    <string name="aboutApp">概要</string>
+    <string name="openSourceLicense">オープンソースライセンス</string>
+    <string name="version">バージョン</string>
     <string name="account">アカウント</string>
     <string name="logout">ログアウト</string>
     <string name="syoboi">syoboi.jp</string>
