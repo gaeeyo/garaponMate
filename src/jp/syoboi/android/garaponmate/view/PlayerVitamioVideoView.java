@@ -14,7 +14,6 @@ import io.vov.vitamio.MediaPlayer.OnPreparedListener;
 import io.vov.vitamio.MediaPlayer.OnSeekCompleteListener;
 import io.vov.vitamio.widget.VideoView;
 
-import java.io.File;
 import java.util.HashMap;
 
 import jp.syoboi.android.garaponmate.Prefs;
@@ -38,10 +37,36 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 	MediaPlayer	mMediaPlayer;
 	float		mSpeed = 1f;
 
+	Runnable	mClearBufferingMessageRunnable = new Runnable() {
+		
+		@Override
+		public void run() {
+			if (mMediaPlayer != null) {
+				mOnBufferingUpdateListener.onBufferingUpdate(mMediaPlayer, 
+						mMediaPlayer.getBufferProgress());
+			}
+		}
+	};
+	
+	OnBufferingUpdateListener mOnBufferingUpdateListener = new OnBufferingUpdateListener() {
+		@Override
+		public void onBufferingUpdate(MediaPlayer mp, int percent) {
+			if (mCallback != null) {
+				if (percent >= 100 || !mp.isBuffering() || mp.isPlaying()) {
+					mCallback.onMessage(null);
+					mVideoView.removeCallbacks(mClearBufferingMessageRunnable);
+				} else {
+					mCallback.onMessage(mResources.getString(R.string.bufferingFmt, percent));
+					mVideoView.postDelayed(mClearBufferingMessageRunnable, 1000);
+				}
+			}
+		}
+	};
+	
 	public PlayerVitamioVideoView(Context context, PlayerViewCallback callback) {
 		mResources = context.getResources();
 		mVideoView = new MyVideoView(context);
-		mVideoView.setBufferSize(128*1024);
+		mVideoView.setBufferSize((416*1024)*1/8);
 		
 		mCallback = callback;
 		
@@ -72,29 +97,19 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 					mCallback.onMessage(null);
 				}
 
-				mp.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
-					@Override
-					public void onBufferingUpdate(MediaPlayer mp, int percent) {
-						if (mCallback != null) {
-							if (percent >= 95 || !mp.isBuffering() || mp.isPlaying()) {
-								mCallback.onMessage(null);
-							} else {
-								mCallback.onMessage(mResources.getString(R.string.bufferingFmt, percent));
-							}
-						}
-					}
-				});
+				mp.setOnBufferingUpdateListener(mOnBufferingUpdateListener);
 
 				mp.setOnSeekCompleteListener(new OnSeekCompleteListener() {
 					@Override
 					public void onSeekComplete(MediaPlayer mp) {
 						mSeeking = false;
-						if (mSeekPos != -1) {
-							long seekPos = mSeekPos;
-							mSeekPos = -1;
-							mCallback.onMessage(null);
-							seek((int)seekPos);
-						}
+						mSeekPos = -1;
+//						if (mSeekPos != -1) {
+//							long seekPos = mSeekPos;
+//							mSeekPos = -1;
+//							mCallback.onMessage(null);
+//							seek((int)seekPos);
+//						}
 					}
 				});
 				mp.setScreenOnWhilePlaying(true);
@@ -211,30 +226,29 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 
 	@Override
 	public void jump(int sec) {
-		if (!mSeeking) {
-			mSeeking = true;
-			long curPos = mVideoView.getCurrentPosition();
-			if (sec > 0) {
-				mCurPos = curPos + sec * 1000;
-//				if (mVideoView.canSeekForward()) {
-//				if (mVideoViewcanSeekForward()) {
-					mVideoView.seekTo(mCurPos);
-//				}
-			} else {
-				mCurPos = Math.max(0, curPos + sec * 1000);
-//				if (mVideoView.canSeekBackward()) {
-					mVideoView.seekTo(mCurPos);
-//				}
-			}
-		} else {
-			if (mSeekPos == -1) {
-//				mVideoView.pause();
-				mSeekPos = mCurPos + sec * 1000;
-			} else {
-				mSeekPos = mSeekPos + sec * 1000;
+		if (mSeekPos == -1) {
+			mSeekPos = mVideoView.getCurrentPosition();
+		}
+		mSeekPos += sec * 1000;
+		if (mSeekPos < 0) {
+			mSeekPos = 0;
+		}
+
+		mSeeking = true;
+		mVideoView.removeCallbacks(mPostSeekRunnable);
+		mVideoView.postDelayed(mPostSeekRunnable, 1000);
+	}
+	
+	Runnable	mPostSeekRunnable = new Runnable() {
+		@Override
+		public void run() {
+			if (mSeekPos != -1) {
+				long seekPos = mSeekPos;
+//				mSeekPos = -1;
+				mVideoView.seekTo(seekPos);
 			}
 		}
-	}
+	};
 
 	@Override
 	public View getView() {
@@ -243,13 +257,10 @@ public class PlayerVitamioVideoView implements PlayerViewInterface {
 
 	@Override
 	public void seek(int msec) {
-		if (!mSeeking) {
-			mSeeking = true;
-			mCurPos = msec;
-			mVideoView.seekTo(msec);
-		} else {
-			mSeekPos = msec;
-		}
+		mSeeking = true;
+		mSeekPos = msec;
+		mVideoView.removeCallbacks(mPostSeekRunnable);
+		mVideoView.postDelayed(mPostSeekRunnable, 0);
 	}
 
 	@Override
