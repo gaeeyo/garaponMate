@@ -690,8 +690,8 @@ public class GaraponClient {
 		}
 
 		HttpURLConnection con = (HttpURLConnection)new URL(url).openConnection();
-		con.setConnectTimeout(10*1000);
-		con.setReadTimeout(10*1000);
+		con.setConnectTimeout(15*1000);
+		con.setReadTimeout(15*1000);
 		return con;
 	}
 
