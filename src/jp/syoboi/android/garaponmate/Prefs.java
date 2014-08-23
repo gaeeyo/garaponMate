@@ -55,6 +55,7 @@ public class Prefs {
 	}
 
 	public static void init(Context context) {
+		PreferenceManager.setDefaultValues(context, R.xml.settings, false);
 		sPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 	}
 
@@ -187,7 +188,7 @@ public class Prefs {
 			int id = Integer.valueOf(value);
 			return id;
 		} catch (Exception e) {
-			return App.PLAYER_WEBVIEW;
+			return App.PLAYER_VIDEOVIEW;
 		}
 	}
 
