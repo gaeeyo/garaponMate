@@ -91,10 +91,14 @@ public class GaraponClient {
 	}
 
 	public static void setVersion(String gtvver) {
-		if (TextUtils.equals(gtvver, "GTV3.0")) {
-			API_BASE = API_BASE_V3;
-		} else {
+		if (gtvver.startsWith("GTV2")) {
 			API_BASE = API_BASE_V2;
+		}
+		else if (gtvver.startsWith("GTV3")) {
+			API_BASE = API_BASE_V3;
+		}
+		else {
+			API_BASE = API_BASE_V3;
 		}
 	}
 
